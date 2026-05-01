@@ -1,0 +1,59 @@
+; Ce ficier contient les sorts de la voie d'Oniros
+; Utiliser le ';' pour les commentaires
+; Le fichier doit se terminer par une ligne vierge
+;
+Anti-magie (Plaines) R-2 r1+
+Barque de rêve (Lac) R-8 r1+
+Bouclier (Gouffre) R-7 r6
+Brouillard (Forêt) R-3 r1+
+Bulle volante (Marais) R-10 r1+
+Chaleur (Cité) R-4 r1+
+Clameurs (Cité) R-2 r1+
+Croissance végétale (Forêt) R-6 r5
+Froid (Désolation) R-4 r1+
+Illusion animale (Forêt) R-4 r4
+Illusion géographique (Gouffre) R-4 r4
+Illusion humanoïde (Cité) R-6 r2+
+Lanterne (Cité) R-3 r2
+Lumière (Plaines) R-4 r3
+Miroirs (Sanctuaire) R-5 r5
+Pont immatériel (Pont) R-6 r2+
+Quiétude (Nécropole) R-3 r4
+Silence (Désert) R-2 r4
+Téléportation (Collines) R-11 r9
+Ténèbres (Gouffre) R-4 r3
+Air en eau (Cité) R-8 r6
+Air en feu (Désolation) R-10 r6
+Bois en air (Marais) R-8 r6
+Bois en eau (Sanctuaire) R-6 r4
+Bois en feu (Désert) R-6 r4
+Bois en métal (Monts) R-6 r4
+Bois en terre (Nécropole) R-4 r2
+Eau en air (Désert) R-4 r2
+Eau en bois (Forêt) R-4 r2
+Eau en feu (Monts) R-8 r6
+Eau en métal (Gouffre) R-6 r4
+Eau en terre (Pont) R-6 r4
+Feu en air (Désolation) R-4 r2
+Feu en bois (Collines) R-6 r4
+Feu en eau (Cité) R-6 r4
+Feu en métal (Sanctuaire) R-6 r4
+Feu en terre (Désert) R-6 r4
+Métal en air (Fleuve) R-8 r6
+Métal en bois (Collines) R-6 r4
+Métal en eau (Fleuve) R-8 r6
+Métal en feu (Lac) R-8 r6
+Métal en terre (Plaines) R-6 r4
+Terre en air (Lac) R-8 r6
+Terre en bois (Plaines) R-4 r2
+Terre en eau (Forêt) R-6 r4
+Terre en métal (Gouffre) R-6 r4
+Bois transparent (Cité) R-4 r4
+Métal transparent (Gouffre) R-4 r4
+Terre transparente (Collines) R-4 r4
+Élargissement de zone (variable) R-4 r4
+Annulation de magie (Variable) variable 
+Annulation de ses propres zones (variable) R-4 r2
+Permanence de zone (variable) R-13 r13
+Détection d'aura (Sanctuaire) R-3 r1
+Lecture d'aura (Sanctuaire) R-3 r3

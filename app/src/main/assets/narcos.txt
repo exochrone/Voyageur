@@ -1,0 +1,26 @@
+; Ce ficier contient les sorts de la voie de Narcos
+; Utiliser le ';' pour les commentaires
+; Le fichier doit se terminer par une ligne vierge
+;
+Enchantement (Cité) R-4 r1+
+Purification (Nécropole) R-4 r4
+Alliance (Pont) R-4 r4
+Permanence * (Sanctuaire) R-5 r5
+Maîtrise (Fleuve) R-7 r7
+Individualité (Désert) R-4 r4
+Restauration * (Cité) R-6 r1+
+Autonomie ** (Lac) R-10 r10
+Écaille d'activité * (Désolation) R-9 r7
+Écaille d'efficacité * (Monts) R-8 r7
+Contre le venin * (Forêt) R-6 r4
+Contre la maladie * (Cité) R-6 r4
+Contre le feu * (Désert) R-6 r4
+Contre la magie * (Sanctuaire) R-8 r6
+Contre les projectiles * (Gouffre) R-8 r6
+Contre les lames * (Lac) R-10 r8
+Contre griffes et crocs * (Marais) R-10 r8
+Puits de rêve * (Lac) R-8 r8
+Bouilloire de Mélimnod * (Monts Brûlants E5) R-9 r9
+Détection d'aura (Sanctuaire) R-3 r1
+Lecture d'aura (Sanctuaire) R-3 r3
+Annulation de magie (Variable) variable variable

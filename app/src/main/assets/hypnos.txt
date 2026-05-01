@@ -1,0 +1,37 @@
+; Ce ficier contient les sorts de la voie d'Hypnos
+; Utiliser le ';' pour les commentaires
+; Le fichier doit se terminer par une ligne vierge
+;
+Égarement (Désolation) R-4 r4
+Fatigue (Nécropole) R-7 r5
+Fauchage (Plaines) R-6 r5
+Grand sommeil d'Hypnos rituel (Marais) R-11 r8
+Non-agressivité (Sanctuaire) R-4 r3
+Non-rêve (Désolation) R-7 r4+
+Oubli (Fleuve) R-8 r6+
+Peur (Nécropole) R-5 r5
+Repos (Cité) R-3 r2+
+Sérénité (Collines) R-3 r3+
+Sommeil (Marais) R-9 r1+
+Suggestion (Désert) R-9 r3+
+Invisibilité (Fleuve) R-10 r8
+Métamorphose (Gouffre) R-8 r6
+Transfiguration (Monts) R-6 r4
+Tympan d'Hypnos (Collines) R-5 r4
+Narine d'Hypnos (Plaines) R-4 r3
+Langue d'Hypnos (Cité) R-3 r2
+Harpe d'Hypnos (Monts) R-4 r1+
+Miroir d'Hypnos (Nécropole) R-5 r1+
+Voix d'Hypnos (Désert) R-4 r4
+Invoquer sa voix (Cité) R-6 r1+
+Invoquer son image (Sanctuaire) R-6 r1+
+Invoquer sa présence (Nécropole) R-9 r1+
+Guerrier sorde (Cité Sordide D13) R-8 r7
+Guerrier turme (Forêt Turmide C8) R-8 r7
+Nonechalepasse (Cité Jalouse M1) R-8 r7
+Kanaillou (Mont de Kanaï E1) R-5 r4
+Annulation de magie (Variable) variable 
+Annulation de ses propres illusions (variable) R-4 r2
+Conjurer l'oubli (Lac) R-4 r4
+Détection d'aura (Sanctuaire) R-3 r1
+Lecture d'aura (Sanctuaire) R-3 r3

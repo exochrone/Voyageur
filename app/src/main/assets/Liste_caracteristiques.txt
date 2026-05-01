@@ -1,0 +1,22 @@
+Caractéristiques principales :
+Beauté
+TAILLE
+APPARENCE
+CONSTITUTION
+FORCE
+AGILITÉ
+DEXTÉRITÉ
+VUE
+OUÏE
+ODO-GOÛT
+VOLONTÉ
+INTELLECT
+EMPATHIE
+RÊVE
+CHANCE
+
+Caractéristiques dérivées : 
+Mêlée
+Tir
+Lancer
+Dérobée

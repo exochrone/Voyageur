@@ -1,0 +1,31 @@
+; Ce ficier contient les sorts de la voie de Thanatos
+; Utiliser le ';' pour les commentaires
+; Le fichier doit se terminer par une ligne vierge
+;
+Possession de corps (Marais) R-9 r2+
+Possession d'esprit (Lac) R-9 r2+
+Cécité (Cité) R-8 r2+
+Maladie (Désolation) R-11 r5+
+Surdité (Gouffre) R-6 r2+
+Cauchemar (Monts) R-5 r5
+Interdiction (Désert) R-7 r7
+Tâche (Forêt) R-8 r8
+Métamorphose en bête (Fleuve) R-10 r10
+Autométamorphose en bête (Foret) R-7 r7
+Flétrissement (Fleuve) R-8 r1+
+Peur thanataire (Lac) R-9 r1+
+Poing de Thanatos (Plaines) R-6 r1+
+Putrescence (Marais) R-8 r1+
+Thanatoeil (Nécropole) R-5 r1+
+Animer un squelette (Nécropole) R-9 r1+
+Animer un zombi (Nécropole) R-7 r1+
+Invoquer un désespoir (Désolation) R-7 r7
+Invoquer une haine (Marais) R-7 r7
+Invoquer une peur (Gouffre) R-7 r7
+Faire parler un crâne (Désert) R-6 r1+
+Faire parler un mort (Pont) R-4 r1+
+Griffe de thanatos * (Nécropole) R-8 r8
+Griffe morbide de thanatos * (Marais) R-11 r11
+Dague de meurtre ** (Désolation de Sel G9) R-13 r13
+Détection d'aura (Sanctuaire) R-3 r1
+Lecture d'aura (Sanctuaire) R-3 r3
