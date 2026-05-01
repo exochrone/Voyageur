@@ -79,27 +79,8 @@ class CaracteristiquesViewModel @Inject constructor(
 
     fun onBeauteChange(valeur: Int) {
         viewModelScope.launch {
-            val resultat = modifierBeauteUseCase(voyageurId, valeur)
-            when (resultat) {
-                is ModifierBeauteUseCase.Resultat.ConfirmationRequise -> {
-                    confirmationBeauteEnAttente = valeur
-                    _events.send(CaracteristiquesEvent.ConfirmerPerteBeaute(resultat.pointsPerdus))
-                }
-                ModifierBeauteUseCase.Resultat.Succes -> { }
-            }
+            modifierBeauteUseCase(voyageurId, valeur)
         }
-    }
-
-    fun onConfirmerPerteBeaute() {
-        val valeur = confirmationBeauteEnAttente ?: return
-        confirmationBeauteEnAttente = null
-        viewModelScope.launch {
-            modifierBeauteUseCase(voyageurId, valeur, confirmationAcceptee = true)
-        }
-    }
-
-    fun onAnnulerPerteBeaute() {
-        confirmationBeauteEnAttente = null
     }
 
     fun onDescriptionChange(champ: ChampDescription, valeur: String) {
@@ -169,7 +150,7 @@ sealed interface CaracteristiquesEvent {
 }
 
 sealed interface ChampAide {
-    data class Carac(val champ: ChampCaracteristique) : ChampAide
+    data class Champ(val champ: ChampAffichage) : ChampAide
     data object Beaute : ChampAide
 }
 

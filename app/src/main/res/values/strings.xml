@@ -23,6 +23,33 @@
     <string name="gaucher">Gaucher</string>
     <string name="saisie_manuelle_titre">Saisie manuelle</string>
     <string name="points_restants">Points restants : %1$d / 160</string>
+
+    <!-- Libellés Caractéristiques -->
+    <string name="carac_taille">TAILLE</string>
+    <string name="carac_apparence">APPARENCE</string>
+    <string name="carac_constitution">CONSTITUTION</string>
+    <string name="carac_force">FORCE</string>
+    <string name="carac_agilite">AGILITÉ</string>
+    <string name="carac_dexterite">DEXTÉRITÉ</string>
+    <string name="carac_vue">VUE</string>
+    <string name="carac_ouie">OUÏE</string>
+    <string name="carac_odogout">ODO-GOÛT</string>
+    <string name="carac_volonte">VOLONTÉ</string>
+    <string name="carac_intellect">INTELLECT</string>
+    <string name="carac_empathie">EMPATHIE</string>
+    <string name="carac_reve">RÊVE</string>
+    <string name="carac_chance">CHANCE</string>
+    <string name="derivee_melee">Mêlée</string>
+    <string name="derivee_tir">Tir</string>
+    <string name="derivee_lancer">Lancer</string>
+    <string name="derivee_derobee">Dérobée</string>
+    <string name="seuil_vie">Vie</string>
+    <string name="seuil_endurance">Endurance</string>
+    <string name="seuil_sc">SC</string>
+    <string name="seuil_sust">Sustentation</string>
+    <string name="seuil_bonus_dom">+Dommages</string>
+    <string name="seuil_encombrement">Encombrement</string>
+
     <string name="beaute_confirmation_titre">Réduction de Beauté</string>
     <string name="beaute_confirmation_texte">Réduire la Beauté sous 10 détruira définitivement %1$d points. Voulez-vous continuer ?</string>
     <string name="aide_invitation">Tapez sur le nom d\'une caractéristique pour afficher l\'aide.</string>
@@ -80,4 +107,23 @@
     <string name="aide_encombrement_desc">Texte aide caractéristique Encombrement</string>
     <string name="aide_generique_titre">Aide</string>
     <string name="aide_generique_desc">Aucune aide disponible pour cet élément.</string>
+
+    <!-- Adjectifs Beauté -->
+    <string name="beaute_3">Hideux</string>
+    <string name="beaute_4">Repoussant</string>
+    <string name="beaute_5">Franchement très laid</string>
+    <string name="beaute_6">Laid</string>
+    <string name="beaute_7">Très désavantagé</string>
+    <string name="beaute_8">Désavantagé</string>
+    <string name="beaute_9">Pas terrible</string>
+    <string name="beaute_10">Commun</string>
+    <string name="beaute_11">Pas mal</string>
+    <string name="beaute_12">Avantagé</string>
+    <string name="beaute_13">Mignon</string>
+    <string name="beaute_14">Beau</string>
+    <string name="beaute_15">Très beau</string>
+    <string name="beaute_16">Éblouissant</string>
+
+    <string name="dialog_edit_title">Modifier %1$s</string>
+    <string name="valider">Valider</string>
 </resources>

@@ -38,7 +38,7 @@ enum class HeureNaissance(val symbole: Char, val label: String) {
     POISSON_ACROBATE('i', "Poisson Acrobate"),
     ARAIGNEE('j', "Araignée"),
     ROSEAU('k', "Roseau"),
-    CHATEAU_DORMANT('l', "Le Château Dormant");
+    CHATEAU_DORMANT('l', "Château Dormant");
 
     fun next(): HeureNaissance = entries[(ordinal + 1) % entries.size]
     fun previous(): HeureNaissance = entries[(ordinal - 1 + entries.size) % entries.size]
