@@ -32,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jb.voyageur.core.ui.theme.VoyageurColors
+import kotlinx.coroutines.withTimeoutOrNull
 
 @Composable
 fun CaracteristiqueRow(
@@ -128,7 +129,7 @@ fun CaracteristiqueRow(
 
                             if (longPressTriggered) {
                                 try {
-                                    // Phase drag active - on reste dans le même scope
+                                    // Phase drag active
                                     while (true) {
                                         val event = awaitPointerEvent()
                                         val change = event.changes.firstOrNull() ?: break
