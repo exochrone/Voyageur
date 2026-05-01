@@ -210,7 +210,7 @@ fun CaracteristiquesListe(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 // Colonne 1
-                Column(Modifier.weight(1.1f)) {
+                Column(Modifier.weight(1.05f)) {
                     val col1 = listOf(
                         ChampAffichage.Principale.TAILLE,
                         ChampAffichage.Principale.APPARENCE,
@@ -227,6 +227,7 @@ fun CaracteristiquesListe(
                             champ = champ,
                             uiState = uiState,
                             labelPaddingStart = 6.dp, 
+                            valuePaddingEnd = 8.dp, // Décalage du score vers la gauche
                             onCaracteristiqueChange = onCaracteristiqueChange,
                             onDemanderAide = onDemanderAide
                         )
@@ -234,7 +235,7 @@ fun CaracteristiquesListe(
                 }
 
                 // Colonne 2
-                Column(Modifier.weight(0.9f)) {
+                Column(Modifier.weight(0.95f)) {
                     val col2 = listOf(
                         ChampAffichage.Principale.VOLONTE,
                         ChampAffichage.Principale.INTELLECT,
@@ -250,7 +251,7 @@ fun CaracteristiquesListe(
                         CaracteristiqueItem(
                             champ = champ,
                             uiState = uiState,
-                            valuePaddingEnd = 12.dp,
+                            valuePaddingEnd = 20.dp, // Augmentation du décalage vers la gauche (12dp -> 20dp)
                             onCaracteristiqueChange = onCaracteristiqueChange,
                             onDemanderAide = onDemanderAide
                         )
@@ -375,8 +376,8 @@ private fun ThresholdItem(
             .padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = stringResource(labelRes), fontFamily = FontFamily.Serif, color = VoyageurColors.NomCaracteristique)
-        Text(text = valeur.toString(), fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, color = VoyageurColors.ValeurCaracteristique)
+        Text(text = stringResource(labelRes), fontFamily = FontFamily.Serif, fontSize = 16.sp, color = VoyageurColors.NomCaracteristique)
+        Text(text = valeur.toString(), fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Normal, color = VoyageurColors.ValeurCaracteristique)
     }
 }
 

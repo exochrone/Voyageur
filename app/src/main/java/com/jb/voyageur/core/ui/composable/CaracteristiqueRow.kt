@@ -172,8 +172,8 @@ fun CaracteristiqueRow(
         Text(
             text = valeurDisplay,
             fontFamily = valueFontFamily,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Normal,
             color = VoyageurColors.ValeurCaracteristique,
             modifier = Modifier
                 .graphicsLayer(scaleX = scale, scaleY = scale)
