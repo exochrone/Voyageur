@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,24 +29,25 @@ fun HeureNaissancePicker(
     modifier: Modifier = Modifier
 ) {
     val haptic = LocalHapticFeedback.current
+    val currentHeure by rememberUpdatedState(heureCourante)
     var dragAccumulator by remember { mutableFloatStateOf(0f) }
     val dragThresholdPx = with(LocalDensity.current) { 40.dp.toPx() }
 
     Column(
         modifier = modifier
-            .pointerInput(heureCourante) {
+            .pointerInput(Unit) {
                 detectHorizontalDragGestures(
                     onDragStart = { dragAccumulator = 0f },
                     onHorizontalDrag = { _, dragAmount ->
                         dragAccumulator += dragAmount
                         while (dragAccumulator < -dragThresholdPx) {
                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            onHeureChange(heureCourante.next())
+                            onHeureChange(currentHeure.next())
                             dragAccumulator += dragThresholdPx
                         }
                         while (dragAccumulator > dragThresholdPx) {
                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            onHeureChange(heureCourante.previous())
+                            onHeureChange(currentHeure.previous())
                             dragAccumulator -= dragThresholdPx
                         }
                     }
