@@ -12,7 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.jb.voyageur.feature.accueil.AccueilScreen
 import com.jb.voyageur.feature.caracteristiques.CaracteristiquesScreen
-import com.jb.voyageur.ui.theme.VoyageurTheme
+import com.jb.voyageur.core.ui.theme.VoyageurTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

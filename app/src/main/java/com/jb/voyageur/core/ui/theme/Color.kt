@@ -1,4 +1,4 @@
-package com.jb.voyageur.ui.theme
+package com.jb.voyageur.core.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
