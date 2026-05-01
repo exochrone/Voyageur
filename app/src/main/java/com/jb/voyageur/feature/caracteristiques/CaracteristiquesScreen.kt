@@ -49,7 +49,7 @@ fun CaracteristiquesScreen(
         viewModel.events.collect { event ->
             when (event) {
                 is CaracteristiquesEvent.ConfirmerPerteBeaute -> {
-                    // Confirmation beauté enlevée comme demandé, on ne fait rien
+                    // Confirmation beauté enlevée
                 }
             }
         }
@@ -210,7 +210,7 @@ fun CaracteristiquesListe(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 // Colonne 1
-                Column(Modifier.weight(1f)) {
+                Column(Modifier.weight(1.1f)) {
                     val col1 = listOf(
                         ChampAffichage.Principale.TAILLE,
                         ChampAffichage.Principale.APPARENCE,
@@ -223,12 +223,18 @@ fun CaracteristiquesListe(
                         ChampAffichage.Principale.ODO_GOUT
                     )
                     col1.forEach { champ ->
-                        CaracteristiqueItem(champ, uiState, onCaracteristiqueChange, onDemanderAide)
+                        CaracteristiqueItem(
+                            champ = champ,
+                            uiState = uiState,
+                            labelPaddingStart = 6.dp, 
+                            onCaracteristiqueChange = onCaracteristiqueChange,
+                            onDemanderAide = onDemanderAide
+                        )
                     }
                 }
 
                 // Colonne 2
-                Column(Modifier.weight(1f)) {
+                Column(Modifier.weight(0.9f)) {
                     val col2 = listOf(
                         ChampAffichage.Principale.VOLONTE,
                         ChampAffichage.Principale.INTELLECT,
@@ -241,7 +247,13 @@ fun CaracteristiquesListe(
                         ChampAffichage.Derivee.DEROBEE
                     )
                     col2.forEach { champ ->
-                        CaracteristiqueItem(champ, uiState, onCaracteristiqueChange, onDemanderAide)
+                        CaracteristiqueItem(
+                            champ = champ,
+                            uiState = uiState,
+                            valuePaddingEnd = 12.dp,
+                            onCaracteristiqueChange = onCaracteristiqueChange,
+                            onDemanderAide = onDemanderAide
+                        )
                     }
                 }
             }
@@ -266,6 +278,8 @@ fun CaracteristiquesListe(
 private fun CaracteristiqueItem(
     champ: ChampAffichage,
     uiState: CaracteristiquesUiState.Success,
+    labelPaddingStart: androidx.compose.ui.unit.Dp = 0.dp,
+    valuePaddingEnd: androidx.compose.ui.unit.Dp = 0.dp,
     onCaracteristiqueChange: (ChampCaracteristique, Int) -> Unit,
     onDemanderAide: (ChampAffichage) -> Unit
 ) {
@@ -331,6 +345,8 @@ private fun CaracteristiqueItem(
         valeur = valeur,
         min = min,
         max = max,
+        labelPaddingStart = labelPaddingStart,
+        valuePaddingEnd = valuePaddingEnd,
         onValeurChange = { if (champ is ChampAffichage.Principale) onCaracteristiqueChange(champ.domain, it) },
         onAideRequise = { onDemanderAide(champ) }
     )

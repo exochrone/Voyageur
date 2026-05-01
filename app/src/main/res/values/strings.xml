@@ -13,11 +13,11 @@
     <string name="section_description">Description</string>
     <string name="description_nom">Nom</string>
     <string name="description_age">Âge</string>
-    <string name="description_taille_cm">Taille (cm)</string>
-    <string name="description_poids_kg">Poids (kg)</string>
+    <string name="description_taille">Taille</string>
+    <string name="description_poids">Poids</string>
     <string name="description_cheveux">Cheveux</string>
     <string name="description_yeux">Yeux</string>
-    <string name="description_signe_particulier">Signe particulier</string>
+    <string name="description_signes_particuliers">Signes particuliers</string>
     <string name="lateralite">Latéralité</string>
     <string name="droitier">Droitier</string>
     <string name="gaucher">Gaucher</string>

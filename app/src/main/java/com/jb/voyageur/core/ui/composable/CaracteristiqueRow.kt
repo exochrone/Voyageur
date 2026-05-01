@@ -43,6 +43,8 @@ fun CaracteristiqueRow(
     valeurDisplay: String = valeur.toString(),
     labelFontFamily: FontFamily = FontFamily.Serif,
     valueFontFamily: FontFamily = FontFamily.Serif,
+    labelPaddingStart: androidx.compose.ui.unit.Dp = 0.dp,
+    valuePaddingEnd: androidx.compose.ui.unit.Dp = 0.dp,
     onValeurChange: (Int) -> Unit,
     onAideRequise: () -> Unit,
     modifier: Modifier = Modifier
@@ -84,6 +86,7 @@ fun CaracteristiqueRow(
             color = VoyageurColors.NomCaracteristique,
             modifier = Modifier
                 .wrapContentWidth()
+                .padding(start = labelPaddingStart)
                 .pointerInput(Unit) {
                     awaitPointerEventScope {
                         while (true) {
@@ -174,7 +177,7 @@ fun CaracteristiqueRow(
             color = VoyageurColors.ValeurCaracteristique,
             modifier = Modifier
                 .graphicsLayer(scaleX = scale, scaleY = scale)
-                .padding(start = 8.dp)
+                .padding(start = 8.dp, end = valuePaddingEnd)
                 .clickable { if (currentMin != currentMax) showSaisieDialog = true }
         )
     }
