@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Voyageur</string>
+    <string name="accueil_sous_titre">Création de personnage pour Rêve de Dragon</string>
+    <string name="accueil_nom_personnage">Nom du personnage</string>
+    <string name="accueil_creer_voyageur">Créer un voyageur</string>
+    <string name="vrai_revant">Vrai-rêvant</string>
+    <string name="haut_revant">Haut-rêvant</string>
+    <string name="homme">Homme</string>
+    <string name="femme">Femme</string>
+    <string name="ok">OK</string>
+    <string name="annuler">Annuler</string>
+    <string name="confirmer">Confirmer</string>
+</resources>
