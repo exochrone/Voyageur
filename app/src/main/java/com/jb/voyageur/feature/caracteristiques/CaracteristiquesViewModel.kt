@@ -63,8 +63,8 @@ class CaracteristiquesViewModel @Inject constructor(
             initialValue = CaracteristiquesUiState.Loading
         )
 
-    private val _aideActive = MutableStateFlow<ChampAide?>(null)
-    val aideActive: StateFlow<ChampAide?> = _aideActive.asStateFlow()
+    private val _aideActive = MutableStateFlow<ChampAffichage?>(null)
+    val aideActive: StateFlow<ChampAffichage?> = _aideActive.asStateFlow()
 
     private val _events = Channel<CaracteristiquesEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
@@ -101,7 +101,7 @@ class CaracteristiquesViewModel @Inject constructor(
         }
     }
 
-    fun onDemanderAide(champ: ChampAide) {
+    fun onDemanderAide(champ: ChampAffichage) {
         _aideActive.value = champ
     }
 
@@ -147,11 +147,6 @@ sealed interface CaracteristiquesUiState {
 
 sealed interface CaracteristiquesEvent {
     data class ConfirmerPerteBeaute(val pointsPerdus: Int) : CaracteristiquesEvent
-}
-
-sealed interface ChampAide {
-    data class Champ(val champ: ChampAffichage) : ChampAide
-    data object Beaute : ChampAide
 }
 
 private fun Voyageur.toCaracteristiquesUiState(): CaracteristiquesUiState.Success {

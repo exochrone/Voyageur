@@ -6,24 +6,24 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.platform.LocalContext
 import com.jb.voyageur.R
 import com.jb.voyageur.core.domain.model.HeureNaissance
-import com.jb.voyageur.core.domain.model.Lateralite
 import com.jb.voyageur.core.domain.model.Sexe
 import com.jb.voyageur.core.domain.usecase.ChampDescription
 import com.jb.voyageur.core.ui.composable.CaracteristiqueRow
 import com.jb.voyageur.core.ui.composable.HeureNaissancePicker
 import com.jb.voyageur.core.ui.theme.VoyageurColors
-import com.jb.voyageur.feature.caracteristiques.ChampAide
+import com.jb.voyageur.feature.caracteristiques.ChampAffichage
 import com.jb.voyageur.feature.caracteristiques.CaracteristiquesUiState
 
 @Composable
@@ -31,9 +31,8 @@ fun SectionDescription(
     uiState: CaracteristiquesUiState.Success,
     onDescriptionChange: (ChampDescription, String) -> Unit,
     onBeauteChange: (Int) -> Unit,
-    onLateraliteChange: (Lateralite) -> Unit,
     onHeureNaissanceChange: (HeureNaissance) -> Unit,
-    onDemanderAide: (ChampAide) -> Unit,
+    onDemanderAide: (ChampAffichage) -> Unit,
     modifier: Modifier = Modifier,
     visible: Boolean = true
 ) {
@@ -53,69 +52,70 @@ fun SectionDescription(
                     // Sexe
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(bottom = 4.dp)
                     ) {
                         Text(text = stringResource(R.string.homme), 
                             modifier = Modifier.clickable { onDescriptionChange(ChampDescription.SEXE, Sexe.HOMME.name) },
                             fontWeight = if(uiState.sexe == Sexe.HOMME) FontWeight.Bold else FontWeight.Normal,
-                            color = if(uiState.sexe == Sexe.HOMME) VoyageurColors.ValeurCaracteristique else VoyageurColors.NomCaracteristique
+                            color = if(uiState.sexe == Sexe.HOMME) VoyageurColors.NomCaracteristique else Color.Gray
                         )
-                        Text(text = "/")
+                        Text(text = "/", color = Color.Gray)
                         Text(text = stringResource(R.string.femme), 
                             modifier = Modifier.clickable { onDescriptionChange(ChampDescription.SEXE, Sexe.FEMME.name) },
                             fontWeight = if(uiState.sexe == Sexe.FEMME) FontWeight.Bold else FontWeight.Normal,
-                            color = if(uiState.sexe == Sexe.FEMME) VoyageurColors.ValeurCaracteristique else VoyageurColors.NomCaracteristique
+                            color = if(uiState.sexe == Sexe.FEMME) VoyageurColors.NomCaracteristique else Color.Gray
                         )
                     }
 
                     DescriptionLabel(label = stringResource(R.string.description_age), valeur = uiState.age?.toString() ?: "") {
                         editChamp = ChampDescription.AGE to (uiState.age?.toString() ?: "")
                     }
-                    DescriptionLabel(label = stringResource(R.string.description_taille_cm), valeur = uiState.tailleCm?.toString() ?: "") {
-                        editChamp = ChampDescription.TAILLE_CM to (uiState.tailleCm?.toString() ?: "")
+                    
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Box(modifier = Modifier.weight(1f)) {
+                            DescriptionLabel(label = stringResource(R.string.description_taille_cm), valeur = uiState.tailleCm?.toString() ?: "") {
+                                editChamp = ChampDescription.TAILLE_CM to (uiState.tailleCm?.toString() ?: "")
+                            }
+                        }
+                        Box(modifier = Modifier.weight(1f)) {
+                            DescriptionLabel(label = stringResource(R.string.description_poids_kg), valeur = uiState.poidsKg?.toString() ?: "") {
+                                editChamp = ChampDescription.POIDS_KG to (uiState.poidsKg?.toString() ?: "")
+                            }
+                        }
                     }
-                    DescriptionLabel(label = stringResource(R.string.description_poids_kg), valeur = uiState.poidsKg?.toString() ?: "") {
-                        editChamp = ChampDescription.POIDS_KG to (uiState.poidsKg?.toString() ?: "")
+
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Box(modifier = Modifier.weight(1f)) {
+                            DescriptionLabel(label = stringResource(R.string.description_cheveux), valeur = uiState.cheveux) {
+                                editChamp = ChampDescription.CHEVEUX to uiState.cheveux
+                            }
+                        }
+                        Box(modifier = Modifier.weight(1f)) {
+                            DescriptionLabel(label = stringResource(R.string.description_yeux), valeur = uiState.yeux) {
+                                editChamp = ChampDescription.YEUX to uiState.yeux
+                            }
+                        }
                     }
-                    DescriptionLabel(label = stringResource(R.string.description_cheveux), valeur = uiState.cheveux) {
-                        editChamp = ChampDescription.CHEVEUX to uiState.cheveux
-                    }
-                    DescriptionLabel(label = stringResource(R.string.description_yeux), valeur = uiState.yeux) {
-                        editChamp = ChampDescription.YEUX to uiState.yeux
-                    }
+
                     DescriptionLabel(label = stringResource(R.string.description_signe_particulier), valeur = uiState.signeParticulier) {
                         editChamp = ChampDescription.SIGNE_PARTICULIER to uiState.signeParticulier
                     }
 
-                    // Latéralité
-                    Row(
-                        modifier = Modifier.padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(text = stringResource(R.string.lateralite) + " :", color = VoyageurColors.NomCaracteristique)
-                        Text(text = stringResource(R.string.droitier), 
-                            modifier = Modifier.clickable { onLateraliteChange(Lateralite.DROITIER) },
-                            fontWeight = if(uiState.lateralite == Lateralite.DROITIER) FontWeight.Bold else FontWeight.Normal,
-                            color = if(uiState.lateralite == Lateralite.DROITIER) VoyageurColors.ValeurCaracteristique else VoyageurColors.NomCaracteristique
-                        )
-                        Text(text = stringResource(R.string.gaucher), 
-                            modifier = Modifier.clickable { onLateraliteChange(Lateralite.GAUCHER) },
-                            fontWeight = if(uiState.lateralite == Lateralite.GAUCHER) FontWeight.Bold else FontWeight.Normal,
-                            color = if(uiState.lateralite == Lateralite.GAUCHER) VoyageurColors.ValeurCaracteristique else VoyageurColors.NomCaracteristique
-                        )
-                    }
-
                     // Beauté avec Adjectif
-                    val beauteAdjectif = stringResource(id = context.resources.getIdentifier("beaute_${uiState.beaute}", "string", context.packageName))
+                    val resId = context.resources.getIdentifier("beaute_${uiState.beaute}", "string", context.packageName)
+                    val beauteAdjectif = if (resId != 0) stringResource(resId) else ""
+                    
                     CaracteristiqueRow(
                         nom = stringResource(R.string.aide_beaute_titre),
                         valeur = uiState.beaute,
                         min = 3,
                         max = 16,
                         valeurDisplay = "${uiState.beaute} ($beauteAdjectif)",
+                        labelFontFamily = FontFamily.Default,
+                        valueFontFamily = FontFamily.Default,
                         onValeurChange = onBeauteChange,
-                        onAideRequise = { onDemanderAide(ChampAide.Beaute) },
+                        onAideRequise = { onDemanderAide(ChampAffichage.Beaute) },
                         modifier = Modifier.padding(top = 8.dp)
                     )
                 }
@@ -182,5 +182,5 @@ private fun getLabelRes(champ: ChampDescription): Int = when (champ) {
     ChampDescription.AGE -> R.string.description_age
     ChampDescription.TAILLE_CM -> R.string.description_taille_cm
     ChampDescription.POIDS_KG -> R.string.description_poids_kg
-    ChampDescription.SEXE -> R.string.homme // Not used for dialog but for completeness
+    ChampDescription.SEXE -> R.string.homme
 }

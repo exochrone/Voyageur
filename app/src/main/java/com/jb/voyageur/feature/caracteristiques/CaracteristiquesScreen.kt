@@ -45,6 +45,16 @@ fun CaracteristiquesScreen(
 
     var descriptionDepliee by remember { mutableStateOf(true) }
 
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is CaracteristiquesEvent.ConfirmerPerteBeaute -> {
+                    // Confirmation beauté enlevée comme demandé, on ne fait rien
+                }
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             val state = uiState
@@ -98,7 +108,7 @@ fun CaracteristiquesScreen(
 @Composable
 fun CaracteristiquesContent(
     uiState: CaracteristiquesUiState.Success,
-    aideActive: ChampAide?,
+    aideActive: ChampAffichage?,
     windowWidthSizeClass: WindowWidthSizeClass,
     descriptionDepliee: Boolean,
     modifier: Modifier = Modifier,
@@ -107,7 +117,7 @@ fun CaracteristiquesContent(
     onDescriptionChange: (com.jb.voyageur.core.domain.usecase.ChampDescription, String) -> Unit,
     onHeureNaissanceChange: (com.jb.voyageur.core.domain.model.HeureNaissance) -> Unit,
     onLateraliteChange: (com.jb.voyageur.core.domain.model.Lateralite) -> Unit,
-    onDemanderAide: (ChampAide) -> Unit,
+    onDemanderAide: (ChampAffichage) -> Unit,
     onFermerAide: () -> Unit
 ) {
     ParcheminBackground(modifier = modifier) {
@@ -162,7 +172,7 @@ fun CaracteristiquesListe(
     onDescriptionChange: (com.jb.voyageur.core.domain.usecase.ChampDescription, String) -> Unit,
     onHeureNaissanceChange: (com.jb.voyageur.core.domain.model.HeureNaissance) -> Unit,
     onLateraliteChange: (com.jb.voyageur.core.domain.model.Lateralite) -> Unit,
-    onDemanderAide: (ChampAide) -> Unit
+    onDemanderAide: (ChampAffichage) -> Unit
 ) {
     LazyColumn(modifier = modifier) {
         item {
@@ -171,7 +181,6 @@ fun CaracteristiquesListe(
                 onDescriptionChange = onDescriptionChange,
                 onBeauteChange = onBeauteChange,
                 onHeureNaissanceChange = onHeureNaissanceChange,
-                onLateraliteChange = onLateraliteChange,
                 onDemanderAide = onDemanderAide,
                 visible = descriptionDepliee
             )
@@ -258,7 +267,7 @@ private fun CaracteristiqueItem(
     champ: ChampAffichage,
     uiState: CaracteristiquesUiState.Success,
     onCaracteristiqueChange: (ChampCaracteristique, Int) -> Unit,
-    onDemanderAide: (ChampAide) -> Unit
+    onDemanderAide: (ChampAffichage) -> Unit
 ) {
     val valeur = when (champ) {
         is ChampAffichage.Principale -> when (champ) {
@@ -323,7 +332,7 @@ private fun CaracteristiqueItem(
         min = min,
         max = max,
         onValeurChange = { if (champ is ChampAffichage.Principale) onCaracteristiqueChange(champ.domain, it) },
-        onAideRequise = { onDemanderAide(ChampAide.Champ(champ)) }
+        onAideRequise = { onDemanderAide(champ) }
     )
     HorizontalDivider(color = VoyageurColors.NomCaracteristique.copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 4.dp))
 }
@@ -332,7 +341,7 @@ private fun CaracteristiqueItem(
 private fun ThresholdItem(
     champ: ChampAffichage.Seuil,
     valeur: Any,
-    onDemanderAide: (ChampAide) -> Unit
+    onDemanderAide: (ChampAffichage) -> Unit
 ) {
     val labelRes = when(champ) {
         ChampAffichage.Seuil.VIE -> R.string.seuil_vie
@@ -346,7 +355,7 @@ private fun ThresholdItem(
     Row(
         Modifier
             .fillMaxWidth()
-            .clickable { onDemanderAide(ChampAide.Champ(champ)) }
+            .clickable { onDemanderAide(champ) }
             .padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -357,17 +366,14 @@ private fun ThresholdItem(
 
 @Composable
 fun ZoneAide(
-    champAide: ChampAide?,
+    champAide: ChampAffichage?,
     modifier: Modifier = Modifier
 ) {
     Column(modifier.padding(16.dp)) {
         if (champAide != null) {
             val context = LocalContext.current
             val aide = remember(champAide) {
-                when (champAide) {
-                    is ChampAide.Champ -> AideCaracteristiqueProvider.pour(champAide.champ, context.resources)
-                    ChampAide.Beaute -> AideCaracteristiqueProvider.pour(ChampAffichage.Beaute, context.resources)
-                }
+                AideCaracteristiqueProvider.pour(champAide, context.resources)
             }
             Text(text = aide.titre, fontFamily = GoudyAcc, fontSize = 24.sp)
             Spacer(Modifier.height(8.dp))
@@ -381,7 +387,7 @@ fun ZoneAide(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AideBottomSheet(
-    champAide: ChampAide,
+    champAide: ChampAffichage,
     onDismiss: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()

@@ -2,7 +2,7 @@ package com.jb.voyageur.core.ui.composable
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -39,6 +40,8 @@ fun CaracteristiqueRow(
     min: Int = 6,
     max: Int = 15,
     valeurDisplay: String = valeur.toString(),
+    labelFontFamily: FontFamily = FontFamily.Serif,
+    valueFontFamily: FontFamily = FontFamily.Serif,
     onValeurChange: (Int) -> Unit,
     onAideRequise: () -> Unit,
     modifier: Modifier = Modifier
@@ -61,9 +64,9 @@ fun CaracteristiqueRow(
         }
     }
 
-    val valeurFontSize by animateFloatAsState(
-        targetValue = if (isDragging) 28f else 22f,
-        label = "valeurFontSize"
+    val scale by animateFloatAsState(
+        targetValue = if (isDragging) 1.4f else 1f,
+        label = "valeurScale"
     )
 
     Row(
@@ -74,40 +77,89 @@ fun CaracteristiqueRow(
     ) {
         Text(
             text = nom,
-            fontFamily = FontFamily.Serif,
+            fontFamily = labelFontFamily,
             fontSize = 16.sp,
             fontWeight = if (isDragging) FontWeight.Bold else FontWeight.Normal,
             color = VoyageurColors.NomCaracteristique,
             modifier = Modifier
                 .wrapContentWidth()
-                .clickable { onAideRequise() }
                 .pointerInput(Unit) {
-                    detectVerticalDragGestures(
-                        onDragStart = {
-                            isDragging = true
+                    awaitPointerEventScope {
+                        while (true) {
+                            // Attendre le premier contact
+                            val down = awaitFirstDown(requireUnconsumed = false)
+                            val downTime = System.currentTimeMillis()
                             dragAccumulator = 0f
-                        },
-                        onDragEnd = { isDragging = false },
-                        onDragCancel = { isDragging = false },
-                        onVerticalDrag = { _, dragAmount ->
-                            dragAccumulator -= dragAmount
-                            val increments = (dragAccumulator / dragThresholdPx).toInt()
-                            if (increments != 0) {
-                                val nouvelleValeur = (currentValeur + increments).coerceIn(currentMin, currentMax)
-                                if (nouvelleValeur != currentValeur) {
-                                    if (nouvelleValeur == currentMin || nouvelleValeur == currentMax) {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    } else {
-                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                    }
-                                    onValeurChange(nouvelleValeur)
-                                } else {
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+
+                            var longPressTriggered = false
+                            var pointer = down
+
+                            // Attendre 200ms ou un mouvement
+                            while (true) {
+                                val elapsed = System.currentTimeMillis() - downTime
+                                val event = withTimeoutOrNull((200 - elapsed).coerceAtLeast(0)) {
+                                    awaitPointerEvent()
                                 }
-                                dragAccumulator -= increments * dragThresholdPx
+
+                                if (event == null) {
+                                    // 200ms écoulées sans mouvement → activer le drag
+                                    if (pointer.pressed) {
+                                        longPressTriggered = true
+                                        isDragging = true
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    }
+                                    break
+                                }
+
+                                pointer = event.changes.firstOrNull() ?: break
+
+                                if (!pointer.pressed) {
+                                    // Doigt levé avant 200ms → tap simple → aide
+                                    if (System.currentTimeMillis() - downTime < 200) {
+                                        onAideRequise()
+                                    }
+                                    break
+                                }
+
+                                // Mouvement détecté avant 200ms → laisser scroller
+                                val drag = pointer.position - pointer.previousPosition
+                                if (drag.getDistance() > 8.dp.toPx()) break
+                            }
+
+                            if (longPressTriggered) {
+                                try {
+                                    // Phase drag active - on reste dans le même scope
+                                    while (true) {
+                                        val event = awaitPointerEvent()
+                                        val change = event.changes.firstOrNull() ?: break
+                                        if (!change.pressed) break
+                                        change.consume()
+
+                                        val dragAmount = change.previousPosition.y - change.position.y
+                                        dragAccumulator += dragAmount
+                                        val increments = (dragAccumulator / dragThresholdPx).toInt()
+                                        if (increments != 0) {
+                                            val nouvelleValeur = (currentValeur + increments)
+                                                .coerceIn(currentMin, currentMax)
+                                            if (nouvelleValeur != currentValeur) {
+                                                val feedbackType = if (nouvelleValeur == currentMin || nouvelleValeur == currentMax)
+                                                    HapticFeedbackType.LongPress
+                                                else
+                                                    HapticFeedbackType.TextHandleMove
+                                                haptic.performHapticFeedback(feedbackType)
+                                                onValeurChange(nouvelleValeur)
+                                            } else {
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            }
+                                            dragAccumulator -= increments * dragThresholdPx
+                                        }
+                                    }
+                                } finally {
+                                    isDragging = false
+                                }
                             }
                         }
-                    )
+                    }
                 }
         )
         
@@ -115,11 +167,12 @@ fun CaracteristiqueRow(
 
         Text(
             text = valeurDisplay,
-            fontFamily = FontFamily.Serif,
-            fontSize = valeurFontSize.sp,
+            fontFamily = valueFontFamily,
+            fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             color = VoyageurColors.ValeurCaracteristique,
             modifier = Modifier
+                .graphicsLayer(scaleX = scale, scaleY = scale)
                 .padding(start = 8.dp)
                 .clickable { if (currentMin != currentMax) showSaisieDialog = true }
         )
