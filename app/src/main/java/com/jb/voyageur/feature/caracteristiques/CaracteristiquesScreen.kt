@@ -1,5 +1,7 @@
 package com.jb.voyageur.feature.caracteristiques
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,15 +11,23 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -40,14 +50,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jb.voyageur.R
 import com.jb.voyageur.core.domain.usecase.ChampCaracteristique
-import com.jb.voyageur.core.ui.AideCaracteristiqueProvider
+import com.jb.voyageur.core.ui.helper.AideCaracteristiqueProvider
 import com.jb.voyageur.core.ui.composable.CaracteristiqueRow
 import com.jb.voyageur.core.ui.composable.ParcheminBackground
 import com.jb.voyageur.core.ui.theme.GoudyAcc
 import com.jb.voyageur.core.ui.theme.VoyageurColors
 import com.jb.voyageur.feature.caracteristiques.composable.SectionDescription
 
-@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun CaracteristiquesScreen(
     voyageurId: Long,
@@ -59,6 +69,7 @@ fun CaracteristiquesScreen(
     val windowSizeClass = calculateWindowSizeClass(context as android.app.Activity)
 
     var showConfirmBeaute by remember { mutableStateOf<Int?>(null) }
+    var descriptionDepliee by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -69,25 +80,52 @@ fun CaracteristiquesScreen(
         }
     }
 
-    when (val state = uiState) {
-        CaracteristiquesUiState.Loading -> {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(text = "Chargement...")
+    Scaffold(
+        topBar = {
+            val state = uiState
+            if (state is CaracteristiquesUiState.Success) {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = state.nom.ifBlank { stringResource(R.string.section_description) },
+                            fontFamily = GoudyAcc
+                        )
+                    },
+                    actions = {
+                        IconButton(onClick = { descriptionDepliee = !descriptionDepliee }) {
+                            Icon(
+                                imageVector = if (descriptionDepliee)
+                                    Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                contentDescription = null
+                            )
+                        }
+                    }
+                )
             }
         }
-        is CaracteristiquesUiState.Success -> {
-            CaracteristiquesContent(
-                uiState = state,
-                aideActive = aideActive,
-                windowWidthSizeClass = windowSizeClass.widthSizeClass,
-                onCaracteristiqueChange = viewModel::onCaracteristiqueChange,
-                onBeauteChange = viewModel::onBeauteChange,
-                onDescriptionChange = viewModel::onDescriptionChange,
-                onHeureNaissanceChange = viewModel::onHeureNaissanceChange,
-                onLateraliteChange = viewModel::onLateraliteChange,
-                onDemanderAide = viewModel::onDemanderAide,
-                onFermerAide = viewModel::onFermerAide
-            )
+    ) { innerPadding ->
+        when (val state = uiState) {
+            CaracteristiquesUiState.Loading -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(text = "Chargement...")
+                }
+            }
+            is CaracteristiquesUiState.Success -> {
+                CaracteristiquesContent(
+                    uiState = state,
+                    aideActive = aideActive,
+                    windowWidthSizeClass = windowSizeClass.widthSizeClass,
+                    descriptionDepliee = descriptionDepliee,
+                    modifier = Modifier.padding(innerPadding),
+                    onCaracteristiqueChange = viewModel::onCaracteristiqueChange,
+                    onBeauteChange = viewModel::onBeauteChange,
+                    onDescriptionChange = viewModel::onDescriptionChange,
+                    onHeureNaissanceChange = viewModel::onHeureNaissanceChange,
+                    onLateraliteChange = viewModel::onLateraliteChange,
+                    onDemanderAide = viewModel::onDemanderAide,
+                    onFermerAide = viewModel::onFermerAide
+                )
+            }
         }
     }
 
@@ -119,6 +157,8 @@ fun CaracteristiquesContent(
     uiState: CaracteristiquesUiState.Success,
     aideActive: ChampAide?,
     windowWidthSizeClass: WindowWidthSizeClass,
+    descriptionDepliee: Boolean,
+    modifier: Modifier = Modifier,
     onCaracteristiqueChange: (ChampCaracteristique, Int) -> Unit,
     onBeauteChange: (Int) -> Unit,
     onDescriptionChange: (com.jb.voyageur.core.domain.usecase.ChampDescription, String) -> Unit,
@@ -127,11 +167,12 @@ fun CaracteristiquesContent(
     onDemanderAide: (ChampAide) -> Unit,
     onFermerAide: () -> Unit
 ) {
-    ParcheminBackground {
+    ParcheminBackground(modifier = modifier) {
         if (windowWidthSizeClass == WindowWidthSizeClass.Expanded) {
-            Row(Modifier.fillMaxSize()) {
+            Row(modifier = Modifier.fillMaxSize()) {
                 CaracteristiquesListe(
                     uiState = uiState,
+                    descriptionDepliee = descriptionDepliee,
                     modifier = Modifier.weight(0.6f),
                     onCaracteristiqueChange = onCaracteristiqueChange,
                     onBeauteChange = onBeauteChange,
@@ -148,6 +189,7 @@ fun CaracteristiquesContent(
         } else {
             CaracteristiquesListe(
                 uiState = uiState,
+                descriptionDepliee = descriptionDepliee,
                 modifier = Modifier.fillMaxSize(),
                 onCaracteristiqueChange = onCaracteristiqueChange,
                 onBeauteChange = onBeauteChange,
@@ -166,9 +208,11 @@ fun CaracteristiquesContent(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CaracteristiquesListe(
     uiState: CaracteristiquesUiState.Success,
+    descriptionDepliee: Boolean,
     modifier: Modifier = Modifier,
     onCaracteristiqueChange: (ChampCaracteristique, Int) -> Unit,
     onBeauteChange: (Int) -> Unit,
@@ -177,88 +221,145 @@ fun CaracteristiquesListe(
     onLateraliteChange: (com.jb.voyageur.core.domain.model.Lateralite) -> Unit,
     onDemanderAide: (ChampAide) -> Unit
 ) {
-    Column(
-        modifier = modifier
-            .verticalScroll(rememberScrollState())
-    ) {
-        SectionDescription(
-            uiState = uiState,
-            onDescriptionChange = onDescriptionChange,
-            onHeureNaissanceChange = onHeureNaissanceChange,
-            onLateraliteChange = onLateraliteChange
-        )
-
-        Surface(
-            color = VoyageurColors.ParcheminBase.copy(alpha = 0.9f),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = stringResource(R.string.points_restants, uiState.pointsRestants),
-                fontFamily = FontFamily.Serif,
-                fontSize = 18.sp,
-                color = if (uiState.pointsRestants < 0) VoyageurColors.ValeurCaracteristique else VoyageurColors.NomCaracteristique,
-                modifier = Modifier.padding(16.dp)
-            )
+    LazyColumn(modifier = modifier) {
+        if (descriptionDepliee) {
+            item {
+                SectionDescription(
+                    uiState = uiState,
+                    onDescriptionChange = onDescriptionChange,
+                    onBeauteChange = onBeauteChange,
+                    onHeureNaissanceChange = onHeureNaissanceChange,
+                    onLateraliteChange = onLateraliteChange,
+                    onDemanderAide = onDemanderAide
+                )
+            }
         }
 
-        Column(Modifier.padding(16.dp)) {
-            ChampCaracteristique.entries.forEach { champ ->
-                val valeur = when (champ) {
-                    ChampCaracteristique.TAILLE -> uiState.caracteristiques.taille
-                    ChampCaracteristique.APPARENCE -> uiState.caracteristiques.apparence
-                    ChampCaracteristique.CONSTITUTION -> uiState.caracteristiques.constitution
-                    ChampCaracteristique.FORCE -> uiState.caracteristiques.force
-                    ChampCaracteristique.AGILITE -> uiState.caracteristiques.agilite
-                    ChampCaracteristique.DEXTERITE -> uiState.caracteristiques.dexterite
-                    ChampCaracteristique.VUE -> uiState.caracteristiques.vue
-                    ChampCaracteristique.OUIE -> uiState.caracteristiques.ouie
-                    ChampCaracteristique.ODO_GOUT -> uiState.caracteristiques.odoGout
-                    ChampCaracteristique.VOLONTE -> uiState.caracteristiques.volonte
-                    ChampCaracteristique.INTELLECT -> uiState.caracteristiques.intellect
-                    ChampCaracteristique.EMPATHIE -> uiState.caracteristiques.empathie
-                    ChampCaracteristique.REVE -> uiState.caracteristiques.reve
-                    ChampCaracteristique.CHANCE -> uiState.caracteristiques.chance
-                }
-                
-                val max = if (champ == ChampCaracteristique.FORCE) uiState.forceMax else 15
-
-                CaracteristiqueRow(
-                    nom = champ.name,
-                    valeur = valeur,
-                    max = max,
-                    onValeurChange = { onCaracteristiqueChange(champ, it) },
-                    onAideRequise = { onDemanderAide(ChampAide.Carac(champ)) }
+        stickyHeader {
+            Surface(
+                color = VoyageurColors.ParcheminBase.copy(alpha = 0.95f),
+                shadowElevation = 4.dp,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(R.string.points_restants, uiState.pointsRestants),
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 18.sp,
+                    color = if (uiState.pointsRestants < 0) VoyageurColors.ValeurCaracteristique else VoyageurColors.NomCaracteristique,
+                    modifier = Modifier.padding(16.dp)
                 )
-                HorizontalDivider(color = VoyageurColors.NomCaracteristique.copy(alpha = 0.1f))
             }
+        }
 
-            Spacer(Modifier.height(8.dp))
-            CaracteristiqueRow(
-                nom = stringResource(R.string.aide_beaute_titre),
-                valeur = uiState.beaute,
-                min = 1,
-                max = 16,
-                onValeurChange = onBeauteChange,
-                onAideRequise = { onDemanderAide(ChampAide.Beaute) }
-            )
-            
-            Spacer(Modifier.height(16.dp))
-            Text(text = "Valeurs Dérivées", fontFamily = GoudyAcc, fontSize = 20.sp)
-            DeriveeRow("Mêlée", uiState.melee)
-            DeriveeRow("Tir", uiState.tir)
-            DeriveeRow("Lancer", uiState.lancer)
-            DeriveeRow("Dérobée", uiState.derobee)
-            
-            Spacer(Modifier.height(16.dp))
-            Text(text = "Seuils et Points", fontFamily = GoudyAcc, fontSize = 20.sp)
-            DeriveeRow("Vie", uiState.vie)
-            DeriveeRow("Endurance", uiState.endurance)
-            DeriveeRow("Seuil Constitution (SC)", uiState.sc)
-            DeriveeRow("Sustentation", uiState.sust)
-            DeriveeRow("Bonus Dommages", uiState.bonusDom)
-            DeriveeRow("Encombrement", uiState.encombrement.toString())
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                // Colonne 1
+                Column(Modifier.weight(1f)) {
+                    val col1 = listOf(
+                        ChampCaracteristique.TAILLE,
+                        ChampCaracteristique.APPARENCE,
+                        ChampCaracteristique.CONSTITUTION,
+                        ChampCaracteristique.FORCE,
+                        ChampCaracteristique.AGILITE,
+                        ChampCaracteristique.DEXTERITE,
+                        ChampCaracteristique.VUE,
+                        ChampCaracteristique.OUIE,
+                        ChampCaracteristique.ODO_GOUT
+                    )
+                    col1.forEach { champ ->
+                        CaracteristiqueItem(champ, uiState, onCaracteristiqueChange, onDemanderAide)
+                    }
+                }
+
+                // Colonne 2
+                Column(Modifier.weight(1f)) {
+                    val col2 = listOf(
+                        ChampCaracteristique.VOLONTE,
+                        ChampCaracteristique.INTELLECT,
+                        ChampCaracteristique.EMPATHIE,
+                        ChampCaracteristique.REVE,
+                        ChampCaracteristique.CHANCE,
+                        ChampCaracteristique.MELEE,
+                        ChampCaracteristique.TIR,
+                        ChampCaracteristique.LANCER,
+                        ChampCaracteristique.DEROBEE
+                    )
+                    col2.forEach { champ ->
+                        CaracteristiqueItem(champ, uiState, onCaracteristiqueChange, onDemanderAide)
+                    }
+                }
+            }
+        }
+
+        item {
+            Column(Modifier.padding(16.dp)) {
+                Text(text = "Seuils et Points", fontFamily = GoudyAcc, fontSize = 20.sp)
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                
+                DeriveeRow("Vie", uiState.vie)
+                DeriveeRow("Endurance", uiState.endurance)
+                DeriveeRow("Seuil Constitution (SC)", uiState.sc)
+                DeriveeRow("Sustentation", uiState.sust)
+                DeriveeRow("Bonus Dommages", uiState.bonusDom)
+                DeriveeRow("Encombrement", String.format("%.1f", uiState.encombrement))
+            }
         }
     }
+}
+
+@Composable
+private fun CaracteristiqueItem(
+    champ: ChampCaracteristique,
+    uiState: CaracteristiquesUiState.Success,
+    onCaracteristiqueChange: (ChampCaracteristique, Int) -> Unit,
+    onDemanderAide: (ChampAide) -> Unit
+) {
+    val valeur = when (champ) {
+        ChampCaracteristique.TAILLE -> uiState.caracteristiques.taille
+        ChampCaracteristique.APPARENCE -> uiState.caracteristiques.apparence
+        ChampCaracteristique.CONSTITUTION -> uiState.caracteristiques.constitution
+        ChampCaracteristique.FORCE -> uiState.caracteristiques.force
+        ChampCaracteristique.AGILITE -> uiState.caracteristiques.agilite
+        ChampCaracteristique.DEXTERITE -> uiState.caracteristiques.dexterite
+        ChampCaracteristique.VUE -> uiState.caracteristiques.vue
+        ChampCaracteristique.OUIE -> uiState.caracteristiques.ouie
+        ChampCaracteristique.ODO_GOUT -> uiState.caracteristiques.odoGout
+        ChampCaracteristique.VOLONTE -> uiState.caracteristiques.volonte
+        ChampCaracteristique.INTELLECT -> uiState.caracteristiques.intellect
+        ChampCaracteristique.EMPATHIE -> uiState.caracteristiques.empathie
+        ChampCaracteristique.REVE -> uiState.caracteristiques.reve
+        ChampCaracteristique.CHANCE -> uiState.caracteristiques.chance
+        ChampCaracteristique.MELEE -> uiState.melee
+        ChampCaracteristique.TIR -> uiState.tir
+        ChampCaracteristique.LANCER -> uiState.lancer
+        ChampCaracteristique.DEROBEE -> uiState.derobee
+        else -> 0
+    }
+
+    val isDerived = champ in listOf(
+        ChampCaracteristique.MELEE,
+        ChampCaracteristique.TIR,
+        ChampCaracteristique.LANCER,
+        ChampCaracteristique.DEROBEE
+    )
+
+    val max = if (champ == ChampCaracteristique.FORCE) uiState.forceMax else if (isDerived) valeur else 15
+    val min = if (isDerived) valeur else 6
+
+    CaracteristiqueRow(
+        nom = champ.name,
+        valeur = valeur,
+        min = min,
+        max = max,
+        onValeurChange = { if (!isDerived) onCaracteristiqueChange(champ, it) },
+        onAideRequise = { onDemanderAide(ChampAide.Carac(champ)) }
+    )
+    HorizontalDivider(color = VoyageurColors.NomCaracteristique.copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 4.dp))
 }
 
 @Composable
@@ -285,11 +386,15 @@ fun ZoneAide(
             val aide = remember(champAide) {
                 when (champAide) {
                     is ChampAide.Carac -> AideCaracteristiqueProvider.pour(champAide.champ, context.resources)
-                    ChampAide.Beaute -> com.jb.voyageur.core.ui.AideCaracteristique(
-                        ChampCaracteristique.APPARENCE, // peu importe ici
-                        context.getString(R.string.aide_beaute_titre),
-                        context.getString(R.string.aide_beaute_desc)
-                    )
+                    ChampAide.Beaute -> {
+                        val titre = context.getString(R.string.aide_beaute_titre)
+                        val desc = context.getString(R.string.aide_beaute_desc)
+                        com.jb.voyageur.core.ui.helper.AideCaracteristique(
+                            ChampCaracteristique.APPARENCE,
+                            titre,
+                            desc
+                        )
+                    }
                 }
             }
             Text(text = aide.titre, fontFamily = GoudyAcc, fontSize = 24.sp)

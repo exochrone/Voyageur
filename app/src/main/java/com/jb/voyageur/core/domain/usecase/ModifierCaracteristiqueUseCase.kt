@@ -38,6 +38,7 @@ class ModifierCaracteristiqueUseCase @Inject constructor(
             ChampCaracteristique.EMPATHIE -> caracs.copy(empathie = valeurClampee)
             ChampCaracteristique.REVE -> caracs.copy(reve = valeurClampee)
             ChampCaracteristique.CHANCE -> caracs.copy(chance = valeurClampee)
+            else -> caracs // Valeurs dérivées en lecture seule
         }
         voyageurRepository.sauvegarder(voyageur.copy(caracteristiques = nouvCaracs))
     }
@@ -45,5 +46,6 @@ class ModifierCaracteristiqueUseCase @Inject constructor(
 
 enum class ChampCaracteristique {
     TAILLE, APPARENCE, CONSTITUTION, FORCE, AGILITE, DEXTERITE,
-    VUE, OUIE, ODO_GOUT, VOLONTE, INTELLECT, EMPATHIE, REVE, CHANCE
+    VUE, OUIE, ODO_GOUT, VOLONTE, INTELLECT, EMPATHIE, REVE, CHANCE,
+    MELEE, TIR, LANCER, DEROBEE, VIE, ENDURANCE, SC, SUST, BONUS_DOM, ENCOMBREMENT
 }

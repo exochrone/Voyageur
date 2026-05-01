@@ -58,6 +58,26 @@
     <string name="aide_chance_desc">Texte aide caractéristique CHANCE</string>
     <string name="aide_beaute_titre">Beauté</string>
     <string name="aide_beaute_desc">Texte aide caractéristique Beauté</string>
+    <string name="aide_melee_titre">Mêlée</string>
+    <string name="aide_melee_desc">Texte aide caractéristique Mêlée</string>
+    <string name="aide_tir_titre">Tir</string>
+    <string name="aide_tir_desc">Texte aide caractéristique Tir</string>
+    <string name="aide_lancer_titre">Lancer</string>
+    <string name="aide_lancer_desc">Texte aide caractéristique Lancer</string>
+    <string name="aide_derobee_titre">Dérobée</string>
+    <string name="aide_derobee_desc">Texte aide caractéristique Dérobée</string>
+    <string name="aide_vie_titre">Vie</string>
+    <string name="aide_vie_desc">Texte aide caractéristique Vie</string>
+    <string name="aide_endurance_titre">Endurance</string>
+    <string name="aide_endurance_desc">Texte aide caractéristique Endurance</string>
+    <string name="aide_sc_titre">Seuil Constitution (SC)</string>
+    <string name="aide_sc_desc">Texte aide caractéristique SC</string>
+    <string name="aide_sust_titre">Sustentation</string>
+    <string name="aide_sust_desc">Texte aide caractéristique Sustentation</string>
+    <string name="aide_bonus_dom_titre">Bonus Dommages</string>
+    <string name="aide_bonus_dom_desc">Texte aide caractéristique Bonus Dommages</string>
+    <string name="aide_encombrement_titre">Encombrement</string>
+    <string name="aide_encombrement_desc">Texte aide caractéristique Encombrement</string>
     <string name="aide_generique_titre">Aide</string>
     <string name="aide_generique_desc">Aucune aide disponible pour cet élément.</string>
 </resources>

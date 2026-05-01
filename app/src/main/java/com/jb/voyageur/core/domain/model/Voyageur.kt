@@ -27,17 +27,17 @@ enum class Sexe { HOMME, FEMME }
 enum class Lateralite { DROITIER, GAUCHER }
 
 enum class HeureNaissance(val symbole: Char, val label: String) {
-    VAISSEAU('a', "Le Vaisseau"),
-    SIRENE('b', "La Sirène"),
-    FAUCON('c', "Le Faucon"),
-    COURONNE('d', "La Couronne"),
-    DRAGON('e', "Le Dragon"),
-    EPEES('f', "Les Épées"),
-    LYRE('g', "La Lyre"),
-    SERPENT('h', "Le Serpent"),
-    POISSON_ACROBATE('i', "Le Poisson Acrobate"),
-    ARAIGNEE('j', "L'Araignée"),
-    ROSEAU('k', "Le Roseau"),
+    VAISSEAU('a', "Vaisseau"),
+    SIRENE('b', "Sirène"),
+    FAUCON('c', "Faucon"),
+    COURONNE('d', "Couronne"),
+    DRAGON('e', "Dragon"),
+    EPEES('f', "Épées"),
+    LYRE('g', "Lyre"),
+    SERPENT('h', "Serpent"),
+    POISSON_ACROBATE('i', "Poisson Acrobate"),
+    ARAIGNEE('j', "Araignée"),
+    ROSEAU('k', "Roseau"),
     CHATEAU_DORMANT('l', "Le Château Dormant");
 
     fun next(): HeureNaissance = entries[(ordinal + 1) % entries.size]

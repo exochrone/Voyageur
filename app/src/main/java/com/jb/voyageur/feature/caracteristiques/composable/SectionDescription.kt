@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
@@ -33,15 +34,19 @@ import com.jb.voyageur.core.domain.model.Lateralite
 import com.jb.voyageur.core.domain.model.Sexe
 import com.jb.voyageur.core.domain.usecase.ChampDescription
 import com.jb.voyageur.core.ui.composable.HeureNaissancePicker
+import com.jb.voyageur.core.ui.composable.CaracteristiqueRow
 import com.jb.voyageur.core.ui.theme.GoudyAcc
+import com.jb.voyageur.feature.caracteristiques.ChampAide
 import com.jb.voyageur.feature.caracteristiques.CaracteristiquesUiState
 
 @Composable
 fun SectionDescription(
     uiState: CaracteristiquesUiState.Success,
     onDescriptionChange: (ChampDescription, String) -> Unit,
+    onBeauteChange: (Int) -> Unit,
     onLateraliteChange: (Lateralite) -> Unit,
     onHeureNaissanceChange: (HeureNaissance) -> Unit,
+    onDemanderAide: (ChampAide) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var deplie by rememberSaveable { mutableStateOf(true) }
@@ -67,96 +72,112 @@ fun SectionDescription(
         }
 
         AnimatedVisibility(visible = deplie) {
-            Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                Row(verticalAlignment = Alignment.Top) {
-                    Column(Modifier.weight(0.7f)) {
-                        OutlinedTextField(
-                            value = uiState.nom,
-                            onValueChange = { onDescriptionChange(ChampDescription.NOM, it) },
-                            label = { Text(stringResource(R.string.description_nom)) },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        
-                        Row(
-                            Modifier.padding(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Button(
-                                onClick = { onDescriptionChange(ChampDescription.SEXE, Sexe.HOMME.name) },
-                                enabled = uiState.sexe != Sexe.HOMME
-                            ) { Text(stringResource(R.string.homme)) }
-                            Button(
-                                onClick = { onDescriptionChange(ChampDescription.SEXE, Sexe.FEMME.name) },
-                                enabled = uiState.sexe != Sexe.FEMME
-                            ) { Text(stringResource(R.string.femme)) }
-                        }
-
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedTextField(
-                                value = uiState.age?.toString() ?: "",
-                                onValueChange = { onDescriptionChange(ChampDescription.AGE, it) },
-                                label = { Text(stringResource(R.string.description_age)) },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                modifier = Modifier.weight(1f)
-                            )
-                            OutlinedTextField(
-                                value = uiState.tailleCm?.toString() ?: "",
-                                onValueChange = { onDescriptionChange(ChampDescription.TAILLE_CM, it) },
-                                label = { Text(stringResource(R.string.description_taille_cm)) },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                modifier = Modifier.weight(1f)
-                            )
-                            OutlinedTextField(
-                                value = uiState.poidsKg?.toString() ?: "",
-                                onValueChange = { onDescriptionChange(ChampDescription.POIDS_KG, it) },
-                                label = { Text(stringResource(R.string.description_poids_kg)) },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-
-                        OutlinedTextField(
-                            value = uiState.cheveux,
-                            onValueChange = { onDescriptionChange(ChampDescription.CHEVEUX, it) },
-                            label = { Text(stringResource(R.string.description_cheveux)) },
-                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
-                        )
-                        OutlinedTextField(
-                            value = uiState.yeux,
-                            onValueChange = { onDescriptionChange(ChampDescription.YEUX, it) },
-                            label = { Text(stringResource(R.string.description_yeux)) },
-                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
-                        )
-                        OutlinedTextField(
-                            value = uiState.signeParticulier,
-                            onValueChange = { onDescriptionChange(ChampDescription.SIGNE_PARTICULIER, it) },
-                            label = { Text(stringResource(R.string.description_signe_particulier)) },
-                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
-                        )
-
-                        Row(
-                            Modifier.padding(vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            Text(stringResource(R.string.lateralite))
-                            Button(
-                                onClick = { onLateraliteChange(Lateralite.DROITIER) },
-                                enabled = uiState.lateralite != Lateralite.DROITIER
-                            ) { Text(stringResource(R.string.droitier)) }
-                            Button(
-                                onClick = { onLateraliteChange(Lateralite.GAUCHER) },
-                                enabled = uiState.lateralite != Lateralite.GAUCHER
-                            ) { Text(stringResource(R.string.gaucher)) }
-                        }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                // Zone gauche : champs description
+                Column(Modifier.weight(1f)) {
+                    OutlinedTextField(
+                        value = uiState.nom,
+                        onValueChange = { onDescriptionChange(ChampDescription.NOM, it) },
+                        label = { Text(stringResource(R.string.description_nom)) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    
+                    Row(
+                        Modifier.padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = { onDescriptionChange(ChampDescription.SEXE, Sexe.HOMME.name) },
+                            enabled = uiState.sexe != Sexe.HOMME
+                        ) { Text(stringResource(R.string.homme)) }
+                        Button(
+                            onClick = { onDescriptionChange(ChampDescription.SEXE, Sexe.FEMME.name) },
+                            enabled = uiState.sexe != Sexe.FEMME
+                        ) { Text(stringResource(R.string.femme)) }
                     }
 
-                    HeureNaissancePicker(
-                        heureCourante = uiState.heureNaissance,
-                        onHeureChange = onHeureNaissanceChange,
-                        modifier = Modifier.weight(0.3f).padding(top = 8.dp)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value = uiState.age?.toString() ?: "",
+                            onValueChange = { onDescriptionChange(ChampDescription.AGE, it) },
+                            label = { Text(stringResource(R.string.description_age)) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.weight(1f)
+                        )
+                        OutlinedTextField(
+                            value = uiState.tailleCm?.toString() ?: "",
+                            onValueChange = { onDescriptionChange(ChampDescription.TAILLE_CM, it) },
+                            label = { Text(stringResource(R.string.description_taille_cm)) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.weight(1f)
+                        )
+                        OutlinedTextField(
+                            value = uiState.poidsKg?.toString() ?: "",
+                            onValueChange = { onDescriptionChange(ChampDescription.POIDS_KG, it) },
+                            label = { Text(stringResource(R.string.description_poids_kg)) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
+                    OutlinedTextField(
+                        value = uiState.cheveux,
+                        onValueChange = { onDescriptionChange(ChampDescription.CHEVEUX, it) },
+                        label = { Text(stringResource(R.string.description_cheveux)) },
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                    )
+                    OutlinedTextField(
+                        value = uiState.yeux,
+                        onValueChange = { onDescriptionChange(ChampDescription.YEUX, it) },
+                        label = { Text(stringResource(R.string.description_yeux)) },
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                    )
+                    OutlinedTextField(
+                        value = uiState.signeParticulier,
+                        onValueChange = { onDescriptionChange(ChampDescription.SIGNE_PARTICULIER, it) },
+                        label = { Text(stringResource(R.string.description_signe_particulier)) },
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                    )
+
+                    Row(
+                        Modifier.padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(stringResource(R.string.lateralite))
+                        Button(
+                            onClick = { onLateraliteChange(Lateralite.DROITIER) },
+                            enabled = uiState.lateralite != Lateralite.DROITIER
+                        ) { Text(stringResource(R.string.droitier)) }
+                        Button(
+                            onClick = { onLateraliteChange(Lateralite.GAUCHER) },
+                            enabled = uiState.lateralite != Lateralite.GAUCHER
+                        ) { Text(stringResource(R.string.gaucher)) }
+                    }
+
+                    CaracteristiqueRow(
+                        nom = stringResource(R.string.aide_beaute_titre),
+                        valeur = uiState.beaute,
+                        min = 1,
+                        max = 16,
+                        onValeurChange = onBeauteChange,
+                        onAideRequise = { onDemanderAide(ChampAide.Beaute) },
+                        modifier = Modifier.padding(top = 8.dp)
                     )
                 }
+
+                // Zone droite : heure de naissance
+                HeureNaissancePicker(
+                    heureCourante = uiState.heureNaissance,
+                    onHeureChange = onHeureNaissanceChange,
+                    modifier = Modifier
+                        .width(100.dp)
+                        .padding(start = 16.dp, top = 8.dp)
+                )
             }
         }
         HorizontalDivider()
