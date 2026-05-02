@@ -28,14 +28,12 @@ import com.jb.voyageur.core.domain.usecase.ModifierDescriptionUseCase
 import com.jb.voyageur.core.domain.usecase.ModifierHeureNaissanceUseCase
 import com.jb.voyageur.core.domain.usecase.ModifierLateraliteUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -65,11 +63,6 @@ class CaracteristiquesViewModel @Inject constructor(
 
     private val _aideActive = MutableStateFlow<ChampAffichage?>(null)
     val aideActive: StateFlow<ChampAffichage?> = _aideActive.asStateFlow()
-
-    private val _events = Channel<CaracteristiquesEvent>(Channel.BUFFERED)
-    val events = _events.receiveAsFlow()
-
-    private var confirmationBeauteEnAttente: Int? = null
 
     fun onCaracteristiqueChange(champ: ChampCaracteristique, valeur: Int) {
         viewModelScope.launch {
@@ -108,11 +101,6 @@ class CaracteristiquesViewModel @Inject constructor(
     fun onFermerAide() {
         _aideActive.value = null
     }
-
-    override fun onCleared() {
-        super.onCleared()
-        _events.close()
-    }
 }
 
 sealed interface CaracteristiquesUiState {
@@ -130,6 +118,7 @@ sealed interface CaracteristiquesUiState {
         val heureNaissance: HeureNaissance,
         val caracteristiques: Caracteristiques,
         val beaute: Int,
+        val hautRevant: Boolean,
         val pointsRestants: Int,
         val derobee: Int,
         val melee: Int,
@@ -143,10 +132,6 @@ sealed interface CaracteristiquesUiState {
         val encombrement: Float,
         val forceMax: Int
     ) : CaracteristiquesUiState
-}
-
-sealed interface CaracteristiquesEvent {
-    data class ConfirmerPerteBeaute(val pointsPerdus: Int) : CaracteristiquesEvent
 }
 
 private fun Voyageur.toCaracteristiquesUiState(): CaracteristiquesUiState.Success {
@@ -164,6 +149,7 @@ private fun Voyageur.toCaracteristiquesUiState(): CaracteristiquesUiState.Succes
         heureNaissance = heureNaissance,
         caracteristiques = caracteristiques,
         beaute = beaute,
+        hautRevant = hautRevant,
         pointsRestants = 160 - caracteristiques.pointsTotal - pointsBeaute,
         derobee = caracteristiques.derobee,
         melee = caracteristiques.melee,

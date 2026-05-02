@@ -18,11 +18,12 @@ class ModifierDescriptionUseCase @Inject constructor(
             ChampDescription.TAILLE_CM -> voyageur.copy(tailleCm = valeur.toIntOrNull())
             ChampDescription.POIDS_KG -> voyageur.copy(poidsKg = valeur.toIntOrNull())
             ChampDescription.SEXE -> voyageur.copy(sexe = Sexe.valueOf(valeur))
+            ChampDescription.HAUT_REVANT -> voyageur.copy(hautRevant = valeur.toBoolean())
         }
         voyageurRepository.sauvegarder(updated)
     }
 }
 
 enum class ChampDescription {
-    NOM, CHEVEUX, YEUX, SIGNE_PARTICULIER, AGE, TAILLE_CM, POIDS_KG, SEXE
+    NOM, CHEVEUX, YEUX, SIGNE_PARTICULIER, AGE, TAILLE_CM, POIDS_KG, SEXE, HAUT_REVANT
 }

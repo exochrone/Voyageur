@@ -25,6 +25,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jb.voyageur.R
 import com.jb.voyageur.core.domain.usecase.ChampCaracteristique
+import com.jb.voyageur.core.domain.usecase.ChampDescription
 import com.jb.voyageur.core.ui.helper.AideCaracteristiqueProvider
 import com.jb.voyageur.core.ui.composable.CaracteristiqueRow
 import com.jb.voyageur.core.ui.composable.ParcheminBackground
@@ -44,16 +45,7 @@ fun CaracteristiquesScreen(
     val windowSizeClass = calculateWindowSizeClass(context as android.app.Activity)
 
     var descriptionDepliee by remember { mutableStateOf(true) }
-
-    LaunchedEffect(Unit) {
-        viewModel.events.collect { event ->
-            when (event) {
-                is CaracteristiquesEvent.ConfirmerPerteBeaute -> {
-                    // Confirmation beauté enlevée
-                }
-            }
-        }
-    }
+    var showRenameDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -63,7 +55,8 @@ fun CaracteristiquesScreen(
                     title = {
                         Text(
                             text = state.nom.ifBlank { stringResource(R.string.section_description) },
-                            fontFamily = GoudyAcc
+                            fontFamily = GoudyAcc,
+                            modifier = Modifier.clickable { showRenameDialog = true }
                         )
                     },
                     actions = {
@@ -100,6 +93,30 @@ fun CaracteristiquesScreen(
                     onDemanderAide = viewModel::onDemanderAide,
                     onFermerAide = viewModel::onFermerAide
                 )
+
+                if (showRenameDialog) {
+                    var tempName by remember { mutableStateOf(state.nom) }
+                    AlertDialog(
+                        onDismissRequest = { showRenameDialog = false },
+                        title = { Text(stringResource(R.string.description_nom)) },
+                        text = {
+                            OutlinedTextField(
+                                value = tempName,
+                                onValueChange = { tempName = it },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                viewModel.onDescriptionChange(ChampDescription.NOM, tempName)
+                                showRenameDialog = false
+                            }) { Text(stringResource(R.string.valider)) }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showRenameDialog = false }) { Text(stringResource(R.string.annuler)) }
+                        }
+                    )
+                }
             }
         }
     }
@@ -114,7 +131,7 @@ fun CaracteristiquesContent(
     modifier: Modifier = Modifier,
     onCaracteristiqueChange: (ChampCaracteristique, Int) -> Unit,
     onBeauteChange: (Int) -> Unit,
-    onDescriptionChange: (com.jb.voyageur.core.domain.usecase.ChampDescription, String) -> Unit,
+    onDescriptionChange: (ChampDescription, String) -> Unit,
     onHeureNaissanceChange: (com.jb.voyageur.core.domain.model.HeureNaissance) -> Unit,
     onLateraliteChange: (com.jb.voyageur.core.domain.model.Lateralite) -> Unit,
     onDemanderAide: (ChampAffichage) -> Unit,
@@ -169,7 +186,7 @@ fun CaracteristiquesListe(
     modifier: Modifier = Modifier,
     onCaracteristiqueChange: (ChampCaracteristique, Int) -> Unit,
     onBeauteChange: (Int) -> Unit,
-    onDescriptionChange: (com.jb.voyageur.core.domain.usecase.ChampDescription, String) -> Unit,
+    onDescriptionChange: (ChampDescription, String) -> Unit,
     onHeureNaissanceChange: (com.jb.voyageur.core.domain.model.HeureNaissance) -> Unit,
     onLateraliteChange: (com.jb.voyageur.core.domain.model.Lateralite) -> Unit,
     onDemanderAide: (ChampAffichage) -> Unit
@@ -227,7 +244,7 @@ fun CaracteristiquesListe(
                             champ = champ,
                             uiState = uiState,
                             labelPaddingStart = 6.dp, 
-                            valuePaddingEnd = 8.dp, // Décalage du score vers la gauche
+                            valuePaddingEnd = 8.dp,
                             onCaracteristiqueChange = onCaracteristiqueChange,
                             onDemanderAide = onDemanderAide
                         )
@@ -251,7 +268,7 @@ fun CaracteristiquesListe(
                         CaracteristiqueItem(
                             champ = champ,
                             uiState = uiState,
-                            valuePaddingEnd = 20.dp, // Augmentation du décalage vers la gauche (12dp -> 20dp)
+                            valuePaddingEnd = 20.dp,
                             onCaracteristiqueChange = onCaracteristiqueChange,
                             onDemanderAide = onDemanderAide
                         )
@@ -264,12 +281,19 @@ fun CaracteristiquesListe(
             Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                 HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp))
                 
-                ThresholdItem(ChampAffichage.Seuil.VIE, uiState.vie, onDemanderAide)
-                ThresholdItem(ChampAffichage.Seuil.ENDURANCE, uiState.endurance, onDemanderAide)
-                ThresholdItem(ChampAffichage.Seuil.SC, uiState.sc, onDemanderAide)
-                ThresholdItem(ChampAffichage.Seuil.SUST, uiState.sust, onDemanderAide)
-                ThresholdItem(ChampAffichage.Seuil.BONUS_DOM, uiState.bonusDom, onDemanderAide)
-                ThresholdItem(ChampAffichage.Seuil.ENCOMBREMENT, String.format("%.1f", uiState.encombrement), onDemanderAide)
+                Row(Modifier.fillMaxWidth()) {
+                    Box(Modifier.weight(1f)) { ThresholdItem(ChampAffichage.Seuil.VIE, uiState.vie, onDemanderAide) }
+                    Box(Modifier.weight(1f)) { ThresholdItem(ChampAffichage.Seuil.ENDURANCE, uiState.endurance, onDemanderAide) }
+                }
+                Row(Modifier.fillMaxWidth()) {
+                    Box(Modifier.weight(1f)) { ThresholdItem(ChampAffichage.Seuil.SC, uiState.sc, onDemanderAide) }
+                    Box(Modifier.weight(1f)) { ThresholdItem(ChampAffichage.Seuil.SUST, uiState.sust, onDemanderAide) }
+                }
+                Row(Modifier.fillMaxWidth()) {
+                    val domText = if (uiState.bonusDom > 0) "+${uiState.bonusDom}" else uiState.bonusDom.toString()
+                    Box(Modifier.weight(1f)) { ThresholdItem(ChampAffichage.Seuil.BONUS_DOM, domText, onDemanderAide) }
+                    Box(Modifier.weight(1f)) { ThresholdItem(ChampAffichage.Seuil.ENCOMBREMENT, String.format("%.1f", uiState.encombrement), onDemanderAide) }
+                }
             }
         }
     }
@@ -373,7 +397,7 @@ private fun ThresholdItem(
         Modifier
             .fillMaxWidth()
             .clickable { onDemanderAide(champ) }
-            .padding(vertical = 4.dp),
+            .padding(vertical = 4.dp, horizontal = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(text = stringResource(labelRes), fontFamily = FontFamily.Serif, fontSize = 16.sp, color = VoyageurColors.NomCaracteristique)

@@ -44,11 +44,11 @@
     <string name="derivee_lancer">Lancer</string>
     <string name="derivee_derobee">Dérobée</string>
     <string name="seuil_vie">Vie</string>
-    <string name="seuil_endurance">Endurance</string>
+    <string name="seuil_endurance">End</string>
     <string name="seuil_sc">SC</string>
-    <string name="seuil_sust">Sustentation</string>
-    <string name="seuil_bonus_dom">+Dommages</string>
-    <string name="seuil_encombrement">Encombrement</string>
+    <string name="seuil_sust">Sust.</string>
+    <string name="seuil_bonus_dom">+Dom</string>
+    <string name="seuil_encombrement">Enc.</string>
 
     <string name="beaute_confirmation_titre">Réduction de Beauté</string>
     <string name="beaute_confirmation_texte">Réduire la Beauté sous 10 détruira définitivement %1$d points. Voulez-vous continuer ?</string>

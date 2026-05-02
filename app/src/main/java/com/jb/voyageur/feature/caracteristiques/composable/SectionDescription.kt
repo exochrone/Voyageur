@@ -49,13 +49,15 @@ fun SectionDescription(
             ) {
                 // Zone gauche : champs description
                 Column(Modifier.weight(1f)) {
-                    // Sexe + Âge
+                    // Ligne Sexe + Type Rêvant
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(bottom = 4.dp)
+                        modifier = Modifier.padding(bottom = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
+                        // Sexe
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(text = stringResource(R.string.homme),
@@ -71,19 +73,33 @@ fun SectionDescription(
                             )
                         }
                         
-                        Spacer(Modifier.width(24.dp))
-                        
-                        DescriptionLabel(
-                            label = stringResource(R.string.description_age),
-                            valeur = uiState.age?.toString() ?: "",
-                            modifier = Modifier.wrapContentWidth()
+                        // Type Rêvant
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            editChamp = ChampDescription.AGE to (uiState.age?.toString() ?: "")
+                            val isHaut = uiState.hautRevant
+                            Text(text = stringResource(R.string.vrai_revant),
+                                modifier = Modifier.clickable { onDescriptionChange(ChampDescription.HAUT_REVANT, "false") },
+                                fontWeight = if(!isHaut) FontWeight.Bold else FontWeight.Normal,
+                                color = if(!isHaut) VoyageurColors.NomCaracteristique else Color.Gray
+                            )
+                            Text(text = "/", color = Color.Gray)
+                            Text(text = stringResource(R.string.haut_revant),
+                                modifier = Modifier.clickable { onDescriptionChange(ChampDescription.HAUT_REVANT, "true") },
+                                fontWeight = if(isHaut) FontWeight.Bold else FontWeight.Normal,
+                                color = if(isHaut) VoyageurColors.NomCaracteristique else Color.Gray
+                            )
                         }
                     }
 
-                    // Taille + Poids
+                    // Âge + Taille + Poids
                     Row(modifier = Modifier.fillMaxWidth()) {
+                        Box(modifier = Modifier.weight(1f)) {
+                            DescriptionLabel(label = stringResource(R.string.description_age), valeur = uiState.age?.toString() ?: "") {
+                                editChamp = ChampDescription.AGE to (uiState.age?.toString() ?: "")
+                            }
+                        }
                         Box(modifier = Modifier.weight(1f)) {
                             DescriptionLabel(label = stringResource(R.string.description_taille), valeur = uiState.tailleCm?.toString() ?: "") {
                                 editChamp = ChampDescription.TAILLE_CM to (uiState.tailleCm?.toString() ?: "")
@@ -117,13 +133,28 @@ fun SectionDescription(
                             .clickable { editChamp = ChampDescription.SIGNE_PARTICULIER to uiState.signeParticulier }
                             .padding(vertical = 4.dp)
                     ) {
-                        Text(text = stringResource(R.string.description_signes_particuliers) + " :", color = VoyageurColors.NomCaracteristique)
+                        Text(text = stringResource(R.string.description_signes_particuliers), color = VoyageurColors.NomCaracteristique)
                         Text(text = uiState.signeParticulier, color = VoyageurColors.ValeurCaracteristique, fontWeight = FontWeight.Bold)
                     }
 
                     // Beauté avec Adjectif
-                    val resId = context.resources.getIdentifier("beaute_${uiState.beaute}", "string", context.packageName)
-                    val beauteAdjectif = if (resId != 0) stringResource(resId) else ""
+                    val beauteAdjectif = when (uiState.beaute) {
+                        3 -> stringResource(R.string.beaute_3)
+                        4 -> stringResource(R.string.beaute_4)
+                        5 -> stringResource(R.string.beaute_5)
+                        6 -> stringResource(R.string.beaute_6)
+                        7 -> stringResource(R.string.beaute_7)
+                        8 -> stringResource(R.string.beaute_8)
+                        9 -> stringResource(R.string.beaute_9)
+                        10 -> stringResource(R.string.beaute_10)
+                        11 -> stringResource(R.string.beaute_11)
+                        12 -> stringResource(R.string.beaute_12)
+                        13 -> stringResource(R.string.beaute_13)
+                        14 -> stringResource(R.string.beaute_14)
+                        15 -> stringResource(R.string.beaute_15)
+                        16 -> stringResource(R.string.beaute_16)
+                        else -> ""
+                    }
                     
                     Row(
                         modifier = Modifier
@@ -132,18 +163,18 @@ fun SectionDescription(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = stringResource(R.string.aide_beaute_titre) + " : ",
+                            text = stringResource(R.string.aide_beaute_titre) + " ",
                             color = VoyageurColors.NomCaracteristique,
                             modifier = Modifier.clickable { onDemanderAide(ChampAffichage.Beaute) }
                         )
                         
                         CaracteristiqueRow(
-                            nom = "", // Nom vide pour rapprocher
+                            nom = "", 
                             valeur = uiState.beaute,
                             min = 3,
                             max = 16,
                             valeurDisplay = uiState.beaute.toString(),
-                            labelFontFamily = FontFamily.Default,
+                            labelFontFamily = FontFamily.Serif,
                             valueFontFamily = FontFamily.Serif,
                             onValeurChange = onBeauteChange,
                             onAideRequise = { onDemanderAide(ChampAffichage.Beaute) },
@@ -175,7 +206,6 @@ fun SectionDescription(
         var tempValeur by remember { mutableStateOf(valeur) }
         val isNumeric = champ in listOf(ChampDescription.AGE, ChampDescription.TAILLE_CM, ChampDescription.POIDS_KG)
         
-        // Custom title with unit if needed for dialog
         val dialogTitle = when(champ) {
             ChampDescription.TAILLE_CM -> stringResource(R.string.description_taille) + " (cm)"
             ChampDescription.POIDS_KG -> stringResource(R.string.description_poids) + " (kg)"
@@ -214,7 +244,7 @@ fun DescriptionLabel(label: String, valeur: String, modifier: Modifier = Modifie
             .clickable { onClick() }
             .padding(vertical = 4.dp)
     ) {
-        Text(text = "$label : ", color = VoyageurColors.NomCaracteristique)
+        Text(text = "$label ", color = VoyageurColors.NomCaracteristique)
         Text(text = valeur, color = VoyageurColors.ValeurCaracteristique, fontWeight = FontWeight.Bold)
     }
 }
@@ -228,4 +258,5 @@ private fun getLabelRes(champ: ChampDescription): Int = when (champ) {
     ChampDescription.TAILLE_CM -> R.string.description_taille
     ChampDescription.POIDS_KG -> R.string.description_poids
     ChampDescription.SEXE -> R.string.homme
+    ChampDescription.HAUT_REVANT -> R.string.haut_revant
 }
