@@ -38,12 +38,13 @@ fun SectionDescription(
     visible: Boolean = true
 ) {
     var editChamp by remember { mutableStateOf<Pair<ChampDescription, String>?>(null) }
+    val spacing = 2.dp // Consistent vertical interval
 
     AnimatedVisibility(visible = visible) {
         Column(
             modifier = modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(horizontal = 16.dp, vertical = 4.dp)
         ) {
             // ── Zone principale : 80% gauche + 20% heure ─────────────
             Row(modifier = Modifier.fillMaxWidth()) {
@@ -51,27 +52,31 @@ fun SectionDescription(
                 // Colonne principale — 80%
                 Column(modifier = Modifier.weight(0.80f)) {
 
-                    // Ligne 1 — Vrai-rêvant / Haut-rêvant (100% de la colonne)
+                    // Ligne 1 — Vrai-rêvant / Haut-rêvant
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp)
+                            .padding(bottom = spacing)
                     ) {
                         Text(
                             text = stringResource(R.string.vrai_revant),
                             fontFamily = FontFamily.Serif,
+                            fontSize = 14.sp,
+                            lineHeight = 14.sp,
                             fontWeight = if (!uiState.hautRevant) FontWeight.Bold else FontWeight.Normal,
                             color = if (!uiState.hautRevant) VoyageurColors.NomCaracteristique else Color.Gray,
                             modifier = Modifier.clickable {
                                 onDescriptionChange(ChampDescription.HAUT_REVANT, "false")
                             }
                         )
-                        Text(text = "/", color = Color.Gray, fontFamily = FontFamily.Serif)
+                        Text(text = "/", color = Color.Gray, fontFamily = FontFamily.Serif, fontSize = 14.sp)
                         Text(
                             text = stringResource(R.string.haut_revant),
                             fontFamily = FontFamily.Serif,
+                            fontSize = 14.sp,
+                            lineHeight = 14.sp,
                             fontWeight = if (uiState.hautRevant) FontWeight.Bold else FontWeight.Normal,
                             color = if (uiState.hautRevant) VoyageurColors.NomCaracteristique else Color.Gray,
                             modifier = Modifier.clickable {
@@ -80,11 +85,11 @@ fun SectionDescription(
                         )
                     }
 
-                    // Ligne 2 — Homme/Femme (60%) + Âge (20%)
+                    // Ligne 2 — Homme/Femme + Âge
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp),
+                            .padding(bottom = spacing),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(
@@ -95,16 +100,20 @@ fun SectionDescription(
                             Text(
                                 text = stringResource(R.string.homme),
                                 fontFamily = FontFamily.Serif,
+                                fontSize = 14.sp,
+                                lineHeight = 14.sp,
                                 fontWeight = if (uiState.sexe == Sexe.HOMME) FontWeight.Bold else FontWeight.Normal,
                                 color = if (uiState.sexe == Sexe.HOMME) VoyageurColors.NomCaracteristique else Color.Gray,
                                 modifier = Modifier.clickable {
                                     onDescriptionChange(ChampDescription.SEXE, Sexe.HOMME.name)
                                 }
                             )
-                            Text(text = "/", color = Color.Gray, fontFamily = FontFamily.Serif)
+                            Text(text = "/", color = Color.Gray, fontFamily = FontFamily.Serif, fontSize = 14.sp)
                             Text(
                                 text = stringResource(R.string.femme),
                                 fontFamily = FontFamily.Serif,
+                                fontSize = 14.sp,
+                                lineHeight = 14.sp,
                                 fontWeight = if (uiState.sexe == Sexe.FEMME) FontWeight.Bold else FontWeight.Normal,
                                 color = if (uiState.sexe == Sexe.FEMME) VoyageurColors.NomCaracteristique else Color.Gray,
                                 modifier = Modifier.clickable {
@@ -115,33 +124,39 @@ fun SectionDescription(
                         Box(modifier = Modifier.weight(0.25f)) {
                             DescriptionLabel(
                                 label = stringResource(R.string.description_age),
-                                valeur = uiState.age?.toString() ?: ""
+                                valeur = uiState.age?.toString() ?: "",
+                                valueColor = Color.Black,
+                                verticalPadding = 0.dp
                             ) { editChamp = ChampDescription.AGE to (uiState.age?.toString() ?: "") }
                         }
                     }
 
-                    // Ligne 3 — Taille (50%) + Poids (50%)
+                    // Ligne 3 — Taille + Poids
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp)
+                            .padding(bottom = spacing)
                     ) {
                         Box(modifier = Modifier.weight(0.5f)) {
                             DescriptionLabel(
                                 label = stringResource(R.string.description_taille),
-                                valeur = uiState.tailleCm?.toString() ?: ""
+                                valeur = uiState.tailleCm?.toString() ?: "",
+                                valueColor = Color.Black,
+                                verticalPadding = 0.dp
                             ) { editChamp = ChampDescription.TAILLE_CM to (uiState.tailleCm?.toString() ?: "") }
                         }
                         Box(modifier = Modifier.weight(0.5f)) {
                             DescriptionLabel(
                                 label = stringResource(R.string.description_poids),
-                                valeur = uiState.poidsKg?.toString() ?: ""
+                                valeur = uiState.poidsKg?.toString() ?: "",
+                                valueColor = Color.Black,
+                                verticalPadding = 0.dp
                             ) { editChamp = ChampDescription.POIDS_KG to (uiState.poidsKg?.toString() ?: "") }
                         }
                     }
                 }
 
-                // Heure de naissance — 20% fixe
+                // Heure de naissance — 20%
                 Box(
                     modifier = Modifier
                         .weight(0.20f)
@@ -159,43 +174,41 @@ fun SectionDescription(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp)
+                    .padding(bottom = spacing)
             ) {
                 Box(modifier = Modifier.weight(0.5f)) {
                     DescriptionLabel(
                         label = stringResource(R.string.description_cheveux),
-                        valeur = uiState.cheveux
+                        valeur = uiState.cheveux,
+                        valueColor = Color.Black,
+                        verticalPadding = 0.dp
                     ) { editChamp = ChampDescription.CHEVEUX to uiState.cheveux }
                 }
                 Box(modifier = Modifier.weight(0.5f)) {
                     DescriptionLabel(
                         label = stringResource(R.string.description_yeux),
-                        valeur = uiState.yeux
+                        valeur = uiState.yeux,
+                        valueColor = Color.Black,
+                        verticalPadding = 0.dp
                     ) { editChamp = ChampDescription.YEUX to uiState.yeux }
                 }
             }
 
             // ── Signe particulier — pleine largeur ───────────────────
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 4.dp),
-                color = VoyageurColors.NomCaracteristique.copy(alpha = 0.1f)
-            )
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
                         editChamp = ChampDescription.SIGNE_PARTICULIER to uiState.signeParticulier
                     }
-                    .padding(vertical = 4.dp)
+                    .padding(bottom = spacing)
             ) {
-                // Libellé seul sur sa ligne
                 Text(
                     text = stringResource(R.string.description_signes_particuliers),
                     color = VoyageurColors.NomCaracteristique,
                     fontFamily = FontFamily.Serif,
                     fontSize = 14.sp
                 )
-                // Valeur seule, 2 lignes max avec ellipsis
                 Text(
                     text = uiState.signeParticulier.ifBlank { "—" },
                     color = Color.Black,
@@ -209,10 +222,6 @@ fun SectionDescription(
             }
 
             // ── Beauté — pleine largeur ───────────────────────────────
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 4.dp),
-                color = VoyageurColors.NomCaracteristique.copy(alpha = 0.1f)
-            )
             val beauteAdjectif = when (uiState.beaute) {
                 3 -> stringResource(R.string.beaute_3)
                 4 -> stringResource(R.string.beaute_4)
@@ -234,14 +243,15 @@ fun SectionDescription(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(IntrinsicSize.Min)
-                    .padding(vertical = 4.dp),
+                    .padding(bottom = spacing),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val maxBeaute = 10 + (uiState.beaute - 10).coerceAtLeast(0) + uiState.pointsRestants
                 CaracteristiqueRow(
                     nom = stringResource(R.string.aide_beaute_titre),
                     valeur = uiState.beaute,
                     min = 3,
-                    max = 16,
+                    max = minOf(16, maxBeaute),
                     valeurDisplay = uiState.beaute.toString(),
                     labelFontFamily = FontFamily.Serif,
                     valueFontFamily = FontFamily.Serif,
@@ -252,7 +262,8 @@ fun SectionDescription(
                 )
                 Text(
                     text = beauteAdjectif,
-                    fontFamily = FontFamily.Default,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Normal,
                     color = Color.Black,
                     maxLines = 1,
@@ -300,26 +311,35 @@ fun SectionDescription(
 }
 
 @Composable
-fun DescriptionLabel(label: String, valeur: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun DescriptionLabel(
+    label: String, 
+    valeur: String, 
+    modifier: Modifier = Modifier, 
+    verticalPadding: androidx.compose.ui.unit.Dp = 1.dp,
+    valueColor: Color = VoyageurColors.ValeurCaracteristique,
+    onClick: () -> Unit
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .padding(vertical = 4.dp),
+            .padding(vertical = verticalPadding),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = "$label ",
             color = VoyageurColors.NomCaracteristique,
             fontFamily = FontFamily.Serif,
-            fontSize = 14.sp
+            fontSize = 14.sp,
+            lineHeight = 14.sp
         )
         Text(
             text = valeur.ifBlank { "—" },
-            color = VoyageurColors.ValeurCaracteristique,
-            fontWeight = FontWeight.Bold,
+            color = valueColor,
+            fontWeight = FontWeight.Normal,
             fontFamily = FontFamily.Serif,
-            fontSize = 14.sp
+            fontSize = 14.sp,
+            lineHeight = 14.sp
         )
     }
 }

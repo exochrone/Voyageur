@@ -59,11 +59,13 @@ fun HeureNaissancePicker(
             text = heureCourante.symbole.toString(),
             fontFamily = HeuresDraconiques,
             fontSize = 48.sp,
+            color = androidx.compose.ui.graphics.Color.Black,
             modifier = Modifier.padding(8.dp)
         )
         Text(
             text = heureCourante.label,
             fontFamily = FontFamily.Serif,
+            color = androidx.compose.ui.graphics.Color.Black,
             fontSize = 12.sp
         )
     }

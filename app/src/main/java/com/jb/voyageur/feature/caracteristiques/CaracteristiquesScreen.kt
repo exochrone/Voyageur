@@ -52,19 +52,26 @@ fun CaracteristiquesScreen(
             val state = uiState
             if (state is CaracteristiquesUiState.Success) {
                 TopAppBar(
+                    modifier = Modifier.statusBarsPadding().height(48.dp),
+                    windowInsets = WindowInsets(0),
                     title = {
                         Text(
                             text = state.nom.ifBlank { stringResource(R.string.section_description) },
                             fontFamily = GoudyAcc,
+                            fontSize = 20.sp, // Reduced font size to fit 48dp
                             modifier = Modifier.clickable { showRenameDialog = true }
                         )
                     },
                     actions = {
-                        IconButton(onClick = { descriptionDepliee = !descriptionDepliee }) {
+                        IconButton(
+                            onClick = { descriptionDepliee = !descriptionDepliee },
+                            modifier = Modifier.size(48.dp) // Ensure button fits
+                        ) {
                             Icon(
                                 imageVector = if (descriptionDepliee)
                                     Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                contentDescription = null
+                                contentDescription = null,
+                                modifier = Modifier.size(24.dp)
                             )
                         }
                     }
@@ -203,31 +210,18 @@ fun CaracteristiquesListe(
             )
         }
 
-        stickyHeader {
-            Surface(
-                color = VoyageurColors.ParcheminBase.copy(alpha = 0.95f),
-                shadowElevation = 4.dp,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = stringResource(R.string.points_restants, uiState.pointsRestants),
-                    fontFamily = FontFamily.Serif,
-                    fontSize = 18.sp,
-                    color = if (uiState.pointsRestants < 0) VoyageurColors.ValeurCaracteristique else VoyageurColors.NomCaracteristique,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-        }
-
         item {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 4.dp, vertical = 16.dp),
+                    .padding(horizontal = 4.dp, vertical = 4.dp), // Reduced vertical padding from 8.dp to 4.dp
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 // Colonne 1
-                Column(Modifier.weight(1.05f)) {
+                Column(
+                    modifier = Modifier.weight(1.05f),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
                     val col1 = listOf(
                         ChampAffichage.Principale.TAILLE,
                         ChampAffichage.Principale.APPARENCE,
@@ -252,7 +246,10 @@ fun CaracteristiquesListe(
                 }
 
                 // Colonne 2
-                Column(Modifier.weight(0.95f)) {
+                Column(
+                    modifier = Modifier.weight(0.95f),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
                     val col2 = listOf(
                         ChampAffichage.Principale.VOLONTE,
                         ChampAffichage.Principale.INTELLECT,
@@ -278,9 +275,47 @@ fun CaracteristiquesListe(
         }
 
         item {
-            Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp, bottom = 4.dp, end = 24.dp),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                val fullText = stringResource(R.string.points_restants, uiState.pointsRestants)
+                val valueStr = uiState.pointsRestants.toString()
+                val startIndex = fullText.indexOf(valueStr)
                 
+                val annotatedString = androidx.compose.ui.text.buildAnnotatedString {
+                    append(fullText)
+                    if (startIndex != -1) {
+                        addStyle(
+                            style = androidx.compose.ui.text.SpanStyle(
+                                color = if (uiState.pointsRestants < 0) VoyageurColors.ValeurCaracteristique else androidx.compose.ui.graphics.Color.Black,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            start = startIndex,
+                            end = startIndex + valueStr.length
+                        )
+                    }
+                }
+
+                Text(
+                    text = annotatedString,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 16.sp,
+                    color = VoyageurColors.NomCaracteristique,
+                    maxLines = 1,
+                    softWrap = false
+                )
+            }
+        }
+
+        item {
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                // Dividers removed
                 Row(Modifier.fillMaxWidth()) {
                     Box(Modifier.weight(1f)) { ThresholdItem(ChampAffichage.Seuil.VIE, uiState.vie, onDemanderAide) }
                     Box(Modifier.weight(1f)) { ThresholdItem(ChampAffichage.Seuil.ENDURANCE, uiState.endurance, onDemanderAide) }
@@ -360,9 +395,12 @@ private fun CaracteristiqueItem(
         else -> R.string.app_name
     }
 
-    val max = if (champ == ChampAffichage.Principale.FORCE) uiState.forceMax 
-              else if (champ is ChampAffichage.Derivee) valeur 
-              else 15
+    val max = if (champ is ChampAffichage.Principale) {
+        val baseMax = if (champ == ChampAffichage.Principale.FORCE) uiState.forceMax else 15
+        minOf(baseMax, valeur + uiState.pointsRestants)
+    } else {
+        valeur
+    }
     val min = if (champ is ChampAffichage.Derivee) valeur else 6
 
     CaracteristiqueRow(
@@ -375,7 +413,7 @@ private fun CaracteristiqueItem(
         onValeurChange = { if (champ is ChampAffichage.Principale) onCaracteristiqueChange(champ.domain, it) },
         onAideRequise = { onDemanderAide(champ) }
     )
-    HorizontalDivider(color = VoyageurColors.NomCaracteristique.copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 4.dp))
+    // Divider removed
 }
 
 @Composable
@@ -397,7 +435,7 @@ private fun ThresholdItem(
         Modifier
             .fillMaxWidth()
             .clickable { onDemanderAide(champ) }
-            .padding(vertical = 4.dp, horizontal = 8.dp),
+            .padding(vertical = 0.dp, horizontal = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(text = stringResource(labelRes), fontFamily = FontFamily.Serif, fontSize = 16.sp, color = VoyageurColors.NomCaracteristique)

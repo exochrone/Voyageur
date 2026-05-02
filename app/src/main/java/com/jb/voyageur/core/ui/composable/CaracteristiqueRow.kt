@@ -75,7 +75,7 @@ fun CaracteristiqueRow(
 
     Row(
         modifier = modifier
-            .fillMaxWidth()
+            .then(if (spacerEnabled) Modifier.fillMaxWidth() else Modifier)
             .nestedScroll(nestedScrollConnection),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -107,8 +107,8 @@ fun CaracteristiqueRow(
                                 }
 
                                 if (event == null) {
-                                    // 200ms écoulées sans mouvement → activer le drag
-                                    if (pointer.pressed) {
+                                    // 200ms écoulées sans mouvement → activer le drag seulement si modifiable
+                                    if (pointer.pressed && currentMin < currentMax) {
                                         longPressTriggered = true
                                         isDragging = true
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)

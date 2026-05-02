@@ -3,20 +3,20 @@ package com.jb.voyageur.core.domain.model
 import kotlin.math.ceil
 
 data class Caracteristiques(
-    val taille: Int = 6,
-    val apparence: Int = 6,
-    val constitution: Int = 6,
-    val force: Int = 6,
-    val agilite: Int = 6,
-    val dexterite: Int = 6,
-    val vue: Int = 6,
-    val ouie: Int = 6,
-    val odoGout: Int = 6,
-    val volonte: Int = 6,
-    val intellect: Int = 6,
-    val empathie: Int = 6,
-    val reve: Int = 6,
-    val chance: Int = 6
+    val taille: Int = 10,
+    val apparence: Int = 10,
+    val constitution: Int = 10,
+    val force: Int = 10,
+    val agilite: Int = 10,
+    val dexterite: Int = 10,
+    val vue: Int = 10,
+    val ouie: Int = 10,
+    val odoGout: Int = 10,
+    val volonte: Int = 10,
+    val intellect: Int = 10,
+    val empathie: Int = 10,
+    val reve: Int = 10,
+    val chance: Int = 10
 )
 
 val Caracteristiques.melee: Int get() = (force + agilite) / 2
