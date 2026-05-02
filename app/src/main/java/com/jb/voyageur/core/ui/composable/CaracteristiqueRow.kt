@@ -45,6 +45,7 @@ fun CaracteristiqueRow(
     valueFontFamily: FontFamily = FontFamily.Serif,
     labelPaddingStart: androidx.compose.ui.unit.Dp = 0.dp,
     valuePaddingEnd: androidx.compose.ui.unit.Dp = 0.dp,
+    spacerEnabled: Boolean = true,
     onValeurChange: (Int) -> Unit,
     onAideRequise: () -> Unit,
     modifier: Modifier = Modifier
@@ -101,7 +102,7 @@ fun CaracteristiqueRow(
                             // Attendre 200ms ou un mouvement
                             while (true) {
                                 val elapsed = System.currentTimeMillis() - downTime
-                                val event = withTimeoutOrNull((250 - elapsed).coerceAtLeast(0)) {
+                                val event = withTimeoutOrNull((200 - elapsed).coerceAtLeast(0)) {
                                     awaitPointerEvent()
                                 }
 
@@ -119,7 +120,7 @@ fun CaracteristiqueRow(
 
                                 if (!pointer.pressed) {
                                     // Doigt levé avant 200ms → tap simple → aide
-                                    if (System.currentTimeMillis() - downTime < 250) {
+                                    if (System.currentTimeMillis() - downTime < 200) {
                                         onAideRequise()
                                     }
                                     break
@@ -167,7 +168,9 @@ fun CaracteristiqueRow(
                 }
         )
         
-        Spacer(Modifier.weight(1f))
+        if (spacerEnabled) {
+            Spacer(Modifier.weight(1f))
+        }
 
         Text(
             text = valeurDisplay,
