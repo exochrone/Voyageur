@@ -179,7 +179,10 @@ fun MainScreen(
                         defaultValue = voyageurId
                     })
                 ) {
-                    CompetencesScreen(voyageurId = voyageurId)
+                    CompetencesScreen(
+                        voyageurId = voyageurId,
+                        onOpenDrawer = { scope.launch { drawerState.open() } }
+                    )
                 }
                 composable(NavItem.Sorts.route) {
                     PlaceholderScreen("Sorts")

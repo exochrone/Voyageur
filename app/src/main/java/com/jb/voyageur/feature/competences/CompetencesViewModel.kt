@@ -48,100 +48,89 @@ class CompetencesViewModel @Inject constructor(
         val pointsTroncs = troncCorps.coutTotal() + troncArmes.coutTotal()
         val pointsRestants = 3000 - pointsDraconic - pointsCompetences - pointsTroncs
 
-        val doubleListes = buildDoubleListes(this)
-        return CompetencesUiState.Success(doubleListes, pointsRestants, hautRevant)
+        val colonnes = buildColonnes(this)
+        return CompetencesUiState.Success(colonnes, pointsRestants, hautRevant)
     }
 
-    private fun buildDoubleListes(voyageur: Voyageur): List<DoubleListe> {
-        val result = mutableListOf<DoubleListe>()
+    private fun buildColonnes(voyageur: Voyageur): List<ColonneCompetences> {
+        val result = mutableListOf<ColonneCompetences>()
 
-        // Double-liste 1 : Générales | Particulières
-        result.add(DoubleListe(
-            gauche = ListeCompetences(
-                famille = FamilleCompetence.GENERALE,
-                items = buildItemsGenerales(voyageur)
-            ),
-            droite = ListeCompetences(
-                famille = FamilleCompetence.PARTICULIERE,
-                items = buildItemsParticulieres(voyageur)
-            )
+        // 1. Générales
+        result.add(ColonneCompetences(
+            famille = FamilleCompetence.GENERALE,
+            items = buildItems(FamilleCompetence.GENERALE, voyageur)
         ))
 
-        // Double-liste 2 : Combat mêlée | Tir et Lancer
-        result.add(DoubleListe(
-            gauche = ListeCompetences(
-                famille = FamilleCompetence.COMBAT_MELEE,
-                items = buildItemsCombat(voyageur)
-            ),
-            droite = ListeCompetences(
-                famille = FamilleCompetence.TIR_LANCER,
-                items = buildItemsTirLancer(voyageur)
-            )
+        // 2. Particulières
+        result.add(ColonneCompetences(
+            famille = FamilleCompetence.PARTICULIERE,
+            items = buildItems(FamilleCompetence.PARTICULIERE, voyageur)
         ))
 
-        // Double-liste 3 : Connaissances + Draconic (gauche) | Spécialisées (droite)
-        val itemsGauche = buildItemsConnaissances(voyageur).toMutableList<CompetenceUiItem>()
+        // 3. Combat mêlée
+        result.add(ColonneCompetences(
+            famille = FamilleCompetence.COMBAT_MELEE,
+            items = buildItemsCombat(voyageur)
+        ))
+
+        // 4. Tir et Lancer
+        result.add(ColonneCompetences(
+            famille = FamilleCompetence.TIR_LANCER,
+            items = buildItems(FamilleCompetence.TIR_LANCER, voyageur)
+        ))
+
+        // 5. Connaissances
+        result.add(ColonneCompetences(
+            famille = FamilleCompetence.CONNAISSANCE,
+            items = buildItems(FamilleCompetence.CONNAISSANCE, voyageur)
+        ))
+
+        // 6. Spécialisées
+        result.add(ColonneCompetences(
+            famille = FamilleCompetence.SPECIALISEE,
+            items = buildItems(FamilleCompetence.SPECIALISEE, voyageur)
+        ))
+
+        // 7. Draconic
         if (voyageur.hautRevant) {
-            itemsGauche.add(CompetenceUiItem.Separateur(FamilleCompetence.DRACONIC.labelRes))
-            itemsGauche.addAll(buildItemsDraconic(voyageur))
+            result.add(ColonneCompetences(
+                famille = FamilleCompetence.DRACONIC,
+                items = buildItemsDraconic(voyageur)
+            ))
         }
-
-        result.add(DoubleListe(
-            gauche = ListeCompetences(
-                famille = FamilleCompetence.CONNAISSANCE,
-                items = itemsGauche
-            ),
-            droite = ListeCompetences(
-                famille = FamilleCompetence.SPECIALISEE,
-                items = buildItemsSpecialisees(voyageur)
-            )
-        ))
 
         return result
     }
 
-    private fun buildItemsGenerales(voyageur: Voyageur): List<CompetenceUiItem.Individuelle> =
-        CatalogueCompetences.parFamille[FamilleCompetence.GENERALE]
-            ?.map { comp -> construireItemIndividuel(comp, voyageur) }
-            ?: emptyList()
-
-    private fun buildItemsParticulieres(voyageur: Voyageur): List<CompetenceUiItem.Individuelle> =
-        CatalogueCompetences.parFamille[FamilleCompetence.PARTICULIERE]
-            ?.map { comp -> construireItemIndividuel(comp, voyageur) }
-            ?: emptyList()
-
-    private fun buildItemsSpecialisees(voyageur: Voyageur): List<CompetenceUiItem.Individuelle> =
-        CatalogueCompetences.parFamille[FamilleCompetence.SPECIALISEE]
-            ?.map { comp -> construireItemIndividuel(comp, voyageur) }
-            ?: emptyList()
-
-    private fun buildItemsConnaissances(voyageur: Voyageur): List<CompetenceUiItem.Individuelle> =
-        CatalogueCompetences.parFamille[FamilleCompetence.CONNAISSANCE]
-            ?.map { comp -> construireItemIndividuel(comp, voyageur) }
-            ?: emptyList()
-
-    private fun buildItemsTirLancer(voyageur: Voyageur): List<CompetenceUiItem.Individuelle> =
-        CatalogueCompetences.parFamille[FamilleCompetence.TIR_LANCER]
-            ?.map { comp -> construireItemIndividuel(comp, voyageur) }
-            ?: emptyList()
+    private fun buildItems(famille: FamilleCompetence, voyageur: Voyageur): List<CompetenceUiItem.Individuelle> =
+        CatalogueCompetences.parFamille[famille]
+            ?.map { comp ->
+                val niveauActuel = voyageur.competences[comp.nom] ?: comp.niveauBase
+                CompetenceUiItem.Individuelle(
+                    competence = comp,
+                    niveauActuel = niveauActuel,
+                    coutCumule = CoutCompetence.coutCumule(comp.niveauBase, niveauActuel)
+                )
+            } ?: emptyList()
 
     private fun buildItemsCombat(voyageur: Voyageur): List<CompetenceUiItem.Individuelle> {
         val items = mutableListOf<CompetenceUiItem.Individuelle>()
-        voyageur.troncCorps.membres.forEach { membreNom ->
-            val niveau = voyageur.troncCorps.niveauPour(membreNom)
-            val comp = CatalogueCompetences.toutes.find { it.nom == membreNom }
-                ?: Competence(membreNom, FamilleCompetence.COMBAT_MELEE, "TroncCorps")
-            items.add(CompetenceUiItem.Individuelle(comp, niveau, 0))
+        voyageur.troncCorps.membres.forEach { nom ->
+            val comp = CatalogueCompetences.toutes.find { it.nom == nom }
+                ?: Competence(nom, FamilleCompetence.COMBAT_MELEE, "TroncCorps")
+            items.add(CompetenceUiItem.Individuelle(comp, voyageur.troncCorps.niveauPour(nom), 0))
         }
-        voyageur.troncArmes.membres.forEach { membreNom ->
-            val niveau = voyageur.troncArmes.niveauPour(membreNom)
-            val comp = CatalogueCompetences.toutes.find { it.nom == membreNom }
-                ?: Competence(membreNom, FamilleCompetence.COMBAT_MELEE, "TroncArmes")
-            items.add(CompetenceUiItem.Individuelle(comp, niveau, 0))
+        voyageur.troncArmes.membres.forEach { nom ->
+            val comp = CatalogueCompetences.toutes.find { it.nom == nom }
+                ?: Competence(nom, FamilleCompetence.COMBAT_MELEE, "TroncArmes")
+            items.add(CompetenceUiItem.Individuelle(comp, voyageur.troncArmes.niveauPour(nom), 0))
         }
         CatalogueCompetences.parFamille[FamilleCompetence.COMBAT_MELEE]
             ?.filter { it.appartientAuTronc == null }
-            ?.forEach { comp -> items.add(construireItemIndividuel(comp, voyageur)) }
+            ?.forEach { comp ->
+                val niveauActuel = voyageur.competences[comp.nom] ?: comp.niveauBase
+                items.add(CompetenceUiItem.Individuelle(comp, niveauActuel, CoutCompetence.coutCumule(comp.niveauBase, niveauActuel)))
+            }
         return items
     }
 
@@ -155,34 +144,20 @@ class CompetencesViewModel @Inject constructor(
             )
             CompetenceUiItem.Individuelle(comp, niveau, CoutCompetence.coutCumuleAvecMultiplicateur(-11, niveau, multiplicateur))
         }
-
-    private fun construireItemIndividuel(competence: Competence, voyageur: Voyageur): CompetenceUiItem.Individuelle {
-        val niveauActuel = voyageur.competences[competence.nom] ?: competence.niveauBase
-        return CompetenceUiItem.Individuelle(
-            competence = competence,
-            niveauActuel = niveauActuel,
-            coutCumule = CoutCompetence.coutCumule(competence.famille.base, niveauActuel)
-        )
-    }
 }
 
 sealed interface CompetencesUiState {
     data object Loading : CompetencesUiState
     data class Success(
-        val doubleListes: List<DoubleListe>,
+        val colonnes: List<ColonneCompetences>,
         val pointsRestants: Int,
         val hautRevant: Boolean
     ) : CompetencesUiState
 }
 
-data class DoubleListe(
-    val gauche: ListeCompetences,
-    val droite: ListeCompetences
-)
-
-data class ListeCompetences(
+data class ColonneCompetences(
     val famille: FamilleCompetence,
-    val items: List<CompetenceUiItem>
+    val items: List<CompetenceUiItem.Individuelle>
 )
 
 sealed interface CompetenceUiItem {
@@ -191,6 +166,4 @@ sealed interface CompetenceUiItem {
         val niveauActuel: Int,
         val coutCumule: Int
     ) : CompetenceUiItem
-
-    data class Separateur(val labelRes: Int) : CompetenceUiItem
 }

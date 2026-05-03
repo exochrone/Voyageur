@@ -142,7 +142,7 @@ fun SectionDescription(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 4.dp) // Espace C = 4dp
+                            .padding(bottom = 6.dp) // Espace C = 6dp
                     ) {
                         Box(modifier = Modifier.weight(0.5f)) {
                             DescriptionLabel(

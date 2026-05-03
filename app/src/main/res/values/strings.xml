@@ -149,6 +149,15 @@
     <string name="menu_competences_connaissances">Connaissances</string>
     <string name="menu_competences_draconic">Draconic</string>
 
+    <!-- Titres courts colonnes -->
+    <string name="col_generales">Comp. générales</string>
+    <string name="col_particulieres">Comp. particulières</string>
+    <string name="col_combat">Combat mêlée</string>
+    <string name="col_tir">Tir &amp; Lancer</string>
+    <string name="col_connaissances">Connaissances</string>
+    <string name="col_specialisees">Comp. spécialisées</string>
+    <string name="col_draconic">Draconic</string>
+
     <string name="xp_restants">Points restants : %1$d / 3000</string>
     <string name="cout_pts">%1$d pts</string>
     <string name="competence_bloquee">Plafonné par Survie en extérieur</string>
