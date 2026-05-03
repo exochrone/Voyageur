@@ -1,14 +1,24 @@
 package com.jb.voyageur.feature.main
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -24,11 +34,22 @@ import com.jb.voyageur.feature.competences.CompetencesScreen
 import com.jb.voyageur.ui.navigation.NavItem
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(voyageurId: Long) {
+fun MainScreen(
+    voyageurId: Long,
+    viewModel: MainViewModel = hiltViewModel()
+) {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val voyageurNom by viewModel.voyageurNom.collectAsStateWithLifecycle()
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+    val currentRoute = currentDestination?.route
+
+    var showRenameDialog by remember { mutableStateOf(false) }
 
     val menuItems = listOf(
         NavItem.Caracteristiques,
@@ -37,9 +58,6 @@ fun MainScreen(voyageurId: Long) {
         NavItem.Equipement,
         NavItem.Archetype
     )
-
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = navBackStackEntry?.destination
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -79,15 +97,29 @@ fun MainScreen(voyageurId: Long) {
 
                     Spacer(modifier = Modifier.weight(1f))
 
+                    // Aide
+                    NavigationDrawerItem(
+                        label = { Text(stringResource(NavItem.Aide.labelRes), fontFamily = FontFamily.Serif, fontSize = 18.sp) },
+                        selected = currentRoute == NavItem.Aide.route,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            navController.navigate(NavItem.Aide.route) {
+                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+
+                    // Options
                     NavigationDrawerItem(
                         label = { Text(stringResource(NavItem.Options.labelRes), fontFamily = FontFamily.Serif, fontSize = 18.sp) },
-                        selected = currentDestination?.hierarchy?.any { it.route == NavItem.Options.route } == true,
+                        selected = currentRoute == NavItem.Options.route,
                         onClick = {
                             scope.launch { drawerState.close() }
                             navController.navigate(NavItem.Options.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
+                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                                 launchSingleTop = true
                                 restoreState = true
                             }
@@ -98,45 +130,102 @@ fun MainScreen(voyageurId: Long) {
             }
         }
     ) {
-        NavHost(
-            navController = navController,
-            startDestination = NavItem.Caracteristiques.route
-        ) {
-            composable(
-                route = NavItem.Caracteristiques.route,
-                arguments = listOf(navArgument("voyageurId") {
-                    type = NavType.LongType
-                    defaultValue = voyageurId
-                })
-            ) {
-                CaracteristiquesScreen(
-                    voyageurId = voyageurId,
-                    onOpenDrawer = { scope.launch { drawerState.open() } }
+        Scaffold(
+            topBar = {
+                val isSpecialScreen = currentRoute == NavItem.Aide.route || currentRoute == NavItem.Options.route
+                val titleText = if (isSpecialScreen) {
+                    stringResource(if (currentRoute == NavItem.Aide.route) R.string.menu_aide else R.string.menu_options)
+                } else {
+                    voyageurNom.ifBlank { stringResource(R.string.app_name) }
+                }
+
+                CenterAlignedTopAppBar(
+                    modifier = Modifier.statusBarsPadding().height(48.dp),
+                    windowInsets = WindowInsets(0),
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(Icons.Default.Menu, contentDescription = null)
+                        }
+                    },
+                    title = {
+                        Text(
+                            text = titleText,
+                            fontFamily = FontFamily.Serif,
+                            fontSize = 20.sp,
+                            modifier = Modifier.clickable(enabled = !isSpecialScreen) { showRenameDialog = true }
+                        )
+                    }
                 )
             }
-            composable(
-                route = NavItem.Competences.route,
-                arguments = listOf(navArgument("voyageurId") {
-                    type = NavType.LongType
-                    defaultValue = voyageurId
-                })
+        ) { innerPadding ->
+            NavHost(
+                navController = navController,
+                startDestination = NavItem.Caracteristiques.route,
+                modifier = Modifier.padding(innerPadding)
             ) {
-                CompetencesScreen(
-                    voyageurId = voyageurId,
-                    onOpenDrawer = { scope.launch { drawerState.open() } }
-                )
+                composable(
+                    route = NavItem.Caracteristiques.route,
+                    arguments = listOf(navArgument("voyageurId") {
+                        type = NavType.LongType
+                        defaultValue = voyageurId
+                    })
+                ) {
+                    CaracteristiquesScreen(voyageurId = voyageurId)
+                }
+                composable(
+                    route = NavItem.Competences.route,
+                    arguments = listOf(navArgument("voyageurId") {
+                        type = NavType.LongType
+                        defaultValue = voyageurId
+                    })
+                ) {
+                    CompetencesScreen(voyageurId = voyageurId)
+                }
+                composable(NavItem.Sorts.route) {
+                    PlaceholderScreen("Sorts")
+                }
+                composable(NavItem.Equipement.route) {
+                    PlaceholderScreen("Équipement")
+                }
+                composable(NavItem.Archetype.route) {
+                    PlaceholderScreen("Archétype")
+                }
+                composable(NavItem.Aide.route) {
+                    PlaceholderScreen("Aide")
+                }
+                composable(NavItem.Options.route) {
+                    PlaceholderScreen("Options")
+                }
             }
-            composable(NavItem.Sorts.route) {
-                PlaceholderScreen("Sorts")
+        }
+
+        if (showRenameDialog) {
+            var tempName by remember {
+                mutableStateOf(TextFieldValue(text = voyageurNom, selection = TextRange(0, voyageurNom.length)))
             }
-            composable(NavItem.Equipement.route) {
-                PlaceholderScreen("Équipement")
-            }
-            composable(NavItem.Archetype.route) {
-                PlaceholderScreen("Archétype")
-            }
-            composable(NavItem.Options.route) {
-                PlaceholderScreen("Options")
+            val focusRequester = remember { FocusRequester() }
+            AlertDialog(
+                onDismissRequest = { showRenameDialog = false },
+                title = { Text(stringResource(R.string.description_nom_voyageur)) },
+                text = {
+                    OutlinedTextField(
+                        value = tempName,
+                        onValueChange = { tempName = it },
+                        modifier = Modifier.fillMaxWidth().focusRequester(focusRequester)
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        viewModel.onRename(tempName.text)
+                        showRenameDialog = false
+                    }) { Text(stringResource(R.string.valider)) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showRenameDialog = false }) { Text(stringResource(R.string.annuler)) }
+                }
+            )
+            LaunchedEffect(Unit) {
+                focusRequester.requestFocus()
             }
         }
     }

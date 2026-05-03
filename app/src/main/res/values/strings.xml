@@ -137,6 +137,7 @@
     <string name="menu_sorts">Sorts</string>
     <string name="menu_equipement">Équipement</string>
     <string name="menu_archetype">Archétype</string>
+    <string name="menu_aide">Aide</string>
     <string name="menu_options">Options</string>
 
     <!-- Familles de compétences -->
@@ -148,7 +149,7 @@
     <string name="menu_competences_connaissances">Connaissances</string>
     <string name="menu_competences_draconic">Draconic</string>
 
-    <string name="xp_restants">Points d\'expérience restants : %1$d / 3000</string>
+    <string name="xp_restants">Points restants : %1$d / 3000</string>
     <string name="cout_pts">%1$d pts</string>
     <string name="competence_bloquee">Plafonné par Survie en extérieur</string>
     <string name="thanatos_cout_double">Coût × 2 (voie maudite)</string>

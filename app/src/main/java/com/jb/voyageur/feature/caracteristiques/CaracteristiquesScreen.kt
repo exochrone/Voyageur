@@ -1,12 +1,9 @@
 package com.jb.voyageur.feature.caracteristiques
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -14,14 +11,10 @@ import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -36,11 +29,10 @@ import com.jb.voyageur.core.ui.theme.GoudyAcc
 import com.jb.voyageur.core.ui.theme.VoyageurColors
 import com.jb.voyageur.feature.caracteristiques.composable.SectionDescription
 
-@OptIn(ExperimentalMaterial3WindowSizeClassApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun CaracteristiquesScreen(
     voyageurId: Long,
-    onOpenDrawer: () -> Unit,
     viewModel: CaracteristiquesViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -48,87 +40,27 @@ fun CaracteristiquesScreen(
     val context = LocalContext.current
     val windowSizeClass = calculateWindowSizeClass(context as android.app.Activity)
 
-    var showRenameDialog by remember { mutableStateOf(false) }
-
-    Scaffold(
-        topBar = {
-            val state = uiState
-            if (state is CaracteristiquesUiState.Success) {
-                CenterAlignedTopAppBar(
-                    modifier = Modifier.statusBarsPadding().height(48.dp),
-                    windowInsets = WindowInsets(0),
-                    navigationIcon = {
-                        IconButton(onClick = onOpenDrawer) {
-                            Icon(Icons.Default.Menu, contentDescription = null)
-                        }
-                    },
-                    title = {
-                        Text(
-                            text = state.nom.ifBlank { stringResource(R.string.app_name) },
-                            fontFamily = FontFamily.Serif,
-                            fontSize = 20.sp, // Reduced font size to fit 48dp
-                            modifier = Modifier.clickable { showRenameDialog = true }
-                        )
-                    }
-                )
+    when (val state = uiState) {
+        CaracteristiquesUiState.Loading -> {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = VoyageurColors.NomCaracteristique)
             }
         }
-    ) { innerPadding ->
-        when (val state = uiState) {
-            CaracteristiquesUiState.Loading -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(text = "Chargement...")
-                }
-            }
-            is CaracteristiquesUiState.Success -> {
-                CaracteristiquesContent(
-                    uiState = state,
-                    aideActive = aideActive,
-                    windowWidthSizeClass = windowSizeClass.widthSizeClass,
-                    descriptionDepliee = true, // Always expanded
-                    modifier = Modifier.padding(innerPadding),
-                    onCaracteristiqueChange = viewModel::onCaracteristiqueChange,
-                    onBeauteChange = viewModel::onBeauteChange,
-                    onDescriptionChange = viewModel::onDescriptionChange,
-                    onPoidsSaisi = viewModel::onPoidsSaisi,
-                    onTailleCmSaisie = viewModel::onTailleCmSaisie,
-                    onHeureNaissanceChange = viewModel::onHeureNaissanceChange,
-                    onLateraliteChange = viewModel::onLateraliteChange,
-                    onDemanderAide = viewModel::onDemanderAide,
-                    onFermerAide = viewModel::onFermerAide
-                )
-
-                if (showRenameDialog) {
-                    var tempName by remember {
-                        val text = state.nom
-                        mutableStateOf(TextFieldValue(text = text, selection = TextRange(0, text.length)))
-                    }
-                    val focusRequester = remember { FocusRequester() }
-                    AlertDialog(
-                        onDismissRequest = { showRenameDialog = false },
-                        title = { Text(stringResource(R.string.description_nom_voyageur)) },
-                        text = {
-                            OutlinedTextField(
-                                value = tempName,
-                                onValueChange = { tempName = it },
-                                modifier = Modifier.fillMaxWidth().focusRequester(focusRequester)
-                            )
-                        },
-                        confirmButton = {
-                            TextButton(onClick = {
-                                viewModel.onDescriptionChange(ChampDescription.NOM, tempName.text)
-                                showRenameDialog = false
-                            }) { Text(stringResource(R.string.valider)) }
-                        },
-                        dismissButton = {
-                            TextButton(onClick = { showRenameDialog = false }) { Text(stringResource(R.string.annuler)) }
-                        }
-                    )
-                    LaunchedEffect(Unit) {
-                        focusRequester.requestFocus()
-                    }
-                }
-            }
+        is CaracteristiquesUiState.Success -> {
+            CaracteristiquesContent(
+                uiState = state,
+                aideActive = aideActive,
+                windowWidthSizeClass = windowSizeClass.widthSizeClass,
+                onCaracteristiqueChange = viewModel::onCaracteristiqueChange,
+                onBeauteChange = viewModel::onBeauteChange,
+                onDescriptionChange = viewModel::onDescriptionChange,
+                onPoidsSaisi = viewModel::onPoidsSaisi,
+                onTailleCmSaisie = viewModel::onTailleCmSaisie,
+                onHeureNaissanceChange = viewModel::onHeureNaissanceChange,
+                onLateraliteChange = viewModel::onLateraliteChange,
+                onDemanderAide = viewModel::onDemanderAide,
+                onFermerAide = viewModel::onFermerAide
+            )
         }
     }
 }
@@ -138,7 +70,6 @@ fun CaracteristiquesContent(
     uiState: CaracteristiquesUiState.Success,
     aideActive: ChampAffichage?,
     windowWidthSizeClass: WindowWidthSizeClass,
-    descriptionDepliee: Boolean,
     modifier: Modifier = Modifier,
     onCaracteristiqueChange: (ChampCaracteristique, Int) -> Unit,
     onBeauteChange: (Int) -> Unit,
@@ -155,7 +86,6 @@ fun CaracteristiquesContent(
             Row(modifier = Modifier.fillMaxSize()) {
                 CaracteristiquesListe(
                     uiState = uiState,
-                    descriptionDepliee = descriptionDepliee,
                     modifier = Modifier.weight(0.6f),
                     onCaracteristiqueChange = onCaracteristiqueChange,
                     onBeauteChange = onBeauteChange,
@@ -174,7 +104,6 @@ fun CaracteristiquesContent(
         } else {
             CaracteristiquesListe(
                 uiState = uiState,
-                descriptionDepliee = descriptionDepliee,
                 modifier = Modifier.fillMaxSize(),
                 onCaracteristiqueChange = onCaracteristiqueChange,
                 onBeauteChange = onBeauteChange,
@@ -199,7 +128,6 @@ fun CaracteristiquesContent(
 @Composable
 fun CaracteristiquesListe(
     uiState: CaracteristiquesUiState.Success,
-    descriptionDepliee: Boolean,
     modifier: Modifier = Modifier,
     onCaracteristiqueChange: (ChampCaracteristique, Int) -> Unit,
     onBeauteChange: (Int) -> Unit,
@@ -220,7 +148,7 @@ fun CaracteristiquesListe(
                 onBeauteChange = onBeauteChange,
                 onHeureNaissanceChange = onHeureNaissanceChange,
                 onDemanderAide = onDemanderAide,
-                visible = descriptionDepliee
+                visible = true
             )
         }
 
@@ -228,7 +156,7 @@ fun CaracteristiquesListe(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 4.dp, vertical = 4.dp), // Reduced vertical padding from 8.dp to 4.dp
+                    .padding(horizontal = 4.dp, vertical = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 // Colonne 1
@@ -329,7 +257,6 @@ fun CaracteristiquesListe(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                // Dividers removed
                 Row(Modifier.fillMaxWidth()) {
                     Box(Modifier.weight(1f)) { ThresholdItem(ChampAffichage.Seuil.VIE, uiState.vie, onDemanderAide) }
                     Box(Modifier.weight(1f)) { ThresholdItem(ChampAffichage.Seuil.ENDURANCE, uiState.endurance, onDemanderAide) }
@@ -427,7 +354,6 @@ private fun CaracteristiqueItem(
         onValeurChange = { if (champ is ChampAffichage.Principale) onCaracteristiqueChange(champ.domain, it) },
         onAideRequise = { onDemanderAide(champ) }
     )
-    // Divider removed
 }
 
 @Composable
