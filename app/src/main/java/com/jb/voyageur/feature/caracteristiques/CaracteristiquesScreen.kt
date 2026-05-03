@@ -22,9 +22,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jb.voyageur.R
 import com.jb.voyageur.core.domain.usecase.ChampCaracteristique
 import com.jb.voyageur.core.domain.usecase.ChampDescription
-import com.jb.voyageur.core.ui.helper.AideCaracteristiqueProvider
+import com.jb.voyageur.core.ui.composable.BarreNavigationEcran
 import com.jb.voyageur.core.ui.composable.CaracteristiqueRow
 import com.jb.voyageur.core.ui.composable.ParcheminBackground
+import com.jb.voyageur.core.ui.helper.AideCaracteristiqueProvider
+import com.jb.voyageur.core.ui.navigation.EcranCreation
 import com.jb.voyageur.core.ui.theme.GoudyAcc
 import com.jb.voyageur.core.ui.theme.VoyageurColors
 import com.jb.voyageur.feature.caracteristiques.composable.SectionDescription
@@ -33,6 +35,7 @@ import com.jb.voyageur.feature.caracteristiques.composable.SectionDescription
 @Composable
 fun CaracteristiquesScreen(
     voyageurId: Long,
+    onNaviguerVers: (EcranCreation) -> Unit,
     viewModel: CaracteristiquesViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -51,6 +54,7 @@ fun CaracteristiquesScreen(
                 uiState = state,
                 aideActive = aideActive,
                 windowWidthSizeClass = windowSizeClass.widthSizeClass,
+                onNaviguerVers = onNaviguerVers,
                 onCaracteristiqueChange = viewModel::onCaracteristiqueChange,
                 onBeauteChange = viewModel::onBeauteChange,
                 onDescriptionChange = viewModel::onDescriptionChange,
@@ -70,6 +74,7 @@ fun CaracteristiquesContent(
     uiState: CaracteristiquesUiState.Success,
     aideActive: ChampAffichage?,
     windowWidthSizeClass: WindowWidthSizeClass,
+    onNaviguerVers: (EcranCreation) -> Unit,
     modifier: Modifier = Modifier,
     onCaracteristiqueChange: (ChampCaracteristique, Int) -> Unit,
     onBeauteChange: (Int) -> Unit,
@@ -82,11 +87,37 @@ fun CaracteristiquesContent(
     onFermerAide: () -> Unit
 ) {
     ParcheminBackground(modifier = modifier) {
-        if (windowWidthSizeClass == WindowWidthSizeClass.Expanded) {
-            Row(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            BarreNavigationEcran(
+                titre = stringResource(R.string.menu_caracteristiques),
+                ecranCourant = EcranCreation.CARACTERISTIQUES,
+                hautRevant = uiState.hautRevant,
+                onNaviguerVers = onNaviguerVers
+            )
+
+            if (windowWidthSizeClass == WindowWidthSizeClass.Expanded) {
+                Row(modifier = Modifier.fillMaxSize()) {
+                    CaracteristiquesListe(
+                        uiState = uiState,
+                        modifier = Modifier.weight(0.6f),
+                        onCaracteristiqueChange = onCaracteristiqueChange,
+                        onBeauteChange = onBeauteChange,
+                        onDescriptionChange = onDescriptionChange,
+                        onPoidsSaisi = onPoidsSaisi,
+                        onTailleCmSaisie = onTailleCmSaisie,
+                        onHeureNaissanceChange = onHeureNaissanceChange,
+                        onLateraliteChange = onLateraliteChange,
+                        onDemanderAide = onDemanderAide
+                    )
+                    ZoneAide(
+                        champAide = aideActive,
+                        modifier = Modifier.weight(0.4f)
+                    )
+                }
+            } else {
                 CaracteristiquesListe(
                     uiState = uiState,
-                    modifier = Modifier.weight(0.6f),
+                    modifier = Modifier.fillMaxSize(),
                     onCaracteristiqueChange = onCaracteristiqueChange,
                     onBeauteChange = onBeauteChange,
                     onDescriptionChange = onDescriptionChange,
@@ -96,29 +127,12 @@ fun CaracteristiquesContent(
                     onLateraliteChange = onLateraliteChange,
                     onDemanderAide = onDemanderAide
                 )
-                ZoneAide(
-                    champAide = aideActive,
-                    modifier = Modifier.weight(0.4f)
-                )
-            }
-        } else {
-            CaracteristiquesListe(
-                uiState = uiState,
-                modifier = Modifier.fillMaxSize(),
-                onCaracteristiqueChange = onCaracteristiqueChange,
-                onBeauteChange = onBeauteChange,
-                onDescriptionChange = onDescriptionChange,
-                onPoidsSaisi = onPoidsSaisi,
-                onTailleCmSaisie = onTailleCmSaisie,
-                onHeureNaissanceChange = onHeureNaissanceChange,
-                onLateraliteChange = onLateraliteChange,
-                onDemanderAide = onDemanderAide
-            )
-            aideActive?.let { champ ->
-                AideBottomSheet(
-                    champAide = champ,
-                    onDismiss = onFermerAide
-                )
+                aideActive?.let { champ ->
+                    AideBottomSheet(
+                        champAide = champ,
+                        onDismiss = onFermerAide
+                    )
+                }
             }
         }
     }

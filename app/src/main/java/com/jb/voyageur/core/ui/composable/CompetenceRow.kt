@@ -38,7 +38,7 @@ fun CompetenceRow(
     var atBorne by remember { mutableStateOf(false) }
     var showSaisieDialog by remember { mutableStateOf(false) }
     var dragAccumulator by remember { mutableFloatStateOf(0f) }
-    val dragThresholdPx = with(LocalDensity.current) { 24.dp.toPx() }
+    val dragThresholdPx = with(LocalDensity.current) { 20.dp.toPx() }
 
     val currentValeur by rememberUpdatedState(niveauActuel)
     val currentBorneInf by rememberUpdatedState(borneInf)
@@ -49,7 +49,7 @@ fun CompetenceRow(
         label = "valeurScale"
     )
 
-    val scoreDisplay = if (niveauActuel >= 0) "+$niveauActuel" else niveauActuel.toString()
+    val scoreDisplay = if (niveauActuel > 0) "+$niveauActuel" else niveauActuel.toString()
 
     Row(
         modifier = modifier

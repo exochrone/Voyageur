@@ -28,11 +28,21 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.jb.voyageur.R
+import com.jb.voyageur.core.ui.composable.BarreNavigationEcran
+import com.jb.voyageur.core.ui.navigation.EcranCreation
 import com.jb.voyageur.core.ui.theme.GoudyAcc
 import com.jb.voyageur.feature.caracteristiques.CaracteristiquesScreen
 import com.jb.voyageur.feature.competences.CompetencesScreen
 import com.jb.voyageur.ui.navigation.NavItem
 import kotlinx.coroutines.launch
+
+fun EcranCreation.toRoute(): String = when (this) {
+    EcranCreation.CARACTERISTIQUES -> NavItem.Caracteristiques.route
+    EcranCreation.COMPETENCES      -> NavItem.Competences.route
+    EcranCreation.SORTS            -> NavItem.Sorts.route
+    EcranCreation.EQUIPEMENT       -> NavItem.Equipement.route
+    EcranCreation.ARCHETYPE        -> NavItem.Archetype.route
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,10 +54,21 @@ fun MainScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val voyageurNom by viewModel.voyageurNom.collectAsStateWithLifecycle()
+    val hautRevant by viewModel.hautRevant.collectAsStateWithLifecycle()
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
     val currentRoute = currentDestination?.route
+
+    val onNaviguerVers: (EcranCreation) -> Unit = { ecran ->
+        navController.navigate(ecran.toRoute()) {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
 
     var showRenameDialog by remember { mutableStateOf(false) }
 
@@ -151,7 +172,7 @@ fun MainScreen(
                         Text(
                             text = titleText,
                             fontFamily = FontFamily.Serif,
-                            fontSize = 20.sp,
+                            fontSize = 26.sp,
                             modifier = Modifier.clickable(enabled = !isSpecialScreen) { showRenameDialog = true }
                         )
                     }
@@ -170,7 +191,10 @@ fun MainScreen(
                         defaultValue = voyageurId
                     })
                 ) {
-                    CaracteristiquesScreen(voyageurId = voyageurId)
+                    CaracteristiquesScreen(
+                        voyageurId = voyageurId,
+                        onNaviguerVers = onNaviguerVers
+                    )
                 }
                 composable(
                     route = NavItem.Competences.route,
@@ -181,17 +205,32 @@ fun MainScreen(
                 ) {
                     CompetencesScreen(
                         voyageurId = voyageurId,
-                        onOpenDrawer = { scope.launch { drawerState.open() } }
+                        onNaviguerVers = onNaviguerVers
                     )
                 }
                 composable(NavItem.Sorts.route) {
-                    PlaceholderScreen("Sorts")
+                    PlaceholderScreen(
+                        name = "Sorts",
+                        ecranCourant = EcranCreation.SORTS,
+                        hautRevant = hautRevant,
+                        onNaviguerVers = onNaviguerVers
+                    )
                 }
                 composable(NavItem.Equipement.route) {
-                    PlaceholderScreen("Équipement")
+                    PlaceholderScreen(
+                        name = "Équipement",
+                        ecranCourant = EcranCreation.EQUIPEMENT,
+                        hautRevant = hautRevant,
+                        onNaviguerVers = onNaviguerVers
+                    )
                 }
                 composable(NavItem.Archetype.route) {
-                    PlaceholderScreen("Archétype")
+                    PlaceholderScreen(
+                        name = "Archétype",
+                        ecranCourant = EcranCreation.ARCHETYPE,
+                        hautRevant = hautRevant,
+                        onNaviguerVers = onNaviguerVers
+                    )
                 }
                 composable(NavItem.Aide.route) {
                     PlaceholderScreen("Aide")
@@ -235,8 +274,23 @@ fun MainScreen(
 }
 
 @Composable
-fun PlaceholderScreen(name: String) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = name, fontSize = 24.sp)
+fun PlaceholderScreen(
+    name: String,
+    ecranCourant: EcranCreation? = null,
+    hautRevant: Boolean = false,
+    onNaviguerVers: ((EcranCreation) -> Unit)? = null
+) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        if (ecranCourant != null && onNaviguerVers != null) {
+            BarreNavigationEcran(
+                titre = name,
+                ecranCourant = ecranCourant,
+                hautRevant = hautRevant,
+                onNaviguerVers = onNaviguerVers
+            )
+        }
+        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+            Text(text = name, fontSize = 24.sp)
+        }
     }
 }

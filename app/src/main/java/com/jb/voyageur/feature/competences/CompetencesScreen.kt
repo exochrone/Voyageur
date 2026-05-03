@@ -8,6 +8,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
@@ -30,9 +32,11 @@ import com.jb.voyageur.R
 import com.jb.voyageur.core.domain.model.FamilleCompetence
 import com.jb.voyageur.core.domain.model.VoieDraconic
 import com.jb.voyageur.core.ui.composable.AideBottomSheet
+import com.jb.voyageur.core.ui.composable.BarreNavigationEcran
 import com.jb.voyageur.core.ui.composable.CompetenceRow
 import com.jb.voyageur.core.ui.composable.ParcheminBackground
 import com.jb.voyageur.core.ui.helper.AideCompetenceProvider
+import com.jb.voyageur.core.ui.navigation.EcranCreation
 import com.jb.voyageur.core.ui.theme.GoudyAcc
 import com.jb.voyageur.core.ui.theme.VoyageurColors
 import kotlinx.coroutines.launch
@@ -40,7 +44,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun CompetencesScreen(
     voyageurId: Long,
-    onOpenDrawer: () -> Unit,
+    onNaviguerVers: (EcranCreation) -> Unit,
     viewModel: CompetencesViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -56,6 +60,7 @@ fun CompetencesScreen(
             is CompetencesUiState.Success -> {
                 CompetencesContent(
                     uiState = state,
+                    onNaviguerVers = onNaviguerVers,
                     onAideRequise = viewModel::onDemanderAide,
                     onCompetenceChange = viewModel::onCompetenceChange,
                     onTroncChange = viewModel::onTroncChange,
@@ -81,6 +86,7 @@ fun CompetencesScreen(
 @Composable
 fun CompetencesContent(
     uiState: CompetencesUiState.Success,
+    onNaviguerVers: (EcranCreation) -> Unit,
     onAideRequise: (String) -> Unit,
     onCompetenceChange: (String, Int, Int) -> Unit,
     onTroncChange: (String, String, Int) -> Unit,
@@ -91,10 +97,18 @@ fun CompetencesContent(
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
+            BarreNavigationEcran(
+                titre = stringResource(R.string.menu_competences),
+                ecranCourant = EcranCreation.COMPETENCES,
+                hautRevant = uiState.hautRevant,
+                onNaviguerVers = onNaviguerVers
+            )
+
             // Indicateur de famille TabRow
             ScrollableTabRow(
                 selectedTabIndex = pagerState.currentPage,
                 containerColor = Color.Transparent,
+                contentColor = VoyageurColors.NomCaracteristique,
                 edgePadding = 8.dp,
                 divider = {},
                 indicator = { tabPositions ->

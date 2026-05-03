@@ -30,6 +30,16 @@ class MainViewModel @Inject constructor(
             initialValue = ""
         )
 
+    val hautRevant: StateFlow<Boolean> = voyageurRepository
+        .observerVoyageur(voyageurId)
+        .filterNotNull()
+        .map { it.hautRevant }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = false
+        )
+
     fun onRename(nouveauNom: String) {
         viewModelScope.launch {
             modifierDescriptionUseCase(voyageurId, ChampDescription.NOM, nouveauNom)
