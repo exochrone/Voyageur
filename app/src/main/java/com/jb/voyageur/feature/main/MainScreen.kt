@@ -20,7 +20,8 @@ import androidx.navigation.navArgument
 import com.jb.voyageur.R
 import com.jb.voyageur.core.ui.theme.GoudyAcc
 import com.jb.voyageur.feature.caracteristiques.CaracteristiquesScreen
-import com.jb.voyageur.ui.navigation.BottomNavItem
+import com.jb.voyageur.feature.competences.CompetencesScreen
+import com.jb.voyageur.ui.navigation.NavItem
 import kotlinx.coroutines.launch
 
 @Composable
@@ -30,11 +31,11 @@ fun MainScreen(voyageurId: Long) {
     val scope = rememberCoroutineScope()
 
     val menuItems = listOf(
-        BottomNavItem.Caracteristiques,
-        BottomNavItem.Competences,
-        BottomNavItem.Sorts,
-        BottomNavItem.Equipement,
-        BottomNavItem.Archetype
+        NavItem.Caracteristiques,
+        NavItem.Competences,
+        NavItem.Sorts,
+        NavItem.Equipement,
+        NavItem.Archetype
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -79,11 +80,11 @@ fun MainScreen(voyageurId: Long) {
                     Spacer(modifier = Modifier.weight(1f))
 
                     NavigationDrawerItem(
-                        label = { Text(stringResource(BottomNavItem.Options.labelRes), fontFamily = FontFamily.Serif, fontSize = 18.sp) },
-                        selected = currentDestination?.hierarchy?.any { it.route == BottomNavItem.Options.route } == true,
+                        label = { Text(stringResource(NavItem.Options.labelRes), fontFamily = FontFamily.Serif, fontSize = 18.sp) },
+                        selected = currentDestination?.hierarchy?.any { it.route == NavItem.Options.route } == true,
                         onClick = {
                             scope.launch { drawerState.close() }
-                            navController.navigate(BottomNavItem.Options.route) {
+                            navController.navigate(NavItem.Options.route) {
                                 popUpTo(navController.graph.findStartDestination().id) {
                                     saveState = true
                                 }
@@ -99,30 +100,42 @@ fun MainScreen(voyageurId: Long) {
     ) {
         NavHost(
             navController = navController,
-            startDestination = BottomNavItem.Caracteristiques.route
+            startDestination = NavItem.Caracteristiques.route
         ) {
             composable(
-                route = BottomNavItem.Caracteristiques.route,
+                route = NavItem.Caracteristiques.route,
                 arguments = listOf(navArgument("voyageurId") {
                     type = NavType.LongType
                     defaultValue = voyageurId
                 })
             ) {
-                CaracteristiquesScreen(voyageurId = voyageurId)
+                CaracteristiquesScreen(
+                    voyageurId = voyageurId,
+                    onOpenDrawer = { scope.launch { drawerState.open() } }
+                )
             }
-            composable(BottomNavItem.Competences.route) {
-                PlaceholderScreen("Compétences")
+            composable(
+                route = NavItem.Competences.route,
+                arguments = listOf(navArgument("voyageurId") {
+                    type = NavType.LongType
+                    defaultValue = voyageurId
+                })
+            ) {
+                CompetencesScreen(
+                    voyageurId = voyageurId,
+                    onOpenDrawer = { scope.launch { drawerState.open() } }
+                )
             }
-            composable(BottomNavItem.Sorts.route) {
+            composable(NavItem.Sorts.route) {
                 PlaceholderScreen("Sorts")
             }
-            composable(BottomNavItem.Equipement.route) {
+            composable(NavItem.Equipement.route) {
                 PlaceholderScreen("Équipement")
             }
-            composable(BottomNavItem.Archetype.route) {
+            composable(NavItem.Archetype.route) {
                 PlaceholderScreen("Archétype")
             }
-            composable(BottomNavItem.Options.route) {
+            composable(NavItem.Options.route) {
                 PlaceholderScreen("Options")
             }
         }

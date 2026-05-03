@@ -6,8 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -41,6 +40,7 @@ import com.jb.voyageur.feature.caracteristiques.composable.SectionDescription
 @Composable
 fun CaracteristiquesScreen(
     voyageurId: Long,
+    onOpenDrawer: () -> Unit,
     viewModel: CaracteristiquesViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -48,7 +48,6 @@ fun CaracteristiquesScreen(
     val context = LocalContext.current
     val windowSizeClass = calculateWindowSizeClass(context as android.app.Activity)
 
-    var descriptionDepliee by remember { mutableStateOf(true) }
     var showRenameDialog by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -58,6 +57,11 @@ fun CaracteristiquesScreen(
                 TopAppBar(
                     modifier = Modifier.statusBarsPadding().height(48.dp),
                     windowInsets = WindowInsets(0),
+                    navigationIcon = {
+                        IconButton(onClick = onOpenDrawer) {
+                            Icon(Icons.Default.Menu, contentDescription = null)
+                        }
+                    },
                     title = {
                         Text(
                             text = state.nom.ifBlank { stringResource(R.string.section_description) },
@@ -65,19 +69,6 @@ fun CaracteristiquesScreen(
                             fontSize = 20.sp, // Reduced font size to fit 48dp
                             modifier = Modifier.clickable { showRenameDialog = true }
                         )
-                    },
-                    actions = {
-                        IconButton(
-                            onClick = { descriptionDepliee = !descriptionDepliee },
-                            modifier = Modifier.size(48.dp) // Ensure button fits
-                        ) {
-                            Icon(
-                                imageVector = if (descriptionDepliee)
-                                    Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                contentDescription = null,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
                     }
                 )
             }
@@ -94,7 +85,7 @@ fun CaracteristiquesScreen(
                     uiState = state,
                     aideActive = aideActive,
                     windowWidthSizeClass = windowSizeClass.widthSizeClass,
-                    descriptionDepliee = descriptionDepliee,
+                    descriptionDepliee = true, // Always expanded
                     modifier = Modifier.padding(innerPadding),
                     onCaracteristiqueChange = viewModel::onCaracteristiqueChange,
                     onBeauteChange = viewModel::onBeauteChange,

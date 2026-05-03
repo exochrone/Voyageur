@@ -6,7 +6,8 @@ import com.jb.voyageur.core.domain.repository.VoyageurRepository
 import javax.inject.Inject
 
 class CreerVoyageurUseCase @Inject constructor(
-    private val voyageurRepository: VoyageurRepository
+    private val voyageurRepository: VoyageurRepository,
+    private val mettreAJourPhysiqueUseCase: MettreAJourPhysiqueUseCase
 ) {
     suspend operator fun invoke(
         nom: String,
@@ -16,8 +17,11 @@ class CreerVoyageurUseCase @Inject constructor(
         val voyageur = Voyageur(
             nom = nom,
             sexe = sexe,
-            hautRevant = hautRevant
+            hautRevant = hautRevant,
+            age = 20 // Default age remains 20 as per business logic, but weight/height should be generated
         )
-        return voyageurRepository.creer(voyageur)
+        val id = voyageurRepository.creer(voyageur)
+        mettreAJourPhysiqueUseCase.generer(id)
+        return id
     }
 }

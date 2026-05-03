@@ -33,8 +33,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -66,28 +68,21 @@ class CaracteristiquesViewModel @Inject constructor(
     private val _aideActive = MutableStateFlow<ChampAffichage?>(null)
     val aideActive: StateFlow<ChampAffichage?> = _aideActive.asStateFlow()
 
-    // Valeurs précédentes pour détecter un changement
-    private var derniereTailleCarac: Int = -1
-    private var dernierSexe: Sexe? = null
-
     init {
         // Observer les changements de TAILLE et Sexe pour régénérer
         viewModelScope.launch {
-            voyageurRepository.observerVoyageur(voyageurId)
-                .filterNotNull()
-                .collect { voyageur ->
-                    val tailleCarac = voyageur.caracteristiques.taille
-                    val sexe = voyageur.sexe
-
-                    val tailleChangee = tailleCarac != derniereTailleCarac && derniereTailleCarac != -1
-                    val sexeChange = sexe != dernierSexe && dernierSexe != null
-
-                    if (tailleChangee || sexeChange) {
+            uiState
+                .filterIsInstance<CaracteristiquesUiState.Success>()
+                .scan<CaracteristiquesUiState.Success, Pair<CaracteristiquesUiState.Success?, CaracteristiquesUiState.Success?>>(
+                    Pair(null, null)
+                ) { acc, new -> Pair(acc.second, new) }
+                .collect { (prev, curr) ->
+                    if (prev != null && curr != null &&
+                        (prev.caracteristiques.taille != curr.caracteristiques.taille ||
+                         prev.sexe != curr.sexe)
+                    ) {
                         mettreAJourPhysiqueUseCase.generer(voyageurId)
                     }
-
-                    derniereTailleCarac = tailleCarac
-                    dernierSexe = sexe
                 }
         }
     }

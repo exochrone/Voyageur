@@ -137,4 +137,25 @@
     <string name="menu_equipement">Équipement</string>
     <string name="menu_archetype">Archétype</string>
     <string name="menu_options">Options</string>
+
+    <!-- Familles de compétences -->
+    <string name="menu_competences_generales">Générales</string>
+    <string name="menu_competences_combat">Combat Mêlée</string>
+    <string name="menu_competences_tir">Tir &amp; Lancer</string>
+    <string name="menu_competences_particulieres">Particulières</string>
+    <string name="menu_competences_specialisees">Spécialisées</string>
+    <string name="menu_competences_connaissances">Connaissances</string>
+    <string name="menu_competences_draconic">Draconic</string>
+
+    <string name="xp_restants">Points d\'expérience restants : %1$d / 3000</string>
+    <string name="cout_pts">%1$d pts</string>
+    <string name="competence_bloquee">Plafonné par Survie en extérieur</string>
+    <string name="thanatos_cout_double">Coût × 2 (voie maudite)</string>
+
+    <!-- Aide Compétences -->
+    <string name="aide_competence_generique">Texte d\'aide générique pour les compétences.</string>
+    <string name="aide_bricolage">Le bricolage permet de réparer des objets usuels ou de fabriquer des mécanismes simples.</string>
+    <string name="aide_corps_a_corps">Maîtrise du combat sans armes, utilisant les poings, les pieds et les prises.</string>
+    <string name="aide_survie_exterieur">Capacité à trouver de la nourriture, de l\'eau et un abri en milieu sauvage tempéré.</string>
+    <string name="aide_oniros">La voie des songes, permettant de manipuler la réalité du rêve.</string>
 </resources>

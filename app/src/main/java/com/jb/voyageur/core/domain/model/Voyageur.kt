@@ -5,9 +5,9 @@ data class Voyageur(
     val nom: String = "",
     val sexe: Sexe = Sexe.HOMME,
     val hautRevant: Boolean = false,
-    val age: Int? = 20,
-    val tailleCm: Int? = 175,
-    val poidsKg: Int? = 70,
+    val age: Int? = null,
+    val tailleCm: Int? = null,
+    val poidsKg: Int? = null,
     val cheveux: String = "",
     val yeux: String = "",
     val signeParticulier: String = "",
@@ -16,6 +16,21 @@ data class Voyageur(
     val caracteristiques: Caracteristiques = Caracteristiques(),
     val beaute: Int = 10,
     val competences: Map<String, Int> = emptyMap(),
+    val troncCorps: Tronc = Tronc(
+        nom = "TroncCorps",
+        membres = listOf("Corps à corps", "Dague de mêlée", "Esquive"),
+        niveauBase = -6
+    ),
+    val troncArmes: Tronc = Tronc(
+        nom = "TroncArmes",
+        membres = listOf(
+            "Épée à une main", "Épée à deux mains",
+            "Hache à une main", "Hache à deux mains",
+            "Masse à une main", "Masse à deux mains",
+            "Lance"
+        ),
+        niveauBase = -6
+    ),
     val draconic: Draconic = Draconic(),
     val sorts: List<SortAchete> = emptyList(),
     val equipement: List<ObjetPossede> = emptyList(),
@@ -49,7 +64,39 @@ data class Draconic(
     val hypnos: Int = -11,
     val narcos: Int = -11,
     val thanatos: Int = -11
-)
+) {
+    fun niveau(voie: VoieDraconic): Int = when (voie) {
+        VoieDraconic.ONIROS   -> oniros
+        VoieDraconic.HYPNOS   -> hypnos
+        VoieDraconic.NARCOS   -> narcos
+        VoieDraconic.THANATOS -> thanatos
+    }
+
+    fun avecNiveau(voie: VoieDraconic, niveau: Int): Draconic = when (voie) {
+        VoieDraconic.ONIROS   -> copy(oniros = niveau)
+        VoieDraconic.HYPNOS   -> copy(hypnos = niveau)
+        VoieDraconic.NARCOS   -> copy(narcos = niveau)
+        VoieDraconic.THANATOS -> copy(thanatos = niveau)
+    }
+
+    fun multiplicateurPour(voie: VoieDraconic): Int =
+        if (voie == VoieDraconic.THANATOS) 2
+        else 1
+
+    /**
+     * Coût total de toutes les voies investies.
+     * Thanatos est comptabilisé au double.
+     */
+    fun pointsTotal(): Int = VoieDraconic.entries.sumOf { voie ->
+        CoutCompetence.coutCumuleAvecMultiplicateur(
+            niveauBase  = -11,
+            niveauCible = niveau(voie),
+            multiplicateur = multiplicateurPour(voie)
+        )
+    }
+}
+
+enum class VoieDraconic { ONIROS, HYPNOS, NARCOS, THANATOS }
 
 data class SortAchete(val nom: String)
 data class ObjetPossede(val nom: String)
