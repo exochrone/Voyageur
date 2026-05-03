@@ -35,6 +35,7 @@ fun CompetenceRow(
 ) {
     val haptic = LocalHapticFeedback.current
     var isDragging by remember { mutableStateOf(false) }
+    var atBorne by remember { mutableStateOf(false) }
     var showSaisieDialog by remember { mutableStateOf(false) }
     var dragAccumulator by remember { mutableFloatStateOf(0f) }
     val dragThresholdPx = with(LocalDensity.current) { 24.dp.toPx() }
@@ -120,21 +121,19 @@ fun CompetenceRow(
                                             val nouveau = (currentValeur + increments)
                                                 .coerceIn(currentBorneInf, currentBorneSup)
                                             if (nouveau != currentValeur) {
-                                                haptic.performHapticFeedback(
-                                                    if (nouveau == currentBorneInf || nouveau == currentBorneSup)
-                                                        HapticFeedbackType.LongPress
-                                                    else
-                                                        HapticFeedbackType.TextHandleMove
-                                                )
+                                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                                 onNiveauChange(nouveau)
+                                                atBorne = false
                                             } else {
                                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                atBorne = true
                                             }
                                             dragAccumulator -= increments * dragThresholdPx
                                         }
                                     }
                                 } finally {
                                     isDragging = false
+                                    atBorne = false
                                 }
                             }
                         }
@@ -148,7 +147,7 @@ fun CompetenceRow(
             fontFamily = FontFamily.Serif,
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
-            color = VoyageurColors.ValeurCaracteristique,
+            color = if (atBorne) androidx.compose.ui.graphics.Color(0xFFFF0000) else VoyageurColors.ValeurCaracteristique,
             textAlign = TextAlign.End,
             modifier = Modifier
                 .weight(0.15f)

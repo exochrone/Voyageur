@@ -52,6 +52,7 @@ fun CaracteristiqueRow(
 ) {
     val haptic = LocalHapticFeedback.current
     var isDragging by remember { mutableStateOf(false) }
+    var atBorne by remember { mutableStateOf(false) }
     var showSaisieDialog by remember { mutableStateOf(false) }
     var dragAccumulator by remember { mutableFloatStateOf(0f) }
     val dragThresholdPx = with(LocalDensity.current) { 24.dp.toPx() }
@@ -147,20 +148,19 @@ fun CaracteristiqueRow(
                                             val nouvelleValeur = (currentValeur + increments)
                                                 .coerceIn(currentMin, currentMax)
                                             if (nouvelleValeur != currentValeur) {
-                                                val feedbackType = if (nouvelleValeur == currentMin || nouvelleValeur == currentMax)
-                                                    HapticFeedbackType.LongPress
-                                                else
-                                                    HapticFeedbackType.TextHandleMove
-                                                haptic.performHapticFeedback(feedbackType)
+                                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                                 onValeurChange(nouvelleValeur)
+                                                atBorne = false
                                             } else {
                                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                atBorne = true
                                             }
                                             dragAccumulator -= increments * dragThresholdPx
                                         }
                                     }
                                 } finally {
                                     isDragging = false
+                                    atBorne = false
                                 }
                             }
                         }
@@ -176,8 +176,8 @@ fun CaracteristiqueRow(
             text = valeurDisplay,
             fontFamily = valueFontFamily,
             fontSize = 18.sp,
-            fontWeight = FontWeight.Normal,
-            color = VoyageurColors.ValeurCaracteristique,
+            fontWeight = FontWeight.Bold,
+            color = if (atBorne) androidx.compose.ui.graphics.Color(0xFFFF0000) else VoyageurColors.ValeurCaracteristique,
             modifier = Modifier
                 .graphicsLayer(scaleX = scale, scaleY = scale)
                 .padding(start = 8.dp, end = valuePaddingEnd)
