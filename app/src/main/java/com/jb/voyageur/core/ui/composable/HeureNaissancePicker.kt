@@ -1,5 +1,6 @@
 package com.jb.voyageur.core.ui.composable
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -16,7 +17,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jb.voyageur.core.domain.model.HeureNaissance
@@ -26,6 +26,7 @@ import com.jb.voyageur.core.ui.theme.HeuresDraconiques
 fun HeureNaissancePicker(
     heureCourante: HeureNaissance,
     onHeureChange: (HeureNaissance) -> Unit,
+    onAideRequise: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val haptic = LocalHapticFeedback.current
@@ -60,13 +61,9 @@ fun HeureNaissancePicker(
             fontFamily = HeuresDraconiques,
             fontSize = 48.sp,
             color = androidx.compose.ui.graphics.Color.Black,
-            modifier = Modifier.padding(8.dp)
-        )
-        Text(
-            text = heureCourante.label,
-            fontFamily = FontFamily.Serif,
-            color = androidx.compose.ui.graphics.Color.Black,
-            fontSize = 12.sp
+            modifier = Modifier
+                .padding(8.dp)
+                .clickable { onAideRequise() }
         )
     }
 }

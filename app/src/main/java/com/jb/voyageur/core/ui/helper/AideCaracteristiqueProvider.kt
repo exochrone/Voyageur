@@ -40,6 +40,7 @@ object AideCaracteristiqueProvider {
             ChampAffichage.Seuil.ENCOMBREMENT -> R.string.seuil_encombrement
                 
             ChampAffichage.Beaute -> R.string.aide_beaute_titre
+            is ChampAffichage.Heure -> R.string.heure_naissance
         }
 
         val descRes = when (champ) {
@@ -71,8 +72,12 @@ object AideCaracteristiqueProvider {
             ChampAffichage.Seuil.ENCOMBREMENT -> R.string.aide_encombrement_desc
                 
             ChampAffichage.Beaute -> R.string.aide_beaute_desc
+            is ChampAffichage.Heure -> R.string.aide_generique_desc
         }
 
-        return AideCaracteristique(resources.getString(titreRes), resources.getString(descRes))
+        val titre = if (champ is ChampAffichage.Heure) champ.heure.label else resources.getString(titreRes)
+        val description = if (champ is ChampAffichage.Heure) resources.getString(R.string.aide_generique_desc) else resources.getString(descRes)
+
+        return AideCaracteristique(titre, description)
     }
 }

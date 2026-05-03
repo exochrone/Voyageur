@@ -23,6 +23,7 @@
     <string name="gaucher">Gaucher</string>
     <string name="saisie_manuelle_titre">Saisie manuelle</string>
     <string name="points_restants">Points restants : %1$d / 160</string>
+    <string name="heure_naissance">Heure de naissance</string>
 
     <!-- Libellés Caractéristiques -->
     <string name="carac_taille">TAILLE</string>

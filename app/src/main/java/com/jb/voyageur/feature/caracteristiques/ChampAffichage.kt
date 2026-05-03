@@ -29,4 +29,5 @@ sealed interface ChampAffichage {
     }
 
     data object Beaute : ChampAffichage
+    data class Heure(val heure: com.jb.voyageur.core.domain.model.HeureNaissance) : ChampAffichage
 }

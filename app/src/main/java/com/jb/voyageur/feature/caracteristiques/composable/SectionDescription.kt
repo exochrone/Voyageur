@@ -51,7 +51,7 @@ fun SectionDescription(
         Column(
             modifier = modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 4.dp)
+                .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 2.dp)
         ) {
             // ── Zone principale : 80% gauche + 20% heure ─────────────
             Row(modifier = Modifier.fillMaxWidth()) {
@@ -100,7 +100,7 @@ fun SectionDescription(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(
-                            modifier = Modifier.weight(0.65f),
+                            modifier = Modifier.weight(0.70f),
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -128,7 +128,7 @@ fun SectionDescription(
                                 }
                             )
                         }
-                        Box(modifier = Modifier.weight(0.35f)) {
+                        Box(modifier = Modifier.weight(0.30f)) {
                             DescriptionLabel(
                                 label = stringResource(R.string.description_age),
                                 valeur = uiState.age?.toString() ?: "",
@@ -142,7 +142,7 @@ fun SectionDescription(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = spacing)
+                            .padding(bottom = 4.dp) // Espace C = 4dp
                     ) {
                         Box(modifier = Modifier.weight(0.5f)) {
                             DescriptionLabel(
@@ -167,12 +167,13 @@ fun SectionDescription(
                 Box(
                     modifier = Modifier
                         .weight(0.20f)
-                        .padding(start = 4.dp),
+                        .padding(start = 4.dp), // Espace V = 4dp
                     contentAlignment = Alignment.TopCenter
                 ) {
                     HeureNaissancePicker(
                         heureCourante = uiState.heureNaissance,
-                        onHeureChange = onHeureNaissanceChange
+                        onHeureChange = onHeureNaissanceChange,
+                        onAideRequise = { onDemanderAide(ChampAffichage.Heure(uiState.heureNaissance)) }
                     )
                 }
             }
@@ -216,16 +217,18 @@ fun SectionDescription(
                     fontFamily = FontFamily.Serif,
                     fontSize = 14.sp
                 )
-                Text(
-                    text = uiState.signeParticulier.ifBlank { "—" },
-                    color = Color.Black,
-                    fontWeight = FontWeight.Normal,
-                    fontFamily = FontFamily.Serif,
-                    fontSize = 14.sp,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                if (uiState.signeParticulier.isNotBlank()) {
+                    Text(
+                        text = uiState.signeParticulier,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Normal,
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 14.sp,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
 
             // ── Beauté — pleine largeur ───────────────────────────────
@@ -280,6 +283,7 @@ fun SectionDescription(
                         .padding(start = 8.dp)
                 )
             }
+            HorizontalDivider(color = VoyageurColors.NomCaracteristique.copy(alpha = 0.1f))
         }
     }
 

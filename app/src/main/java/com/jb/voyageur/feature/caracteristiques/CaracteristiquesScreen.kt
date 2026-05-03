@@ -54,7 +54,7 @@ fun CaracteristiquesScreen(
         topBar = {
             val state = uiState
             if (state is CaracteristiquesUiState.Success) {
-                TopAppBar(
+                CenterAlignedTopAppBar(
                     modifier = Modifier.statusBarsPadding().height(48.dp),
                     windowInsets = WindowInsets(0),
                     navigationIcon = {
@@ -64,7 +64,7 @@ fun CaracteristiquesScreen(
                     },
                     title = {
                         Text(
-                            text = state.nom.ifBlank { stringResource(R.string.section_description) },
+                            text = state.nom.ifBlank { stringResource(R.string.app_name) },
                             fontFamily = FontFamily.Serif,
                             fontSize = 20.sp, // Reduced font size to fit 48dp
                             modifier = Modifier.clickable { showRenameDialog = true }
