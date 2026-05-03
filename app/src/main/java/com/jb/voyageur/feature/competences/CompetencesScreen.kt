@@ -149,7 +149,7 @@ fun CompetencesContent(
                 val colonne = uiState.colonnes[page]
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(vertical = 4.dp)
+                    contentPadding = PaddingValues(vertical = 12.dp)
                 ) {
                     items(colonne.items, key = { it.competence.nom }) { item ->
                         CompetenceRow(
@@ -172,7 +172,8 @@ fun CompetencesContent(
                                         onCompetenceChange(item.competence.nom, item.borneInf, nouveau)
                                 }
                             },
-                            onAideRequise = { onAideRequise(item.competence.nom) }
+                            onAideRequise = { onAideRequise(item.competence.nom) },
+                            modifier = Modifier.padding(vertical = 5.dp)
                         )
                         HorizontalDivider(color = VoyageurColors.NomCaracteristique.copy(alpha = 0.06f))
                     }

@@ -1,5 +1,8 @@
 package com.jb.voyageur.core.ui.composable
 
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -33,10 +36,23 @@ fun BarreNavigationEcran(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(40.dp),
+            .height(40.dp)
+            .draggable(
+                state = rememberDraggableState { /* On ne gère pas le mouvement continu */ },
+                orientation = Orientation.Horizontal,
+                onDragStopped = { velocity ->
+                    if (velocity < -500f && ecranSuivant != null) {
+                        // Swipe vers la gauche (vitesse négative) -> Suivant
+                        onNaviguerVers(ecranSuivant)
+                    } else if (velocity > 500f && ecranPrecedent != null) {
+                        // Swipe vers la droite (vitesse positive) -> Précédent
+                        onNaviguerVers(ecranPrecedent)
+                    }
+                }
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Chevron gauche 5%
+        // Chevron gauche 10%
         Box(
             modifier = Modifier.weight(0.10f),
             contentAlignment = Alignment.Center
@@ -60,7 +76,7 @@ fun BarreNavigationEcran(
         Text(
             text       = titre,
             fontFamily = GoudyAcc,
-            fontSize   = 28.sp,
+            fontSize   = 30.sp,
             fontWeight = FontWeight.Bold,
             color      = VoyageurColors.NomCaracteristique,
             textAlign  = TextAlign.Center,
