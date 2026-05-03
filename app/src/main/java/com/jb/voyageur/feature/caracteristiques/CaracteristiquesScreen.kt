@@ -99,6 +99,8 @@ fun CaracteristiquesScreen(
                     onCaracteristiqueChange = viewModel::onCaracteristiqueChange,
                     onBeauteChange = viewModel::onBeauteChange,
                     onDescriptionChange = viewModel::onDescriptionChange,
+                    onPoidsSaisi = viewModel::onPoidsSaisi,
+                    onTailleCmSaisie = viewModel::onTailleCmSaisie,
                     onHeureNaissanceChange = viewModel::onHeureNaissanceChange,
                     onLateraliteChange = viewModel::onLateraliteChange,
                     onDemanderAide = viewModel::onDemanderAide,
@@ -150,6 +152,8 @@ fun CaracteristiquesContent(
     onCaracteristiqueChange: (ChampCaracteristique, Int) -> Unit,
     onBeauteChange: (Int) -> Unit,
     onDescriptionChange: (ChampDescription, String) -> Unit,
+    onPoidsSaisi: (Int) -> Unit,
+    onTailleCmSaisie: (Int) -> Unit,
     onHeureNaissanceChange: (com.jb.voyageur.core.domain.model.HeureNaissance) -> Unit,
     onLateraliteChange: (com.jb.voyageur.core.domain.model.Lateralite) -> Unit,
     onDemanderAide: (ChampAffichage) -> Unit,
@@ -165,6 +169,8 @@ fun CaracteristiquesContent(
                     onCaracteristiqueChange = onCaracteristiqueChange,
                     onBeauteChange = onBeauteChange,
                     onDescriptionChange = onDescriptionChange,
+                    onPoidsSaisi = onPoidsSaisi,
+                    onTailleCmSaisie = onTailleCmSaisie,
                     onHeureNaissanceChange = onHeureNaissanceChange,
                     onLateraliteChange = onLateraliteChange,
                     onDemanderAide = onDemanderAide
@@ -182,6 +188,8 @@ fun CaracteristiquesContent(
                 onCaracteristiqueChange = onCaracteristiqueChange,
                 onBeauteChange = onBeauteChange,
                 onDescriptionChange = onDescriptionChange,
+                onPoidsSaisi = onPoidsSaisi,
+                onTailleCmSaisie = onTailleCmSaisie,
                 onHeureNaissanceChange = onHeureNaissanceChange,
                 onLateraliteChange = onLateraliteChange,
                 onDemanderAide = onDemanderAide
@@ -205,6 +213,8 @@ fun CaracteristiquesListe(
     onCaracteristiqueChange: (ChampCaracteristique, Int) -> Unit,
     onBeauteChange: (Int) -> Unit,
     onDescriptionChange: (ChampDescription, String) -> Unit,
+    onPoidsSaisi: (Int) -> Unit,
+    onTailleCmSaisie: (Int) -> Unit,
     onHeureNaissanceChange: (com.jb.voyageur.core.domain.model.HeureNaissance) -> Unit,
     onLateraliteChange: (com.jb.voyageur.core.domain.model.Lateralite) -> Unit,
     onDemanderAide: (ChampAffichage) -> Unit
@@ -214,6 +224,8 @@ fun CaracteristiquesListe(
             SectionDescription(
                 uiState = uiState,
                 onDescriptionChange = onDescriptionChange,
+                onPoidsSaisi = onPoidsSaisi,
+                onTailleCmSaisie = onTailleCmSaisie,
                 onBeauteChange = onBeauteChange,
                 onHeureNaissanceChange = onHeureNaissanceChange,
                 onDemanderAide = onDemanderAide,

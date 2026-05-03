@@ -27,6 +27,7 @@ import com.jb.voyageur.core.domain.usecase.ModifierCaracteristiqueUseCase
 import com.jb.voyageur.core.domain.usecase.ModifierDescriptionUseCase
 import com.jb.voyageur.core.domain.usecase.ModifierHeureNaissanceUseCase
 import com.jb.voyageur.core.domain.usecase.ModifierLateraliteUseCase
+import com.jb.voyageur.core.domain.usecase.MettreAJourPhysiqueUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -46,6 +47,7 @@ class CaracteristiquesViewModel @Inject constructor(
     private val modifierDescriptionUseCase: ModifierDescriptionUseCase,
     private val modifierHeureNaissanceUseCase: ModifierHeureNaissanceUseCase,
     private val modifierLateraliteUseCase: ModifierLateraliteUseCase,
+    private val mettreAJourPhysiqueUseCase: MettreAJourPhysiqueUseCase,
     private val voyageurRepository: VoyageurRepository
 ) : ViewModel() {
 
@@ -63,6 +65,32 @@ class CaracteristiquesViewModel @Inject constructor(
 
     private val _aideActive = MutableStateFlow<ChampAffichage?>(null)
     val aideActive: StateFlow<ChampAffichage?> = _aideActive.asStateFlow()
+
+    // Valeurs précédentes pour détecter un changement
+    private var derniereTailleCarac: Int = -1
+    private var dernierSexe: Sexe? = null
+
+    init {
+        // Observer les changements de TAILLE et Sexe pour régénérer
+        viewModelScope.launch {
+            voyageurRepository.observerVoyageur(voyageurId)
+                .filterNotNull()
+                .collect { voyageur ->
+                    val tailleCarac = voyageur.caracteristiques.taille
+                    val sexe = voyageur.sexe
+
+                    val tailleChangee = tailleCarac != derniereTailleCarac && derniereTailleCarac != -1
+                    val sexeChange = sexe != dernierSexe && dernierSexe != null
+
+                    if (tailleChangee || sexeChange) {
+                        mettreAJourPhysiqueUseCase.generer(voyageurId)
+                    }
+
+                    derniereTailleCarac = tailleCarac
+                    dernierSexe = sexe
+                }
+        }
+    }
 
     fun onCaracteristiqueChange(champ: ChampCaracteristique, valeur: Int) {
         viewModelScope.launch {
@@ -91,6 +119,18 @@ class CaracteristiquesViewModel @Inject constructor(
     fun onLateraliteChange(lateralite: Lateralite) {
         viewModelScope.launch {
             modifierLateraliteUseCase(voyageurId, lateralite)
+        }
+    }
+
+    fun onPoidsSaisi(valeur: Int) {
+        viewModelScope.launch {
+            mettreAJourPhysiqueUseCase.clamperPoids(voyageurId, valeur)
+        }
+    }
+
+    fun onTailleCmSaisie(valeur: Int) {
+        viewModelScope.launch {
+            mettreAJourPhysiqueUseCase.clamperTailleCm(voyageurId, valeur)
         }
     }
 

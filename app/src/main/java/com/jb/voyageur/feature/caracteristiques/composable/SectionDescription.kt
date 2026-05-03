@@ -28,6 +28,7 @@ import com.jb.voyageur.core.domain.usecase.ChampDescription
 import com.jb.voyageur.core.ui.composable.CaracteristiqueRow
 import com.jb.voyageur.core.ui.composable.HeureNaissancePicker
 import com.jb.voyageur.core.ui.theme.VoyageurColors
+import com.jb.voyageur.core.ui.util.FormatPhysique
 import com.jb.voyageur.feature.caracteristiques.ChampAffichage
 import com.jb.voyageur.feature.caracteristiques.CaracteristiquesUiState
 
@@ -35,6 +36,8 @@ import com.jb.voyageur.feature.caracteristiques.CaracteristiquesUiState
 fun SectionDescription(
     uiState: CaracteristiquesUiState.Success,
     onDescriptionChange: (ChampDescription, String) -> Unit,
+    onPoidsSaisi: (Int) -> Unit,
+    onTailleCmSaisie: (Int) -> Unit,
     onBeauteChange: (Int) -> Unit,
     onHeureNaissanceChange: (HeureNaissance) -> Unit,
     onDemanderAide: (ChampAffichage) -> Unit,
@@ -142,19 +145,17 @@ fun SectionDescription(
                             .padding(bottom = spacing)
                     ) {
                         Box(modifier = Modifier.weight(0.5f)) {
-                            val tailleMetres = uiState.tailleCm?.let { String.format("%.2f m", it / 100f) } ?: ""
                             DescriptionLabel(
                                 label = stringResource(R.string.description_taille),
-                                valeur = tailleMetres,
+                                valeur = uiState.tailleCm?.let { FormatPhysique.formatTailleCm(it) } ?: "—",
                                 valueColor = Color.Black,
                                 verticalPadding = 0.dp
                             ) { editChamp = ChampDescription.TAILLE_CM to (uiState.tailleCm?.toString() ?: "") }
                         }
                         Box(modifier = Modifier.weight(0.5f)) {
-                            val poidsAffichage = uiState.poidsKg?.let { "$it kg" } ?: ""
                             DescriptionLabel(
                                 label = stringResource(R.string.description_poids),
-                                valeur = poidsAffichage,
+                                valeur = uiState.poidsKg?.let { FormatPhysique.formatPoids(it) } ?: "—",
                                 valueColor = Color.Black,
                                 verticalPadding = 0.dp
                             ) { editChamp = ChampDescription.POIDS_KG to (uiState.poidsKg?.toString() ?: "") }
@@ -290,8 +291,8 @@ fun SectionDescription(
         val isNumeric = champ in listOf(ChampDescription.AGE, ChampDescription.TAILLE_CM, ChampDescription.POIDS_KG)
         
         val dialogTitle = when(champ) {
-            ChampDescription.TAILLE_CM -> stringResource(R.string.description_taille) + " (cm)"
-            ChampDescription.POIDS_KG -> stringResource(R.string.description_poids) + " (kg)"
+            ChampDescription.TAILLE_CM -> stringResource(R.string.description_taille) + " " + FormatPhysique.formatFourchetteTaille(uiState.caracteristiques.taille, uiState.sexe)
+            ChampDescription.POIDS_KG -> stringResource(R.string.description_poids) + " " + FormatPhysique.formatFourchettePoids(uiState.caracteristiques.taille)
             ChampDescription.CHEVEUX -> stringResource(R.string.description_couleur_cheveux)
             ChampDescription.YEUX -> stringResource(R.string.description_couleur_yeux)
             else -> stringResource(getLabelRes(champ))
@@ -310,7 +311,12 @@ fun SectionDescription(
             },
             confirmButton = {
                 TextButton(onClick = {
-                    onDescriptionChange(champ, tempValeur.text)
+                    val text = tempValeur.text
+                    when (champ) {
+                        ChampDescription.TAILLE_CM -> text.toIntOrNull()?.let { onTailleCmSaisie(it) }
+                        ChampDescription.POIDS_KG -> text.toIntOrNull()?.let { onPoidsSaisi(it) }
+                        else -> onDescriptionChange(champ, text)
+                    }
                     editChamp = null
                 }) { Text(stringResource(R.string.valider)) }
             },
