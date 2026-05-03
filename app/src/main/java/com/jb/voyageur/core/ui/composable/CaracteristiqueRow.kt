@@ -187,6 +187,7 @@ fun CaracteristiqueRow(
 
     if (showSaisieDialog) {
         SaisieNumerique(
+            titre = nom,
             valeurInitiale = valeur,
             min = min,
             max = max,

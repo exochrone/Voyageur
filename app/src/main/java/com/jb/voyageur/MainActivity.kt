@@ -11,7 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.jb.voyageur.feature.accueil.AccueilScreen
-import com.jb.voyageur.feature.caracteristiques.CaracteristiquesScreen
+import com.jb.voyageur.feature.main.MainScreen
 import com.jb.voyageur.core.ui.theme.VoyageurTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -44,7 +44,7 @@ fun VoyageurNavHost() {
             arguments = listOf(navArgument("voyageurId") { type = NavType.LongType })
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getLong("voyageurId") ?: 0L
-            CaracteristiquesScreen(voyageurId = id)
+            MainScreen(voyageurId = id)
         }
     }
 }

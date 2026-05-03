@@ -15,10 +15,14 @@ import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -57,7 +61,7 @@ fun CaracteristiquesScreen(
                     title = {
                         Text(
                             text = state.nom.ifBlank { stringResource(R.string.section_description) },
-                            fontFamily = GoudyAcc,
+                            fontFamily = FontFamily.Serif,
                             fontSize = 20.sp, // Reduced font size to fit 48dp
                             modifier = Modifier.clickable { showRenameDialog = true }
                         )
@@ -102,20 +106,24 @@ fun CaracteristiquesScreen(
                 )
 
                 if (showRenameDialog) {
-                    var tempName by remember { mutableStateOf(state.nom) }
+                    var tempName by remember {
+                        val text = state.nom
+                        mutableStateOf(TextFieldValue(text = text, selection = TextRange(0, text.length)))
+                    }
+                    val focusRequester = remember { FocusRequester() }
                     AlertDialog(
                         onDismissRequest = { showRenameDialog = false },
-                        title = { Text(stringResource(R.string.description_nom)) },
+                        title = { Text(stringResource(R.string.description_nom_voyageur)) },
                         text = {
                             OutlinedTextField(
                                 value = tempName,
                                 onValueChange = { tempName = it },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth().focusRequester(focusRequester)
                             )
                         },
                         confirmButton = {
                             TextButton(onClick = {
-                                viewModel.onDescriptionChange(ChampDescription.NOM, tempName)
+                                viewModel.onDescriptionChange(ChampDescription.NOM, tempName.text)
                                 showRenameDialog = false
                             }) { Text(stringResource(R.string.valider)) }
                         },
@@ -123,6 +131,9 @@ fun CaracteristiquesScreen(
                             TextButton(onClick = { showRenameDialog = false }) { Text(stringResource(R.string.annuler)) }
                         }
                     )
+                    LaunchedEffect(Unit) {
+                        focusRequester.requestFocus()
+                    }
                 }
             }
         }

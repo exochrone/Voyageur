@@ -124,6 +124,17 @@
     <string name="beaute_15">Très beau</string>
     <string name="beaute_16">Éblouissant</string>
 
-    <string name="dialog_edit_title">Modifier %1$s</string>
+    <string name="description_couleur_cheveux">Couleur des cheveux</string>
+    <string name="description_couleur_yeux">Couleur des yeux</string>
+    <string name="description_nom_voyageur">Nom du voyageur</string>
+    <string name="dialog_edit_title">%1$s</string>
     <string name="valider">Valider</string>
+
+    <!-- Menu Navigation -->
+    <string name="menu_caracteristiques">Caractéristiques</string>
+    <string name="menu_competences">Compétences</string>
+    <string name="menu_sorts">Sorts</string>
+    <string name="menu_equipement">Équipement</string>
+    <string name="menu_archetype">Archétype</string>
+    <string name="menu_options">Options</string>
 </resources>

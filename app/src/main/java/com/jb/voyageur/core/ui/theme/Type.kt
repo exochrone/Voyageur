@@ -8,8 +8,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.jb.voyageur.R
 
-val GoudyAcc = FontFamily(Font(R.font.goudyacc))
-val HeuresDraconiques = FontFamily(Font(R.font.heures_draconiques))
+val GoudyAcc = FontFamily(
+    Font(R.font.goudy_font)
+)
+
+val HeuresDraconiques = FontFamily(
+    Font(R.font.heures_draconiques, FontWeight.Normal)
+)
 
 // Set of Material typography styles to start with
 val Typography = Typography(

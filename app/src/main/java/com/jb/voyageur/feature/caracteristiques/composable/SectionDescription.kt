@@ -8,12 +8,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -93,7 +97,7 @@ fun SectionDescription(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(
-                            modifier = Modifier.weight(0.75f),
+                            modifier = Modifier.weight(0.65f),
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -121,7 +125,7 @@ fun SectionDescription(
                                 }
                             )
                         }
-                        Box(modifier = Modifier.weight(0.25f)) {
+                        Box(modifier = Modifier.weight(0.35f)) {
                             DescriptionLabel(
                                 label = stringResource(R.string.description_age),
                                 valeur = uiState.age?.toString() ?: "",
@@ -138,17 +142,19 @@ fun SectionDescription(
                             .padding(bottom = spacing)
                     ) {
                         Box(modifier = Modifier.weight(0.5f)) {
+                            val tailleMetres = uiState.tailleCm?.let { String.format("%.2f m", it / 100f) } ?: ""
                             DescriptionLabel(
                                 label = stringResource(R.string.description_taille),
-                                valeur = uiState.tailleCm?.toString() ?: "",
+                                valeur = tailleMetres,
                                 valueColor = Color.Black,
                                 verticalPadding = 0.dp
                             ) { editChamp = ChampDescription.TAILLE_CM to (uiState.tailleCm?.toString() ?: "") }
                         }
                         Box(modifier = Modifier.weight(0.5f)) {
+                            val poidsAffichage = uiState.poidsKg?.let { "$it kg" } ?: ""
                             DescriptionLabel(
                                 label = stringResource(R.string.description_poids),
-                                valeur = uiState.poidsKg?.toString() ?: "",
+                                valeur = poidsAffichage,
                                 valueColor = Color.Black,
                                 verticalPadding = 0.dp
                             ) { editChamp = ChampDescription.POIDS_KG to (uiState.poidsKg?.toString() ?: "") }
@@ -277,12 +283,17 @@ fun SectionDescription(
     }
 
     editChamp?.let { (champ, valeur) ->
-        var tempValeur by remember { mutableStateOf(valeur) }
+        var tempValeur by remember {
+            mutableStateOf(TextFieldValue(text = valeur, selection = TextRange(0, valeur.length)))
+        }
+        val focusRequester = remember { FocusRequester() }
         val isNumeric = champ in listOf(ChampDescription.AGE, ChampDescription.TAILLE_CM, ChampDescription.POIDS_KG)
         
         val dialogTitle = when(champ) {
             ChampDescription.TAILLE_CM -> stringResource(R.string.description_taille) + " (cm)"
             ChampDescription.POIDS_KG -> stringResource(R.string.description_poids) + " (kg)"
+            ChampDescription.CHEVEUX -> stringResource(R.string.description_couleur_cheveux)
+            ChampDescription.YEUX -> stringResource(R.string.description_couleur_yeux)
             else -> stringResource(getLabelRes(champ))
         }
 
@@ -294,12 +305,12 @@ fun SectionDescription(
                     value = tempValeur,
                     onValueChange = { tempValeur = it },
                     keyboardOptions = if (isNumeric) KeyboardOptions(keyboardType = KeyboardType.Number) else KeyboardOptions.Default,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().focusRequester(focusRequester)
                 )
             },
             confirmButton = {
                 TextButton(onClick = {
-                    onDescriptionChange(champ, tempValeur)
+                    onDescriptionChange(champ, tempValeur.text)
                     editChamp = null
                 }) { Text(stringResource(R.string.valider)) }
             },
@@ -307,6 +318,9 @@ fun SectionDescription(
                 TextButton(onClick = { editChamp = null }) { Text(stringResource(R.string.annuler)) }
             }
         )
+        LaunchedEffect(Unit) {
+            focusRequester.requestFocus()
+        }
     }
 }
 
