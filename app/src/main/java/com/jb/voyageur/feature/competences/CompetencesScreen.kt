@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jb.voyageur.R
+import com.jb.voyageur.core.domain.model.FamilleCompetence
+import com.jb.voyageur.core.domain.model.VoieDraconic
 import com.jb.voyageur.core.ui.composable.AideBottomSheet
 import com.jb.voyageur.core.ui.composable.CompetenceRow
 import com.jb.voyageur.core.ui.composable.ParcheminBackground
@@ -54,7 +56,10 @@ fun CompetencesScreen(
             is CompetencesUiState.Success -> {
                 CompetencesContent(
                     uiState = state,
-                    onAideRequise = viewModel::onDemanderAide
+                    onAideRequise = viewModel::onDemanderAide,
+                    onCompetenceChange = viewModel::onCompetenceChange,
+                    onTroncChange = viewModel::onTroncChange,
+                    onDraconicChange = viewModel::onDraconicChange
                 )
             }
         }
@@ -76,7 +81,10 @@ fun CompetencesScreen(
 @Composable
 fun CompetencesContent(
     uiState: CompetencesUiState.Success,
-    onAideRequise: (String) -> Unit
+    onAideRequise: (String) -> Unit,
+    onCompetenceChange: (String, Int, Int) -> Unit,
+    onTroncChange: (String, String, Int) -> Unit,
+    onDraconicChange: (VoieDraconic, Int) -> Unit
 ) {
     val pagerState = rememberPagerState { uiState.colonnes.size }
     val scope = rememberCoroutineScope()
@@ -120,7 +128,7 @@ fun CompetencesContent(
                 state = pagerState,
                 modifier = Modifier
                     .weight(1f)
-                    .padding(top = 12.dp) // Espacement : environ moitié d'une ligne
+                    .padding(top = 12.dp)
                     .padding(bottom = 40.dp), // Réserver l'espace pour le sticky bottom
                 verticalAlignment = Alignment.Top
             ) { page ->
@@ -134,6 +142,22 @@ fun CompetencesContent(
                             nom = item.competence.nom,
                             niveauActuel = item.niveauActuel,
                             coutCumule = item.coutCumule,
+                            borneInf = item.borneInf,
+                            borneSup = item.borneSup,
+                            onNiveauChange = { nouveau ->
+                                when {
+                                    item.appartientAuTronc != null ->
+                                        onTroncChange(item.appartientAuTronc, item.competence.nom, nouveau)
+                                    item.competence.famille == FamilleCompetence.DRACONIC -> {
+                                        val voie = VoieDraconic.entries.firstOrNull {
+                                            it.name.lowercase().replaceFirstChar { c -> c.uppercase() } == item.competence.nom
+                                        }
+                                        if (voie != null) onDraconicChange(voie, nouveau)
+                                    }
+                                    else ->
+                                        onCompetenceChange(item.competence.nom, item.borneInf, nouveau)
+                                }
+                            },
                             onAideRequise = { onAideRequise(item.competence.nom) }
                         )
                         HorizontalDivider(color = VoyageurColors.NomCaracteristique.copy(alpha = 0.06f))

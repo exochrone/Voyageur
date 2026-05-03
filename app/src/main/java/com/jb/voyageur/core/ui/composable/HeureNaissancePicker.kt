@@ -32,7 +32,7 @@ fun HeureNaissancePicker(
     val haptic = LocalHapticFeedback.current
     val currentHeure by rememberUpdatedState(heureCourante)
     var dragAccumulator by remember { mutableFloatStateOf(0f) }
-    val dragThresholdPx = with(LocalDensity.current) { 40.dp.toPx() }
+    val dragThresholdPx = with(LocalDensity.current) { 20.dp.toPx() }
 
     Column(
         modifier = modifier
@@ -59,7 +59,7 @@ fun HeureNaissancePicker(
         Text(
             text = heureCourante.symbole.toString(),
             fontFamily = HeuresDraconiques,
-            fontSize = 48.sp,
+            fontSize = 64.sp,
             color = androidx.compose.ui.graphics.Color.Black,
             modifier = Modifier
                 .padding(8.dp)
