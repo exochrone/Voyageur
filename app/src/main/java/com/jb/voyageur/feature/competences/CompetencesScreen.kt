@@ -128,7 +128,7 @@ fun CompetencesContent(
                 state = pagerState,
                 modifier = Modifier
                     .weight(1f)
-                    .padding(top = 12.dp)
+                    .padding(top = 24.dp)
                     .padding(bottom = 40.dp), // Réserver l'espace pour le sticky bottom
                 verticalAlignment = Alignment.Top
             ) { page ->

@@ -62,7 +62,7 @@ fun CompetenceRow(
         Text(
             text = nom,
             fontFamily = FontFamily.Serif,
-            fontSize = 14.sp,
+            fontSize = 16.sp,
             fontWeight = if (isDragging) FontWeight.Bold else FontWeight.Normal,
             color = VoyageurColors.NomCaracteristique,
             modifier = Modifier
@@ -146,7 +146,7 @@ fun CompetenceRow(
         Text(
             text = scoreDisplay,
             fontFamily = FontFamily.Serif,
-            fontSize = 14.sp,
+            fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
             color = VoyageurColors.ValeurCaracteristique,
             textAlign = TextAlign.End,

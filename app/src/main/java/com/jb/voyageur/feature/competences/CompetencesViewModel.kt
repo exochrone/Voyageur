@@ -78,34 +78,40 @@ class CompetencesViewModel @Inject constructor(
     private fun buildColonnes(voyageur: Voyageur): List<ColonneCompetences> {
         val result = mutableListOf<ColonneCompetences>()
 
+        // 1. Générales
         result.add(ColonneCompetences(
             famille = FamilleCompetence.GENERALE,
             items = buildItems(FamilleCompetence.GENERALE, voyageur)
         ))
 
+        // 2. Particulières
         result.add(ColonneCompetences(
             famille = FamilleCompetence.PARTICULIERE,
             items = buildItems(FamilleCompetence.PARTICULIERE, voyageur)
         ))
 
+        // 3. Combat mêlée
         result.add(ColonneCompetences(
             famille = FamilleCompetence.COMBAT_MELEE,
             items = buildItemsCombat(voyageur)
         ))
 
+        // 4. Tir et Lancer
         result.add(ColonneCompetences(
             famille = FamilleCompetence.TIR_LANCER,
             items = buildItems(FamilleCompetence.TIR_LANCER, voyageur)
         ))
 
-        result.add(ColonneCompetences(
-            famille = FamilleCompetence.CONNAISSANCE,
-            items = buildItems(FamilleCompetence.CONNAISSANCE, voyageur)
-        ))
-
+        // 5. Spécialisées
         result.add(ColonneCompetences(
             famille = FamilleCompetence.SPECIALISEE,
             items = buildItems(FamilleCompetence.SPECIALISEE, voyageur)
+        ))
+
+        // 6. Connaissances
+        result.add(ColonneCompetences(
+            famille = FamilleCompetence.CONNAISSANCE,
+            items = buildItems(FamilleCompetence.CONNAISSANCE, voyageur)
         ))
 
         if (voyageur.hautRevant) {

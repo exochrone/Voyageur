@@ -15,7 +15,7 @@ enum class FamilleCompetence(val base: Int, val labelRes: Int, val titreColonneR
     PARTICULIERE(-8, R.string.menu_competences_particulieres, R.string.col_particulieres),
     COMBAT_MELEE(-6, R.string.menu_competences_combat, R.string.col_combat),
     TIR_LANCER(-8, R.string.menu_competences_tir, R.string.col_tir),
-    CONNAISSANCE(-11, R.string.menu_competences_connaissances, R.string.col_connaissances),
     SPECIALISEE(-11, R.string.menu_competences_specialisees, R.string.col_specialisees),
+    CONNAISSANCE(-11, R.string.menu_competences_connaissances, R.string.col_connaissances),
     DRACONIC(-11, R.string.menu_competences_draconic, R.string.col_draconic)
 }
