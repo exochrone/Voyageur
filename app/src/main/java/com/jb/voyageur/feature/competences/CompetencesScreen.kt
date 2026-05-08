@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jb.voyageur.R
+import com.jb.voyageur.core.domain.model.CatalogueCompetences
 import com.jb.voyageur.core.domain.model.FamilleCompetence
 import com.jb.voyageur.core.domain.model.VoieDraconic
 import com.jb.voyageur.core.ui.composable.AideBottomSheet
@@ -49,6 +50,8 @@ fun CompetencesScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val aideActive by viewModel.aideActive.collectAsStateWithLifecycle()
+    val isXPBlocked by viewModel.isXPBlocked.collectAsStateWithLifecycle()
+    var highlightedSkills by remember { mutableStateOf(setOf<String>()) }
 
     ParcheminBackground {
         when (val state = uiState) {
@@ -60,11 +63,46 @@ fun CompetencesScreen(
             is CompetencesUiState.Success -> {
                 CompetencesContent(
                     uiState = state,
+                    isXPBlocked = isXPBlocked,
+                    highlightedSkills = highlightedSkills,
                     onNaviguerVers = onNaviguerVers,
                     onAideRequise = viewModel::onDemanderAide,
                     onCompetenceChange = viewModel::onCompetenceChange,
                     onTroncChange = viewModel::onTroncChange,
-                    onDraconicChange = viewModel::onDraconicChange
+                    onDraconicChange = viewModel::onDraconicChange,
+                    onDragEnd = {
+                        viewModel.resetXPBlocked()
+                        highlightedSkills = emptySet()
+                    },
+                    onAtBorneChange = { item, isAtBorne ->
+                        if (isAtBorne) {
+                            when {
+                                item.competence.nom in CatalogueCompetences.SURVIES_RESTRICTIVES && 
+                                    item.niveauActuel < 0 && 
+                                    item.niveauActuel == item.borneSup -> {
+                                    highlightedSkills = setOf("Survie en extérieur")
+                                }
+                                item.competence.nom == "Survie en extérieur" && 
+                                    item.niveauActuel == item.borneInf &&
+                                    item.borneInf > -8 -> { 
+                                    // Trouver toutes les survies spécifiques
+                                    val specificItems = state.colonnes
+                                        .flatMap { it.items }
+                                        .filter { it.competence.nom in CatalogueCompetences.SURVIES_RESTRICTIVES }
+                                    
+                                    val maxLevel = specificItems.maxOfOrNull { it.niveauActuel } ?: -8
+                                    
+                                    val blockers = specificItems
+                                        .filter { it.niveauActuel == maxLevel }
+                                        .map { it.competence.nom }
+                                        
+                                    highlightedSkills = blockers.toSet()
+                                }
+                            }
+                        } else {
+                            highlightedSkills = emptySet()
+                        }
+                    }
                 )
             }
         }
@@ -86,11 +124,15 @@ fun CompetencesScreen(
 @Composable
 fun CompetencesContent(
     uiState: CompetencesUiState.Success,
+    isXPBlocked: Boolean,
+    highlightedSkills: Set<String>,
     onNaviguerVers: (EcranCreation) -> Unit,
     onAideRequise: (String) -> Unit,
     onCompetenceChange: (String, Int, Int) -> Unit,
     onTroncChange: (String, String, Int) -> Unit,
-    onDraconicChange: (VoieDraconic, Int) -> Unit
+    onDraconicChange: (VoieDraconic, Int) -> Unit,
+    onDragEnd: () -> Unit,
+    onAtBorneChange: (CompetenceUiItem.Individuelle, Boolean) -> Unit
 ) {
     val pagerState = rememberPagerState { uiState.colonnes.size }
     val scope = rememberCoroutineScope()
@@ -169,10 +211,13 @@ fun CompetencesContent(
                                         if (voie != null) onDraconicChange(voie, nouveau)
                                     }
                                     else ->
-                                        onCompetenceChange(item.competence.nom, item.borneInf, nouveau)
+                                        onCompetenceChange(item.competence.nom, item.competence.niveauBase, nouveau)
                                 }
                             },
                             onAideRequise = { onAideRequise(item.competence.nom) },
+                            onDragEnd = onDragEnd,
+                            onAtBorneChange = { isAtBorne -> onAtBorneChange(item, isAtBorne) },
+                            isForceRed = item.competence.nom in highlightedSkills,
                             modifier = Modifier.padding(vertical = 5.dp)
                         )
                         HorizontalDivider(color = VoyageurColors.NomCaracteristique.copy(alpha = 0.06f))
@@ -198,7 +243,9 @@ fun CompetencesContent(
                 if (startIndex != -1) {
                     addStyle(
                         style = SpanStyle(
-                            color = if (uiState.pointsRestants < 0)
+                            color = if (isXPBlocked)
+                                Color(0xFFFF0000)
+                            else if (uiState.pointsRestants < 0)
                                 VoyageurColors.ValeurCaracteristique
                             else
                                 Color.Black,

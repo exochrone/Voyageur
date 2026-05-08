@@ -31,6 +31,9 @@ fun CompetenceRow(
     borneSup: Int,
     onNiveauChange: (Int) -> Unit,
     onAideRequise: () -> Unit,
+    onDragEnd: () -> Unit = {},
+    onAtBorneChange: (Boolean) -> Unit = {},
+    isForceRed: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val haptic = LocalHapticFeedback.current
@@ -43,6 +46,10 @@ fun CompetenceRow(
     val currentValeur by rememberUpdatedState(niveauActuel)
     val currentBorneInf by rememberUpdatedState(borneInf)
     val currentBorneSup by rememberUpdatedState(borneSup)
+    val currentOnNiveauChange by rememberUpdatedState(onNiveauChange)
+    val currentOnAideRequise by rememberUpdatedState(onAideRequise)
+    val currentOnAtBorneChange by rememberUpdatedState(onAtBorneChange)
+    val currentOnDragEnd by rememberUpdatedState(onDragEnd)
 
     val scale by animateFloatAsState(
         targetValue = if (isDragging) 1.4f else 1f,
@@ -96,7 +103,7 @@ fun CompetenceRow(
 
                                 if (!pointer.pressed) {
                                     if (System.currentTimeMillis() - downTime < 200) {
-                                        onAideRequise()
+                                        currentOnAideRequise()
                                     }
                                     break
                                 }
@@ -122,11 +129,17 @@ fun CompetenceRow(
                                                 .coerceIn(currentBorneInf, currentBorneSup)
                                             if (nouveau != currentValeur) {
                                                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                                onNiveauChange(nouveau)
-                                                atBorne = false
+                                                currentOnNiveauChange(nouveau)
+                                                if (atBorne) {
+                                                    atBorne = false
+                                                    currentOnAtBorneChange(false)
+                                                }
                                             } else {
                                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                atBorne = true
+                                                if (!atBorne) {
+                                                    atBorne = true
+                                                    currentOnAtBorneChange(true)
+                                                }
                                             }
                                             dragAccumulator -= increments * dragThresholdPx
                                         }
@@ -134,6 +147,8 @@ fun CompetenceRow(
                                 } finally {
                                     isDragging = false
                                     atBorne = false
+                                    currentOnAtBorneChange(false)
+                                    currentOnDragEnd()
                                 }
                             }
                         }
@@ -147,7 +162,7 @@ fun CompetenceRow(
             fontFamily = FontFamily.Serif,
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
-            color = if (atBorne) androidx.compose.ui.graphics.Color(0xFFFF0000) else VoyageurColors.ValeurCaracteristique,
+            color = if (atBorne || isForceRed) androidx.compose.ui.graphics.Color(0xFFFF0000) else VoyageurColors.ValeurCaracteristique,
             textAlign = TextAlign.End,
             modifier = Modifier
                 .weight(0.15f)
@@ -160,7 +175,7 @@ fun CompetenceRow(
             text = if (coutCumule > 0) "$coutCumule" else "",
             fontFamily = FontFamily.Default,
             fontSize = 10.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = androidx.compose.ui.graphics.Color(0xFF808080),
             textAlign = TextAlign.End,
             modifier = Modifier.weight(0.15f)
         )

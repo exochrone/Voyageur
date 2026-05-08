@@ -35,22 +35,64 @@ class CompetencesViewModel @Inject constructor(
     private val _aideActive = MutableStateFlow<String?>(null)
     val aideActive: StateFlow<String?> = _aideActive.asStateFlow()
 
-    fun onCompetenceChange(nom: String, borneInf: Int, niveauCible: Int) {
+    private val _isXPBlocked = MutableStateFlow(false)
+    val isXPBlocked: StateFlow<Boolean> = _isXPBlocked.asStateFlow()
+
+    fun onCompetenceChange(nom: String, absoluteBase: Int, niveauCible: Int) {
         viewModelScope.launch {
-            modifierCompetenceUseCase(voyageurId, nom, borneInf, niveauCible)
+            val voyageur = voyageurRepository.charger(voyageurId) ?: return@launch
+            val currentNiveau = voyageur.competences[nom] ?: absoluteBase
+            
+            if (niveauCible > currentNiveau) {
+                val coutNiveauSuivant = CoutCompetence.coutUnNiveau(niveauCible)
+                if (coutNiveauSuivant > calculPointsRestants(voyageur)) {
+                    _isXPBlocked.value = true
+                    return@launch
+                }
+            }
+            
+            modifierCompetenceUseCase(voyageurId, nom, absoluteBase, niveauCible)
         }
     }
 
     fun onTroncChange(nomTronc: String, membre: String, niveauCible: Int) {
         viewModelScope.launch {
+            val voyageur = voyageurRepository.charger(voyageurId) ?: return@launch
+            val tronc = if (nomTronc == "TroncCorps") voyageur.troncCorps else voyageur.troncArmes
+            val currentNiveau = tronc.niveauPour(membre)
+
+            if (niveauCible > currentNiveau) {
+                val coutNiveauSuivant = CoutCompetence.coutUnNiveau(niveauCible)
+                // Note: simplification, on ne gère pas ici le cas complexe du tronc non séparé qui coûte 10x
+                // mais on bloque au moins sur le coût de base
+                if (coutNiveauSuivant > calculPointsRestants(voyageur)) {
+                    _isXPBlocked.value = true
+                    return@launch
+                }
+            }
             modifierNiveauTroncUseCase(voyageurId, nomTronc, membre, niveauCible)
         }
     }
 
     fun onDraconicChange(voie: VoieDraconic, niveauCible: Int) {
         viewModelScope.launch {
+            val voyageur = voyageurRepository.charger(voyageurId) ?: return@launch
+            val currentNiveau = voyageur.draconic.niveau(voie)
+
+            if (niveauCible > currentNiveau) {
+                val multi = voyageur.draconic.multiplicateurPour(voie)
+                val coutNiveauSuivant = CoutCompetence.coutUnNiveau(niveauCible) * multi
+                if (coutNiveauSuivant > calculPointsRestants(voyageur)) {
+                    _isXPBlocked.value = true
+                    return@launch
+                }
+            }
             modifierDraconicUseCase(voyageurId, voie, niveauCible)
         }
+    }
+
+    fun resetXPBlocked() {
+        _isXPBlocked.value = false
     }
 
     fun onDemanderAide(nom: String) {
@@ -62,17 +104,20 @@ class CompetencesViewModel @Inject constructor(
     }
 
     private fun Voyageur.toCompetencesUiState(): CompetencesUiState.Success {
-        val pointsDraconic = draconic.pointsTotal()
-        val pointsCompetences = competences.entries.sumOf { (nom, niveau) ->
+        val pointsRestants = calculPointsRestants(this)
+        val colonnes = buildColonnes(this)
+        return CompetencesUiState.Success(colonnes, pointsRestants, hautRevant)
+    }
+
+    private fun calculPointsRestants(voyageur: Voyageur): Int {
+        val pointsDraconic = voyageur.draconic.pointsTotal()
+        val pointsCompetences = voyageur.competences.entries.sumOf { (nom, niveau) ->
             val famille = CatalogueCompetences.toutes
                 .find { it.nom == nom }?.famille ?: return@sumOf 0
             CoutCompetence.coutCumule(famille.base, niveau)
         }
-        val pointsTroncs = troncCorps.coutTotal() + troncArmes.coutTotal()
-        val pointsRestants = 3000 - pointsDraconic - pointsCompetences - pointsTroncs
-
-        val colonnes = buildColonnes(this)
-        return CompetencesUiState.Success(colonnes, pointsRestants, hautRevant)
+        val pointsTroncs = voyageur.troncCorps.coutTotal() + voyageur.troncArmes.coutTotal()
+        return 3000 - pointsDraconic - pointsCompetences - pointsTroncs
     }
 
     private fun buildColonnes(voyageur: Voyageur): List<ColonneCompetences> {
@@ -126,10 +171,10 @@ class CompetencesViewModel @Inject constructor(
 
     private fun buildItems(famille: FamilleCompetence, voyageur: Voyageur): List<CompetenceUiItem.Individuelle> {
         return CatalogueCompetences.parFamille[famille]?.map { comp ->
-            if (comp.nom in CatalogueCompetences.SURVIES_SPECIFIQUES) {
-                construireItemSurvie(comp, voyageur)
-            } else {
-                construireItemIndividuel(comp, voyageur)
+            when (comp.nom) {
+                in CatalogueCompetences.SURVIES_RESTRICTIVES -> construireItemSurvieRestreinte(comp, voyageur)
+                "Survie en extérieur" -> construireItemSurvieExterieur(comp, voyageur)
+                else -> construireItemIndividuel(comp, voyageur)
             }
         } ?: emptyList()
     }
@@ -216,7 +261,7 @@ class CompetencesViewModel @Inject constructor(
         )
     }
 
-    private fun construireItemSurvie(competence: Competence, voyageur: Voyageur): CompetenceUiItem.Individuelle {
+    private fun construireItemSurvieRestreinte(competence: Competence, voyageur: Voyageur): CompetenceUiItem.Individuelle {
         val niveauActuel = voyageur.competences[competence.nom] ?: competence.niveauBase
         val survieExterieur = voyageur.competences["Survie en extérieur"] ?: -8
         val borneSup = if (survieExterieur >= 0) 3 else survieExterieur
@@ -227,6 +272,25 @@ class CompetencesViewModel @Inject constructor(
             coutCumule = CoutCompetence.coutCumule(competence.famille.base, niveauActuel),
             borneInf = competence.niveauBase,
             borneSup = borneSup
+        )
+    }
+
+    private fun construireItemSurvieExterieur(competence: Competence, voyageur: Voyageur): CompetenceUiItem.Individuelle {
+        val niveauActuel = voyageur.competences[competence.nom] ?: competence.niveauBase
+        val maxSpecific = CatalogueCompetences.SURVIES_RESTRICTIVES
+            .map { voyageur.competences[it] ?: -8 }
+            .maxOrNull() ?: -8
+        
+        // Si une survie spécifique est >= 0, l'extérieur est bloqué à 0 minimum.
+        // Sinon (toutes < 0), l'extérieur est bloqué au max des survies spécifiques.
+        val borneInf = if (maxSpecific >= 0) 0 else maxSpecific
+
+        return CompetenceUiItem.Individuelle(
+            competence = competence,
+            niveauActuel = niveauActuel,
+            coutCumule = CoutCompetence.coutCumule(competence.famille.base, niveauActuel),
+            borneInf = borneInf,
+            borneSup = 3
         )
     }
 }
