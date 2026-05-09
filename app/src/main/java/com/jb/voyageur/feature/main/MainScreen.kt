@@ -82,6 +82,19 @@ fun MainScreen(
         }
     }
 
+    if (pdfExportState is PdfExportState.Error) {
+        AlertDialog(
+            onDismissRequest = viewModel::onPdfExportConsumed,
+            title = { Text(stringResource(R.string.sorts_achat_impossible_titre)) },
+            text = { Text((pdfExportState as PdfExportState.Error).message) },
+            confirmButton = {
+                TextButton(onClick = viewModel::onPdfExportConsumed) {
+                    Text(stringResource(R.string.ok))
+                }
+            }
+        )
+    }
+
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
     val currentRoute = currentDestination?.route

@@ -58,11 +58,11 @@ fun SortsScreen(
         }
     }
 
-    messageErreur?.let { msg ->
+    messageErreur?.let { resId ->
         AlertDialog(
             onDismissRequest = viewModel::effacerErreur,
             title = { Text(stringResource(R.string.sorts_achat_impossible_titre)) },
-            text = { Text(msg) },
+            text = { Text(stringResource(resId)) },
             confirmButton = {
                 TextButton(onClick = viewModel::effacerErreur) {
                     Text(stringResource(R.string.ok))

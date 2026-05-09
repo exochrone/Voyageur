@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jb.voyageur.core.domain.model.*
+import com.jb.voyageur.R
 import com.jb.voyageur.core.domain.repository.SortRepository
 import com.jb.voyageur.core.domain.repository.VoyageurRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,7 +32,7 @@ class SortsViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SortsUiState.Loading)
 
-    private val _messageErreur = MutableStateFlow<String?>(null)
+    private val _messageErreur = MutableStateFlow<Int?>(null)
     val messageErreur = _messageErreur.asStateFlow()
 
     fun acheterSort(sort: Sort, coutTotal: Int) {
@@ -39,7 +40,7 @@ class SortsViewModel @Inject constructor(
         val currentSortsPoints = v.sorts.sumOf { it.coutPaye }
         
         if (currentSortsPoints + coutTotal > 300) {
-            _messageErreur.value = "Achat impossible : le quota de 300 points pour les sorts serait dépassé."
+            _messageErreur.value = R.string.sorts_achat_impossible_quota
             return
         }
 
