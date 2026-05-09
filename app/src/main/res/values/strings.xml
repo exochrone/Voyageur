@@ -185,4 +185,5 @@
     <string name="sorts_acheter">Acheter</string>
 
     <string name="competences_modif_impossible_titre">Modification impossible</string>
+    <string name="pdf_export_erreur_titre">Erreur d\'export PDF</string>
 </resources>

@@ -85,7 +85,7 @@ fun MainScreen(
     if (pdfExportState is PdfExportState.Error) {
         AlertDialog(
             onDismissRequest = viewModel::onPdfExportConsumed,
-            title = { Text(stringResource(R.string.sorts_achat_impossible_titre)) },
+            title = { Text(stringResource(R.string.pdf_export_erreur_titre)) },
             text = { Text((pdfExportState as PdfExportState.Error).message) },
             confirmButton = {
                 TextButton(onClick = viewModel::onPdfExportConsumed) {
