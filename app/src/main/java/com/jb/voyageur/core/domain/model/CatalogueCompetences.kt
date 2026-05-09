@@ -94,9 +94,4 @@ object CatalogueCompetences {
         "Survie en désert", "Survie en forêt", "Survie en glaces",
         "Survie en marais", "Survie en montagne", "Survie en sous-sol"
     )
-
-    val SURVIES_SPECIFIQUES = setOf(
-        "Survie en désert", "Survie en forêt", "Survie en glaces",
-        "Survie en marais", "Survie en montagne", "Survie en sous-sol"
-    )
 }
