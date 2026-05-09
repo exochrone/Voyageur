@@ -212,7 +212,7 @@ fun CompetencesContent(
                             niveauActuel = item.niveauActuel,
                             coutCumule = item.coutCumule,
                             borneInf = item.borneInf,
-                            borneSup = 3,
+                            borneSup = item.borneSup,
                             onNiveauChange = { nouveau ->
                                 when {
                                     item.appartientAuTronc != null ->
