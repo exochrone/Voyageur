@@ -26,6 +26,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 fun CompetenceRow(
     nom: String,
     niveauActuel: Int,
+    niveauBase: Int,
     coutCumule: Int,
     borneInf: Int,
     borneSup: Int,
@@ -34,6 +35,8 @@ fun CompetenceRow(
     onDragEnd: () -> Unit = {},
     onAtBorneChange: (Boolean) -> Unit = {},
     isForceRed: Boolean = false,
+    isVerrouille: Boolean = false,
+    onVerrouilleClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val haptic = LocalHapticFeedback.current
@@ -92,6 +95,10 @@ fun CompetenceRow(
 
                                 if (event == null) {
                                     if (pointer.pressed) {
+                                        if (isVerrouille) {
+                                            onVerrouilleClick()
+                                            break
+                                        }
                                         longPressTriggered = true
                                         isDragging = true
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -103,7 +110,8 @@ fun CompetenceRow(
 
                                 if (!pointer.pressed) {
                                     if (System.currentTimeMillis() - downTime < 200) {
-                                        currentOnAideRequise()
+                                        if (isVerrouille) onVerrouilleClick()
+                                        else currentOnAideRequise()
                                     }
                                     break
                                 }
@@ -162,12 +170,17 @@ fun CompetenceRow(
             fontFamily = FontFamily.Serif,
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
-            color = if (atBorne || isForceRed) androidx.compose.ui.graphics.Color(0xFFFF0000) else VoyageurColors.ValeurCaracteristique,
+            color = when {
+                isVerrouille -> androidx.compose.ui.graphics.Color.DarkGray
+                atBorne || isForceRed -> androidx.compose.ui.graphics.Color(0xFFFF0000)
+                niveauActuel == niveauBase -> androidx.compose.ui.graphics.Color.Black
+                else -> VoyageurColors.ValeurCaracteristique
+            },
             textAlign = TextAlign.End,
             modifier = Modifier
                 .weight(0.15f)
                 .graphicsLayer(scaleX = scale, scaleY = scale)
-                .clickable { showSaisieDialog = true }
+                .clickable { if (isVerrouille) onVerrouilleClick() else showSaisieDialog = true }
         )
 
         // Points dépensés 15%

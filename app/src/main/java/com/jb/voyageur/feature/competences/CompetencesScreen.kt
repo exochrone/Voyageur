@@ -51,6 +51,7 @@ fun CompetencesScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val aideActive by viewModel.aideActive.collectAsStateWithLifecycle()
     val isXPBlocked by viewModel.isXPBlocked.collectAsStateWithLifecycle()
+    val messageDraconicBloque by viewModel.messageDraconicBloque.collectAsStateWithLifecycle()
     var highlightedSkills by remember { mutableStateOf(setOf<String>()) }
 
     ParcheminBackground {
@@ -129,6 +130,19 @@ fun CompetencesScreen(
             titre = aide.titre,
             description = aide.description,
             onDismiss = viewModel::onFermerAide
+        )
+    }
+
+    messageDraconicBloque?.let { msg ->
+        AlertDialog(
+            onDismissRequest = viewModel::effacerMessageDraconic,
+            title = { Text("Modification impossible") },
+            text = { Text(msg) },
+            confirmButton = {
+                TextButton(onClick = viewModel::effacerMessageDraconic) {
+                    Text("OK")
+                }
+            }
         )
     }
 }
@@ -210,6 +224,7 @@ fun CompetencesContent(
                         CompetenceRow(
                             nom = item.competence.nom,
                             niveauActuel = item.niveauActuel,
+                            niveauBase = item.competence.niveauBase,
                             coutCumule = item.coutCumule,
                             borneInf = item.borneInf,
                             borneSup = item.borneSup,
@@ -231,6 +246,13 @@ fun CompetencesContent(
                             onDragEnd = onDragEnd,
                             onAtBorneChange = { isAtBorne -> onAtBorneChange(item, isAtBorne) },
                             isForceRed = item.competence.nom in highlightedSkills,
+                            isVerrouille = item.estVerrouilleParSorts,
+                            onVerrouilleClick = {
+                                val voie = VoieDraconic.entries.firstOrNull {
+                                    it.name.lowercase().replaceFirstChar { c -> c.uppercase() } == item.competence.nom
+                                }
+                                if (voie != null) onDraconicChange(voie, item.niveauActuel)
+                            },
                             modifier = Modifier.padding(vertical = 5.dp)
                         )
                         HorizontalDivider(color = VoyageurColors.NomCaracteristique.copy(alpha = 0.06f))

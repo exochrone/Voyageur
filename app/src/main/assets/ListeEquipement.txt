@@ -218,7 +218,8 @@ Bouclier lourd\3\800
 Arbalète\3\3000
 Arc\1\1000
 Fronde\0\60
-Flèche ou carreau\0,1\10
+Flèche\0,1\10
+Carreau d'arbalète\0,1\10
 #Armes de Lancer
 Javelot\1\100
 Fouet\0,5\100

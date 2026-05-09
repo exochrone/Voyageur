@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jb.voyageur.core.domain.model.*
+import com.jb.voyageur.core.domain.repository.SortRepository
 import com.jb.voyageur.core.domain.repository.VoyageurRepository
 import com.jb.voyageur.core.domain.usecase.*
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,6 +16,7 @@ import javax.inject.Inject
 class CompetencesViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val voyageurRepository: VoyageurRepository,
+    private val sortRepository: SortRepository,
     private val modifierCompetenceUseCase: ModifierCompetenceUseCase,
     private val modifierNiveauTroncUseCase: ModifierNiveauTroncUseCase,
     private val modifierDraconicUseCase: ModifierDraconicUseCase
@@ -37,6 +39,9 @@ class CompetencesViewModel @Inject constructor(
 
     private val _isXPBlocked = MutableStateFlow(false)
     val isXPBlocked: StateFlow<Boolean> = _isXPBlocked.asStateFlow()
+
+    private val _messageDraconicBloque = MutableStateFlow<String?>(null)
+    val messageDraconicBloque: StateFlow<String?> = _messageDraconicBloque.asStateFlow()
 
     fun onCompetenceChange(nom: String, absoluteBase: Int, niveauCible: Int) {
         viewModelScope.launch {
@@ -75,6 +80,19 @@ class CompetencesViewModel @Inject constructor(
     fun onDraconicChange(voie: VoieDraconic, niveauCible: Int) {
         viewModelScope.launch {
             val voyageur = voyageurRepository.charger(voyageurId) ?: return@launch
+            
+            // Vérification si des sorts sont possédés dans cette voie
+            val aDesSorts = voyageur.sorts.any { s ->
+                val fileName = voie.name.lowercase() + ".txt"
+                // On simplifie la vérification en cherchant si le sort appartient à la voie via le repository
+                sortRepository.chargerSorts(voie).any { it.nom == s.nom }
+            }
+            
+            if (aDesSorts) {
+                _messageDraconicBloque.value = "Vous possédez des sorts dans cette voie : elle ne peut plus être modifiée.\nRenoncez à vos sorts pour ajuster son niveau."
+                return@launch
+            }
+
             val currentNiveau = voyageur.draconic.niveau(voie)
 
             if (niveauCible > currentNiveau) {
@@ -91,6 +109,10 @@ class CompetencesViewModel @Inject constructor(
 
     fun resetXPBlocked() {
         _isXPBlocked.value = false
+    }
+
+    fun effacerMessageDraconic() {
+        _messageDraconicBloque.value = null
     }
 
     fun onDemanderAide(nom: String) {
@@ -115,7 +137,18 @@ class CompetencesViewModel @Inject constructor(
             CoutCompetence.coutCumule(famille.base, niveau)
         }
         val pointsTroncs = voyageur.troncCorps.coutTotal() + voyageur.troncArmes.coutTotal()
-        return 3000 - pointsDraconic - pointsCompetences - pointsTroncs
+        
+        // Calcul des points de sorts
+        val tousSortsPossibles = VoieDraconic.entries.flatMap { sortRepository.chargerSorts(it) }
+        val nomsSortsAchetes = voyageur.sorts.map { it.nom }.toSet()
+        val pointsSorts = tousSortsPossibles
+            .filter { it.nom in nomsSortsAchetes }
+            .sumOf { sort ->
+                val niveau = voyageur.draconic.niveau(sort.voie)
+                sort.calculerCoutDeBase() + sort.calculerSupplement(niveau)
+            }
+
+        return 3000 - pointsDraconic - pointsCompetences - pointsTroncs - pointsSorts
     }
 
     private fun buildColonnes(voyageur: Voyageur): List<ColonneCompetences> {
@@ -259,6 +292,11 @@ class CompetencesViewModel @Inject constructor(
         VoieDraconic.entries.map { voie ->
             val niveau = voyageur.draconic.niveau(voie)
             val multiplicateur = voyageur.draconic.multiplicateurPour(voie)
+            
+            // Vérifier si la voie contient des sorts achetés
+            val sortsDeLaVoie = sortRepository.chargerSorts(voie).map { it.nom }.toSet()
+            val aDesSorts = voyageur.sorts.any { it.nom in sortsDeLaVoie }
+
             val comp = Competence(
                 nom = voie.name.lowercase().replaceFirstChar { it.uppercase() },
                 famille = FamilleCompetence.DRACONIC
@@ -268,7 +306,8 @@ class CompetencesViewModel @Inject constructor(
                 niveauActuel = niveau,
                 coutCumule = CoutCompetence.coutCumuleAvecMultiplicateur(-11, niveau, multiplicateur),
                 borneInf = -11,
-                borneSup = 3
+                borneSup = 3,
+                estVerrouilleParSorts = aDesSorts
             )
         }
 
@@ -339,6 +378,7 @@ sealed interface CompetenceUiItem {
         val borneInf: Int = competence.niveauBase,
         val borneSup: Int = 3,
         val appartientAuTronc: String? = null,
-        val estPremierDuTronc: Boolean = false
+        val estPremierDuTronc: Boolean = false,
+        val estVerrouilleParSorts: Boolean = false
     ) : CompetenceUiItem
 }
