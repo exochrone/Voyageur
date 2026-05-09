@@ -63,8 +63,6 @@ class CompetencesViewModel @Inject constructor(
 
             if (niveauCible > currentNiveau) {
                 val coutNiveauSuivant = CoutCompetence.coutUnNiveau(niveauCible)
-                // Note: simplification, on ne gère pas ici le cas complexe du tronc non séparé qui coûte 10x
-                // mais on bloque au moins sur le coût de base
                 if (coutNiveauSuivant > calculPointsRestants(voyageur)) {
                     _isXPBlocked.value = true
                     return@launch
@@ -172,7 +170,7 @@ class CompetencesViewModel @Inject constructor(
     private fun buildItems(famille: FamilleCompetence, voyageur: Voyageur): List<CompetenceUiItem.Individuelle> {
         return CatalogueCompetences.parFamille[famille]?.map { comp ->
             when (comp.nom) {
-                in CatalogueCompetences.SURVIES_RESTRICTIVES -> construireItemSurvieRestreinte(comp, voyageur)
+                in CatalogueCompetences.SURVIES_SPECIFIQUES -> construireItemSurvieRestreinte(comp, voyageur)
                 "Survie en extérieur" -> construireItemSurvieExterieur(comp, voyageur)
                 else -> construireItemIndividuel(comp, voyageur)
             }
@@ -183,19 +181,28 @@ class CompetencesViewModel @Inject constructor(
         val items = mutableListOf<CompetenceUiItem.Individuelle>()
 
         // TroncCorps
-        val corpsEstSepare = voyageur.troncCorps.estSepare
-        voyageur.troncCorps.membres.forEachIndexed { index, nom ->
-            val niveau = voyageur.troncCorps.niveauPour(nom)
+        val corps = voyageur.troncCorps
+        corps.membres.forEachIndexed { index, nom ->
+            val niveau = corps.niveauPour(nom)
             val comp = CatalogueCompetences.toutes.find { it.nom == nom }
                 ?: Competence(nom, FamilleCompetence.COMBAT_MELEE, "TroncCorps")
 
-            val cout = if (index == 0) voyageur.troncCorps.coutTotal() else 0
-            val borneInf = if (corpsEstSepare) 0 else -6
+            val coutBaseTronc = CoutCompetence.coutCumule(corps.niveauBase, minOf(0, corps.niveauCommun))
+            val coutIndividuel = if (niveau > 0) CoutCompetence.coutCumule(0, niveau) else 0
+
+            val isAncre = if (corps.membreAncreCommun != null) {
+                nom == corps.membreAncreCommun
+            } else {
+                index == 0
+            }
+
+            val autreMembresSupZero = troncMembresSupZero(corps, nom)
+            val borneInf = if (autreMembresSupZero.isNotEmpty()) 0 else corps.niveauBase
 
             items.add(CompetenceUiItem.Individuelle(
                 competence = comp,
                 niveauActuel = niveau,
-                coutCumule = cout,
+                coutCumule = (if (isAncre) coutBaseTronc else 0) + coutIndividuel,
                 borneInf = borneInf,
                 borneSup = 3,
                 appartientAuTronc = "TroncCorps",
@@ -204,19 +211,28 @@ class CompetencesViewModel @Inject constructor(
         }
 
         // TroncArmes
-        val armesEstSepare = voyageur.troncArmes.estSepare
-        voyageur.troncArmes.membres.forEachIndexed { index, nom ->
-            val niveau = voyageur.troncArmes.niveauPour(nom)
+        val armes = voyageur.troncArmes
+        armes.membres.forEachIndexed { index, nom ->
+            val niveau = armes.niveauPour(nom)
             val comp = CatalogueCompetences.toutes.find { it.nom == nom }
                 ?: Competence(nom, FamilleCompetence.COMBAT_MELEE, "TroncArmes")
 
-            val cout = if (index == 0) voyageur.troncArmes.coutTotal() else 0
-            val borneInf = if (armesEstSepare) 0 else -6
+            val coutBaseTronc = CoutCompetence.coutCumule(armes.niveauBase, minOf(0, armes.niveauCommun))
+            val coutIndividuel = if (niveau > 0) CoutCompetence.coutCumule(0, niveau) else 0
+
+            val isAncre = if (armes.membreAncreCommun != null) {
+                nom == armes.membreAncreCommun
+            } else {
+                index == 0
+            }
+
+            val autreMembresSupZero = troncMembresSupZero(armes, nom)
+            val borneInf = if (autreMembresSupZero.isNotEmpty()) 0 else armes.niveauBase
 
             items.add(CompetenceUiItem.Individuelle(
                 competence = comp,
                 niveauActuel = niveau,
-                coutCumule = cout,
+                coutCumule = (if (isAncre) coutBaseTronc else 0) + coutIndividuel,
                 borneInf = borneInf,
                 borneSup = 3,
                 appartientAuTronc = "TroncArmes",
@@ -231,6 +247,12 @@ class CompetencesViewModel @Inject constructor(
             }
 
         return items
+    }
+
+    private fun troncMembresSupZero(tronc: Tronc, membreExclu: String): List<String> {
+        return tronc.niveauxIndividuels
+            .filter { it.key != membreExclu && it.value > 0 }
+            .map { it.key }
     }
 
     private fun buildItemsDraconic(voyageur: Voyageur): List<CompetenceUiItem.Individuelle> =
@@ -277,7 +299,7 @@ class CompetencesViewModel @Inject constructor(
 
     private fun construireItemSurvieExterieur(competence: Competence, voyageur: Voyageur): CompetenceUiItem.Individuelle {
         val niveauActuel = voyageur.competences[competence.nom] ?: competence.niveauBase
-        val maxSpecific = CatalogueCompetences.SURVIES_RESTRICTIVES
+        val maxSpecific = CatalogueCompetences.SURVIES_SPECIFIQUES
             .map { voyageur.competences[it] ?: -8 }
             .maxOrNull() ?: -8
         

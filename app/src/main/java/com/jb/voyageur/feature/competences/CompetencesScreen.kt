@@ -77,7 +77,7 @@ fun CompetencesScreen(
                     onAtBorneChange = { item, isAtBorne ->
                         if (isAtBorne) {
                             when {
-                                item.competence.nom in CatalogueCompetences.SURVIES_RESTRICTIVES && 
+                                item.competence.nom in CatalogueCompetences.SURVIES_SPECIFIQUES && 
                                     item.niveauActuel < 0 && 
                                     item.niveauActuel == item.borneSup -> {
                                     highlightedSkills = setOf("Survie en extérieur")
@@ -88,7 +88,7 @@ fun CompetencesScreen(
                                     // Trouver toutes les survies spécifiques
                                     val specificItems = state.colonnes
                                         .flatMap { it.items }
-                                        .filter { it.competence.nom in CatalogueCompetences.SURVIES_RESTRICTIVES }
+                                        .filter { it.competence.nom in CatalogueCompetences.SURVIES_SPECIFIQUES }
                                     
                                     val maxLevel = specificItems.maxOfOrNull { it.niveauActuel } ?: -8
                                     
@@ -96,6 +96,19 @@ fun CompetencesScreen(
                                         .filter { it.niveauActuel == maxLevel }
                                         .map { it.competence.nom }
                                         
+                                    highlightedSkills = blockers.toSet()
+                                }
+                                item.appartientAuTronc != null && item.niveauActuel == 0 && item.borneInf == 0 -> {
+                                    // Bloqué à 0 car un autre membre du tronc est > 0
+                                    val troncItems = state.colonnes
+                                        .flatMap { it.items }
+                                        .filter { it.appartientAuTronc == item.appartientAuTronc }
+                                    
+                                    val maxLevel = troncItems.maxOfOrNull { it.niveauActuel } ?: 0
+                                    val blockers = troncItems
+                                        .filter { it.niveauActuel == maxLevel && it.competence.nom != item.competence.nom }
+                                        .map { it.competence.nom }
+                                    
                                     highlightedSkills = blockers.toSet()
                                 }
                             }
@@ -199,7 +212,7 @@ fun CompetencesContent(
                             niveauActuel = item.niveauActuel,
                             coutCumule = item.coutCumule,
                             borneInf = item.borneInf,
-                            borneSup = item.borneSup,
+                            borneSup = 3,
                             onNiveauChange = { nouveau ->
                                 when {
                                     item.appartientAuTronc != null ->

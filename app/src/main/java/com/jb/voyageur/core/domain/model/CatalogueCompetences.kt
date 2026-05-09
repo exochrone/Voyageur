@@ -90,7 +90,7 @@ object CatalogueCompetences {
     val parFamille: Map<FamilleCompetence, List<Competence>> =
         toutes.groupBy { it.famille }
 
-    val SURVIES_RESTRICTIVES = setOf(
+    val SURVIES_SPECIFIQUES = setOf(
         "Survie en désert", "Survie en forêt", "Survie en glaces",
         "Survie en marais", "Survie en montagne", "Survie en sous-sol"
     )

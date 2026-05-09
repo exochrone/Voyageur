@@ -5,7 +5,8 @@ data class Tronc(
     val membres: List<String>,
     val niveauBase: Int,
     val niveauCommun: Int = niveauBase,
-    val niveauxIndividuels: Map<String, Int> = emptyMap()
+    val niveauxIndividuels: Map<String, Int> = emptyMap(),
+    val membreAncreCommun: String? = null
 ) {
     val estSepare: Boolean get() = niveauCommun >= 0
 
