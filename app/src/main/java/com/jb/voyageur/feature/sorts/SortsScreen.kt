@@ -23,6 +23,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jb.voyageur.R
 import com.jb.voyageur.core.domain.model.Sort
+import com.jb.voyageur.core.domain.model.VoieDraconic
 import com.jb.voyageur.core.ui.composable.BarreNavigationEcran
 import com.jb.voyageur.core.ui.composable.ParcheminBackground
 import com.jb.voyageur.core.ui.navigation.EcranCreation
@@ -60,11 +61,11 @@ fun SortsScreen(
     messageErreur?.let { msg ->
         AlertDialog(
             onDismissRequest = viewModel::effacerErreur,
-            title = { Text("Achat impossible") },
+            title = { Text(stringResource(R.string.sorts_achat_impossible_titre)) },
             text = { Text(msg) },
             confirmButton = {
                 TextButton(onClick = viewModel::effacerErreur) {
-                    Text("OK")
+                    Text(stringResource(R.string.ok))
                 }
             }
         )
@@ -88,7 +89,7 @@ fun SortsContent(
             BarreNavigationEcran(
                 titre = stringResource(R.string.menu_sorts),
                 ecranCourant = EcranCreation.SORTS,
-                hautRevant = true,
+                hautRevant = state.hautRevant,
                 onNaviguerVers = onNaviguerVers
             )
 
@@ -113,7 +114,7 @@ fun SortsContent(
                         onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
                         text = {
                             Text(
-                                text = col.titre,
+                                text = if (col.isConnu) stringResource(R.string.sorts_connu_titre) else col.titre,
                                 fontFamily = GoudyAcc,
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
@@ -148,7 +149,7 @@ fun SortsContent(
                                     )
                                 }
                             }
-                            items(sortsDansVoie, key = { it.nom }) { sort ->
+                            items(sortsDansVoie, key = { it.nom + it.voie.name }) { sort ->
                                 SpellRow(
                                     sort = sort,
                                     estAchete = true,
@@ -160,8 +161,8 @@ fun SortsContent(
                             }
                         }
                     } else {
-                        items(col.sorts, key = { it.nom }) { sort ->
-                            val estAchete = sort.nom in state.sortsAchetes
+                        items(col.sorts, key = { it.nom + it.voie.name }) { sort ->
+                            val estAchete = (sort.nom to sort.voie) in state.sortsAchetes
                             val niveauDraconic = state.niveauxDraconic[sort.voie] ?: -11
                             
                             SpellRow(
@@ -189,7 +190,7 @@ fun SortsContent(
                 horizontalAlignment = Alignment.End
             ) {
                 Text(
-                    text = "Points de sorts : ${state.pointsSortsUtilises} / 300",
+                    text = stringResource(R.string.sorts_points_sorts, state.pointsSortsUtilises),
                     fontFamily = FontFamily.Serif,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
@@ -197,7 +198,7 @@ fun SortsContent(
                     textAlign = TextAlign.End
                 )
                 Text(
-                    text = "Points restants : ${state.pointsRestantsGlobal} / 3000",
+                    text = stringResource(R.string.sorts_points_restants, state.pointsRestantsGlobal),
                     fontFamily = FontFamily.Serif,
                     fontSize = 14.sp,
                     color = if (state.pointsRestantsGlobal < 0) VoyageurColors.ValeurCaracteristique else Color.Black,
@@ -209,7 +210,7 @@ fun SortsContent(
 
     sortSelectionne?.let { sort ->
         val niveau = state.niveauxDraconic[sort.voie] ?: -11
-        val estConnu = sort.nom in state.sortsAchetes
+        val estConnu = (sort.nom to sort.voie) in state.sortsAchetes
         
         AchatSortDialog(
             sort = sort,
@@ -274,30 +275,30 @@ fun AchatSortDialog(
         text = {
             Column {
                 if (estConnu) {
-                    Text("Ce sort est déjà connu.")
+                    Text(stringResource(R.string.sorts_deja_connu))
                 } else if (!accessible) {
-                    Text("Votre niveau en ${sort.voie.name.lowercase()} est trop bas pour acquérir ce sort (différence > 5).")
+                    Text(stringResource(R.string.sorts_inaccessible_niveau, sort.voie.name.lowercase()))
                 } else {
-                    Text("Coût : $coutBase points")
+                    Text(stringResource(R.string.sorts_cout, coutBase))
                     if (supplement > 0) {
-                        Text("Supplément (difficulté élevée) : $supplement points")
-                        Text("Total : $coutTotal points", fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.sorts_supplement, supplement))
+                        Text(stringResource(R.string.sorts_total, coutTotal), fontWeight = FontWeight.Bold)
                     }
                 }
             }
         },
         confirmButton = {
             if (estConnu) {
-                Button(onClick = onRembourser) { Text("Rembourser") }
+                Button(onClick = onRembourser) { Text(stringResource(R.string.sorts_rembourser)) }
             } else if (accessible) {
-                Button(onClick = { onAcheter(coutTotal) }) { Text("Acheter") }
+                Button(onClick = { onAcheter(coutTotal) }) { Text(stringResource(R.string.sorts_acheter)) }
             } else {
-                Button(onClick = onDismiss) { Text("OK") }
+                Button(onClick = onDismiss) { Text(stringResource(R.string.ok)) }
             }
         },
         dismissButton = {
             if (estConnu || accessible) {
-                TextButton(onClick = onDismiss) { Text("Annuler") }
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.annuler)) }
             }
         }
     )

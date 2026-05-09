@@ -139,6 +139,7 @@
     <string name="menu_archetype">Archétype</string>
     <string name="menu_aide">Aide</string>
     <string name="menu_options">Options</string>
+    <string name="menu_sauvegarde_pdf">Sauvegarde PDF</string>
 
     <!-- Familles de compétences -->
     <string name="menu_competences_generales">Générales</string>
@@ -169,4 +170,19 @@
     <string name="aide_corps_a_corps">Maîtrise du combat sans armes, utilisant les poings, les pieds et les prises.</string>
     <string name="aide_survie_exterieur">Capacité à trouver de la nourriture, de l\'eau et un abri en milieu sauvage tempéré.</string>
     <string name="aide_oniros">La voie des songes, permettant de manipuler la réalité du rêve.</string>
+
+    <string name="sorts_connu_titre">Sorts connus</string>
+    <string name="sorts_points_sorts">Points de sorts : %1$d / 300</string>
+    <string name="sorts_points_restants">Points restants : %1$d / 3000</string>
+    <string name="sorts_deja_connu">Ce sort est déjà connu.</string>
+    <string name="sorts_achat_impossible_titre">Achat impossible</string>
+    <string name="sorts_achat_impossible_quota">Achat impossible : le quota de 300 points pour les sorts serait dépassé.</string>
+    <string name="sorts_inaccessible_niveau">Votre niveau en %1$s est trop bas pour acquérir ce sort (différence > 5).</string>
+    <string name="sorts_cout">Coût : %1$d points</string>
+    <string name="sorts_supplement">Supplément (difficulté élevée) : %1$d points</string>
+    <string name="sorts_total">Total : %1$d points</string>
+    <string name="sorts_rembourser">Rembourser</string>
+    <string name="sorts_acheter">Acheter</string>
+
+    <string name="competences_modif_impossible_titre">Modification impossible</string>
 </resources>

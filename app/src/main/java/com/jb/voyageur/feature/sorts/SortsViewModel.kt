@@ -36,7 +36,7 @@ class SortsViewModel @Inject constructor(
 
     fun acheterSort(sort: Sort, coutTotal: Int) {
         val v = _voyageur.value ?: return
-        val currentSortsPoints = calculerPointsSorts(v)
+        val currentSortsPoints = v.sorts.sumOf { it.coutPaye }
         
         if (currentSortsPoints + coutTotal > 300) {
             _messageErreur.value = "Achat impossible : le quota de 300 points pour les sorts serait dépassé."
@@ -44,7 +44,7 @@ class SortsViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            val nouveauxSorts = v.sorts + SortAchete(sort.nom)
+            val nouveauxSorts = v.sorts + SortAchete(sort.nom, sort.voie, coutTotal)
             voyageurRepository.sauvegarder(v.copy(sorts = nouveauxSorts))
         }
     }
@@ -52,7 +52,7 @@ class SortsViewModel @Inject constructor(
     fun rembourserSort(sort: Sort) {
         val v = _voyageur.value ?: return
         viewModelScope.launch {
-            val nouveauxSorts = v.sorts.filter { it.nom != sort.nom }
+            val nouveauxSorts = v.sorts.filter { it.nom != sort.nom || it.voie != sort.voie }
             voyageurRepository.sauvegarder(v.copy(sorts = nouveauxSorts))
         }
     }
@@ -65,9 +65,9 @@ class SortsViewModel @Inject constructor(
         val colonnes = mutableListOf<SortsColonne>()
         
         // 1. Sorts connus
-        val nomsSortsAchetes = voyageur.sorts.map { it.nom }.toSet()
+        val sortsAchetesInfos = voyageur.sorts.map { it.nom to it.voie }.toSet()
         val tousSortsPossibles = VoieDraconic.entries.flatMap { sortRepository.chargerSorts(it) }
-        val sortsAchetes = tousSortsPossibles.filter { it.nom in nomsSortsAchetes }
+        val sortsAchetes = tousSortsPossibles.filter { (it.nom to it.voie) in sortsAchetesInfos }
         
         colonnes.add(SortsColonne("Sorts connus", sortsAchetes, isConnu = true))
 
@@ -86,10 +86,11 @@ class SortsViewModel @Inject constructor(
 
         return SortsUiState.Success(
             colonnes = colonnes,
-            pointsSortsUtilises = calculerPointsSorts(voyageur),
+            pointsSortsUtilises = voyageur.sorts.sumOf { it.coutPaye },
             pointsRestantsGlobal = pointsRestants,
             niveauxDraconic = VoieDraconic.entries.associateWith { voyageur.draconic.niveau(it) },
-            sortsAchetes = nomsSortsAchetes
+            sortsAchetes = sortsAchetesInfos,
+            hautRevant = voyageur.hautRevant
         )
     }
 
@@ -102,20 +103,9 @@ class SortsViewModel @Inject constructor(
         }
         val pointsTroncs = voyageur.troncCorps.coutTotal() + voyageur.troncArmes.coutTotal()
         
-        val pointsSorts = calculerPointsSorts(voyageur)
+        val pointsSorts = voyageur.sorts.sumOf { it.coutPaye }
 
         return 3000 - pointsDraconic - pointsCompetences - pointsTroncs - pointsSorts
-    }
-
-    private fun calculerPointsSorts(voyageur: Voyageur): Int {
-        val nomsSortsAchetes = voyageur.sorts.map { it.nom }.toSet()
-        val tousSortsPossibles = VoieDraconic.entries.flatMap { sortRepository.chargerSorts(it) }
-        return tousSortsPossibles
-            .filter { it.nom in nomsSortsAchetes }
-            .sumOf { sort ->
-                val niveau = voyageur.draconic.niveau(sort.voie)
-                sort.calculerCoutDeBase() + sort.calculerSupplement(niveau)
-            }
     }
 }
 
@@ -126,7 +116,8 @@ sealed interface SortsUiState {
         val pointsSortsUtilises: Int,
         val pointsRestantsGlobal: Int,
         val niveauxDraconic: Map<VoieDraconic, Int>,
-        val sortsAchetes: Set<String>
+        val sortsAchetes: Set<Pair<String, VoieDraconic>>,
+        val hautRevant: Boolean
     ) : SortsUiState
 }
 

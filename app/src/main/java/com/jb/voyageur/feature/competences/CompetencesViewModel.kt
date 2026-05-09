@@ -139,14 +139,7 @@ class CompetencesViewModel @Inject constructor(
         val pointsTroncs = voyageur.troncCorps.coutTotal() + voyageur.troncArmes.coutTotal()
         
         // Calcul des points de sorts
-        val tousSortsPossibles = VoieDraconic.entries.flatMap { sortRepository.chargerSorts(it) }
-        val nomsSortsAchetes = voyageur.sorts.map { it.nom }.toSet()
-        val pointsSorts = tousSortsPossibles
-            .filter { it.nom in nomsSortsAchetes }
-            .sumOf { sort ->
-                val niveau = voyageur.draconic.niveau(sort.voie)
-                sort.calculerCoutDeBase() + sort.calculerSupplement(niveau)
-            }
+        val pointsSorts = voyageur.sorts.sumOf { it.coutPaye }
 
         return 3000 - pointsDraconic - pointsCompetences - pointsTroncs - pointsSorts
     }

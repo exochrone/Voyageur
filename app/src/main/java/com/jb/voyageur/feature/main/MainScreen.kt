@@ -1,5 +1,7 @@
 package com.jb.voyageur.feature.main
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -56,6 +58,29 @@ fun MainScreen(
     val scope = rememberCoroutineScope()
     val voyageurNom by viewModel.voyageurNom.collectAsStateWithLifecycle()
     val hautRevant by viewModel.hautRevant.collectAsStateWithLifecycle()
+    val pdfExportState by viewModel.pdfExportState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    val createDocumentLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/pdf")
+    ) { uri ->
+        if (uri != null && pdfExportState is PdfExportState.Success) {
+            try {
+                context.contentResolver.openOutputStream(uri)?.use { os ->
+                    os.write((pdfExportState as PdfExportState.Success).data)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            viewModel.onPdfExportConsumed()
+        }
+    }
+
+    LaunchedEffect(pdfExportState) {
+        if (pdfExportState is PdfExportState.Success) {
+            createDocumentLauncher.launch((pdfExportState as PdfExportState.Success).fileName)
+        }
+    }
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -118,6 +143,17 @@ fun MainScreen(
                     }
 
                     Spacer(modifier = Modifier.weight(1f))
+
+                    // Sauvegarde PDF
+                    NavigationDrawerItem(
+                        label = { Text(stringResource(R.string.menu_sauvegarde_pdf), fontFamily = FontFamily.Serif, fontSize = 18.sp) },
+                        selected = false,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            viewModel.onExportPdf()
+                        },
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
 
                     // Aide
                     NavigationDrawerItem(

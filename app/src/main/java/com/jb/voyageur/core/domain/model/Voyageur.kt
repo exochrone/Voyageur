@@ -98,5 +98,9 @@ data class Draconic(
 
 enum class VoieDraconic { ONIROS, HYPNOS, NARCOS, THANATOS }
 
-data class SortAchete(val nom: String)
+data class SortAchete(
+    val nom: String,
+    val voie: VoieDraconic,
+    val coutPaye: Int
+)
 data class ObjetPossede(val nom: String)

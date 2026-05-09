@@ -136,11 +136,11 @@ fun CompetencesScreen(
     messageDraconicBloque?.let { msg ->
         AlertDialog(
             onDismissRequest = viewModel::effacerMessageDraconic,
-            title = { Text("Modification impossible") },
+            title = { Text(stringResource(R.string.competences_modif_impossible_titre)) },
             text = { Text(msg) },
             confirmButton = {
                 TextButton(onClick = viewModel::effacerMessageDraconic) {
-                    Text("OK")
+                    Text(stringResource(R.string.ok))
                 }
             }
         )
