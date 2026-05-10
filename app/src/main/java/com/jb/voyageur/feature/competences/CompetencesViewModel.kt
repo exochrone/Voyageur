@@ -125,8 +125,9 @@ class CompetencesViewModel @Inject constructor(
 
     private fun Voyageur.toCompetencesUiState(): CompetencesUiState.Success {
         val pointsRestants = calculPointsRestants(this)
+        val pointsSorts = sorts.sumOf { it.coutPaye }
         val colonnes = buildColonnes(this)
-        return CompetencesUiState.Success(colonnes, pointsRestants, hautRevant)
+        return CompetencesUiState.Success(colonnes, pointsRestants, pointsSorts, hautRevant)
     }
 
     private fun calculPointsRestants(voyageur: Voyageur): Int {
@@ -354,6 +355,7 @@ sealed interface CompetencesUiState {
     data class Success(
         val colonnes: List<ColonneCompetences>,
         val pointsRestants: Int,
+        val pointsSortsUtilises: Int,
         val hautRevant: Boolean
     ) : CompetencesUiState
 }

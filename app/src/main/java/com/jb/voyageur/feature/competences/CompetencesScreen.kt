@@ -269,41 +269,58 @@ fun CompetencesContent(
                 .align(Alignment.BottomEnd)
                 .fillMaxWidth()
         ) {
-            val fullText = stringResource(R.string.xp_restants, uiState.pointsRestants)
-            val valueStr = uiState.pointsRestants.toString()
-            val startIndex = fullText.indexOf(valueStr)
-            
-            val annotatedText = buildAnnotatedString {
-                append(fullText)
-                if (startIndex != -1) {
-                    addStyle(
-                        style = SpanStyle(
-                            color = if (isXPBlocked)
-                                Color(0xFFFF0000)
-                            else if (uiState.pointsRestants < 0)
-                                VoyageurColors.ValeurCaracteristique
-                            else
-                                Color.Black,
-                            fontWeight = FontWeight.Bold
-                        ),
-                        start = startIndex,
-                        end = startIndex + valueStr.length
-                    )
-                }
-            }
-
-            Text(
-                text = annotatedText,
-                fontFamily = FontFamily.Serif,
-                fontSize = 16.sp,
-                color = VoyageurColors.NomCaracteristique,
-                textAlign = TextAlign.End,
-                maxLines = 1,
-                softWrap = false,
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 6.dp)
-            )
+                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                horizontalAlignment = Alignment.End
+            ) {
+                if (uiState.hautRevant) {
+                    Text(
+                        text = stringResource(R.string.sorts_points_sorts, uiState.pointsSortsUtilises),
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = VoyageurColors.NomCaracteristique,
+                        textAlign = TextAlign.End,
+                        maxLines = 1,
+                        softWrap = false
+                    )
+                }
+
+                val fullText = stringResource(R.string.xp_restants, uiState.pointsRestants)
+                val valueStr = uiState.pointsRestants.toString()
+                val startIndex = fullText.indexOf(valueStr)
+                
+                val annotatedText = buildAnnotatedString {
+                    append(fullText)
+                    if (startIndex != -1) {
+                        addStyle(
+                            style = SpanStyle(
+                                color = if (isXPBlocked)
+                                    Color(0xFFFF0000)
+                                else if (uiState.pointsRestants < 0)
+                                    VoyageurColors.ValeurCaracteristique
+                                else
+                                    Color.Black,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            start = startIndex,
+                            end = startIndex + valueStr.length
+                        )
+                    }
+                }
+
+                Text(
+                    text = annotatedText,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 16.sp,
+                    color = VoyageurColors.NomCaracteristique,
+                    textAlign = TextAlign.End,
+                    maxLines = 1,
+                    softWrap = false
+                )
+            }
         }
     }
 }

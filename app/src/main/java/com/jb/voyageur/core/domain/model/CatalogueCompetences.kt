@@ -50,6 +50,7 @@ object CatalogueCompetences {
         Competence("Maçonnerie", FamilleCompetence.PARTICULIERE),
         Competence("Musique", FamilleCompetence.PARTICULIERE),
         Competence("Pickpocket", FamilleCompetence.PARTICULIERE),
+        Competence("Survie en cité", FamilleCompetence.PARTICULIERE),
         Competence("Survie en extérieur", FamilleCompetence.PARTICULIERE),
         Competence("Survie en désert", FamilleCompetence.PARTICULIERE),
         Competence("Survie en forêt", FamilleCompetence.PARTICULIERE),
