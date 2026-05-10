@@ -35,6 +35,10 @@ val Caracteristiques.bonusDommages: Int get() = when ((taille + force) / 2) {
     in 6..7 -> -1; in 8..11 -> 0; in 12..13 -> 1; else -> 2
 }
 val Caracteristiques.encombrement: Float get() = (taille + force) / 2f
+val Caracteristiques.sust: Int get() = sustentation
+val Caracteristiques.sc: Int get() = seuilConstitution
+val Caracteristiques.bonusDom: Int get() = bonusDommages
+
 val Caracteristiques.pointsTotal: Int get() =
     taille + apparence + constitution + force + agilite + dexterite +
     vue + ouie + odoGout + volonte + intellect + empathie + reve + chance
