@@ -27,7 +27,7 @@ import com.jb.voyageur.core.ui.composable.CaracteristiqueRow
 import com.jb.voyageur.core.ui.composable.ParcheminBackground
 import com.jb.voyageur.core.ui.helper.AideCaracteristiqueProvider
 import com.jb.voyageur.core.ui.navigation.EcranCreation
-import com.jb.voyageur.core.ui.theme.GoudyAcc
+import com.jb.voyageur.core.ui.theme.Luminari
 import com.jb.voyageur.core.ui.theme.VoyageurColors
 import com.jb.voyageur.feature.caracteristiques.composable.SectionDescription
 
@@ -408,7 +408,7 @@ fun ZoneAide(
             val aide = remember(champAide) {
                 AideCaracteristiqueProvider.pour(champAide, context.resources)
             }
-            Text(text = aide.titre, fontFamily = GoudyAcc, fontSize = 24.sp)
+            Text(text = aide.titre, fontFamily = Luminari, fontSize = 24.sp)
             Spacer(Modifier.height(8.dp))
             Text(text = aide.description, fontFamily = FontFamily.Serif, fontSize = 16.sp)
         } else {

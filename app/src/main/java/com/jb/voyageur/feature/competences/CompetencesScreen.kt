@@ -38,7 +38,7 @@ import com.jb.voyageur.core.ui.composable.CompetenceRow
 import com.jb.voyageur.core.ui.composable.ParcheminBackground
 import com.jb.voyageur.core.ui.helper.AideCompetenceProvider
 import com.jb.voyageur.core.ui.navigation.EcranCreation
-import com.jb.voyageur.core.ui.theme.GoudyAcc
+import com.jb.voyageur.core.ui.theme.Luminari
 import com.jb.voyageur.core.ui.theme.VoyageurColors
 import kotlinx.coroutines.launch
 
@@ -196,7 +196,7 @@ fun CompetencesContent(
                         text = {
                             Text(
                                 text = stringResource(colonne.famille.titreColonneRes),
-                                fontFamily = GoudyAcc,
+                                fontFamily = Luminari,
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 1

@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jb.voyageur.core.ui.theme.GoudyAcc
+import com.jb.voyageur.core.ui.theme.Luminari
 
 @Composable
 fun InfoAideContent(
@@ -18,7 +18,7 @@ fun InfoAideContent(
     Column(modifier.padding(16.dp)) {
         Text(
             text = titre,
-            fontFamily = GoudyAcc,
+            fontFamily = Luminari,
             fontSize = 24.sp,
             color = MaterialTheme.colorScheme.primary
         )

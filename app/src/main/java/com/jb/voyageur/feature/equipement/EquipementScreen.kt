@@ -26,7 +26,7 @@ import com.jb.voyageur.core.domain.model.*
 import com.jb.voyageur.core.ui.composable.BarreNavigationEcran
 import com.jb.voyageur.core.ui.composable.ParcheminBackground
 import com.jb.voyageur.core.ui.navigation.EcranCreation
-import com.jb.voyageur.core.ui.theme.GoudyAcc
+import com.jb.voyageur.core.ui.theme.Luminari
 import com.jb.voyageur.core.ui.theme.VoyageurColors
 import kotlinx.coroutines.launch
 
@@ -116,7 +116,7 @@ fun EquipementContent(
                     text = {
                         Text(
                             text       = stringResource(R.string.equipement_possede_titre),
-                            fontFamily = GoudyAcc,
+                            fontFamily = Luminari,
                             fontSize   = 18.sp,
                             color      = Color.Black  // libellé noir
                         )
@@ -130,7 +130,7 @@ fun EquipementContent(
                         text = {
                             Text(
                                 text       = col.categorie.nom,
-                                fontFamily = GoudyAcc,
+                                fontFamily = Luminari,
                                 fontSize   = 18.sp,
                                 color      = VoyageurColors.NomCaracteristique  // libellé bleu
                             )
@@ -235,7 +235,7 @@ fun ColonnePossedes(
                 ) {
                     Text(
                         text       = categorie,
-                        fontFamily = GoudyAcc,
+                        fontFamily = Luminari,
                         fontSize   = 16.sp,
                         color      = Color.Black,
                         modifier   = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)

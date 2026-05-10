@@ -8,8 +8,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.jb.voyageur.R
 
-val GoudyAcc = FontFamily(
-    Font(R.font.goudy_font)
+val Luminari = FontFamily(
+    Font(R.font.luminari)
 )
 
 val HeuresDraconiques = FontFamily(

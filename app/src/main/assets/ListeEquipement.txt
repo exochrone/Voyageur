@@ -44,7 +44,7 @@ Bonnet de laine\0\6
 Chaperon de laine\0,1\20
 Manteau de laine\0,8\60
 Couverture de laine\0,6\30
-#Velours et Soies
+#Velours & Soies
 1m² soie ou velours\0\300
 Chemise de soie\0\600
 Robe de soie\0\1000

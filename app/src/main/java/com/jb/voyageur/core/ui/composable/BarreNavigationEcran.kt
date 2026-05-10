@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jb.voyageur.core.ui.navigation.EcranCreation
 import com.jb.voyageur.core.ui.navigation.SequenceEcrans
-import com.jb.voyageur.core.ui.theme.GoudyAcc
+import com.jb.voyageur.core.ui.theme.Luminari
 import com.jb.voyageur.core.ui.theme.VoyageurColors
 
 @Composable
@@ -75,7 +75,7 @@ fun BarreNavigationEcran(
         // Titre 80%
         Text(
             text       = titre,
-            fontFamily = GoudyAcc,
+            fontFamily = Luminari,
             fontSize   = 30.sp,
             fontWeight = FontWeight.Bold,
             color      = VoyageurColors.NomCaracteristique,

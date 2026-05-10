@@ -32,7 +32,7 @@ import androidx.navigation.navArgument
 import com.jb.voyageur.R
 import com.jb.voyageur.core.ui.composable.BarreNavigationEcran
 import com.jb.voyageur.core.ui.navigation.EcranCreation
-import com.jb.voyageur.core.ui.theme.GoudyAcc
+import com.jb.voyageur.core.ui.theme.Luminari
 import com.jb.voyageur.feature.caracteristiques.CaracteristiquesScreen
 import com.jb.voyageur.feature.competences.CompetencesScreen
 import com.jb.voyageur.feature.equipement.EquipementScreen
@@ -133,7 +133,7 @@ fun MainScreen(
                 ) {
                     Text(
                         text = stringResource(R.string.app_name),
-                        fontFamily = GoudyAcc,
+                        fontFamily = Luminari,
                         fontSize = 32.sp,
                         modifier = Modifier.padding(bottom = 24.dp)
                     )

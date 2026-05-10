@@ -27,7 +27,7 @@ import com.jb.voyageur.core.domain.model.VoieDraconic
 import com.jb.voyageur.core.ui.composable.BarreNavigationEcran
 import com.jb.voyageur.core.ui.composable.ParcheminBackground
 import com.jb.voyageur.core.ui.navigation.EcranCreation
-import com.jb.voyageur.core.ui.theme.GoudyAcc
+import com.jb.voyageur.core.ui.theme.Luminari
 import com.jb.voyageur.core.ui.theme.VoyageurColors
 import kotlinx.coroutines.launch
 
@@ -115,7 +115,7 @@ fun SortsContent(
                         text = {
                             Text(
                                 text = if (col.isConnu) stringResource(R.string.sorts_connu_titre) else col.titre,
-                                fontFamily = GoudyAcc,
+                                fontFamily = Luminari,
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = if (col.isConnu) Color.Black else VoyageurColors.NomCaracteristique
@@ -142,7 +142,7 @@ fun SortsContent(
                                     Text(
                                         text = voie.name.lowercase().replaceFirstChar { it.uppercase() },
                                         modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
-                                        fontFamily = GoudyAcc,
+                                        fontFamily = Luminari,
                                         fontSize = 18.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color.Black

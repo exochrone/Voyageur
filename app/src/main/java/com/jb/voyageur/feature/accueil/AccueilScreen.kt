@@ -26,7 +26,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jb.voyageur.R
 import com.jb.voyageur.core.ui.composable.ParcheminBackground
-import com.jb.voyageur.core.ui.theme.GoudyAcc
+import com.jb.voyageur.core.ui.theme.Luminari
 
 @Composable
 fun AccueilScreen(
@@ -61,7 +61,7 @@ fun AccueilContent(
         ) {
             Text(
                 text = stringResource(R.string.app_name),
-                fontFamily = GoudyAcc,
+                fontFamily = Luminari,
                 fontSize = 48.sp
             )
             Spacer(Modifier.height(8.dp))
