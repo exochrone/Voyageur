@@ -95,7 +95,8 @@ class CompetencesViewModel @Inject constructor(
             val voyageur = voyageurRepository.charger(voyageurId) ?: return@launch
             val parts = oldKey.split(":")
             if (parts.size < 4) return@launch
-            val newKey = "CUSTOM:${parts[1]}:${parts[2]}:$nouveauNom"
+            val prefix = "CUSTOM:${parts[1]}:${parts[2]}:"
+            val newKey = "${prefix}$nouveauNom"
             
             val niveau = voyageur.competences[oldKey] ?: -4
             val nouvCompetences = voyageur.competences.toMutableMap()
@@ -265,7 +266,7 @@ class CompetencesViewModel @Inject constructor(
             val existingKey = voyageur.competences.keys.find { it.startsWith(customKeyPrefix) }
             
             if (existingKey != null) {
-                val nom = existingKey.substringAfterLast(":")
+                val nom = existingKey.substringAfter(customKeyPrefix)
                 val niveau = voyageur.competences[existingKey] ?: famille.base
                 items.add(CompetenceUiItem.Individuelle(
                     competence = Competence(nom, famille),
@@ -358,7 +359,7 @@ class CompetencesViewModel @Inject constructor(
             val existingKey = voyageur.competences.keys.find { it.startsWith(customKeyPrefix) }
             
             if (existingKey != null) {
-                val nom = existingKey.substringAfterLast(":")
+                val nom = existingKey.substringAfter(customKeyPrefix)
                 val niveau = voyageur.competences[existingKey] ?: combatFamille.base
                 items.add(CompetenceUiItem.Individuelle(
                     competence = Competence(nom, combatFamille),
