@@ -186,4 +186,11 @@
 
     <string name="competences_modif_impossible_titre">Modification impossible</string>
     <string name="pdf_export_erreur_titre">Erreur d\'export PDF</string>
+
+    <string name="equipement_possede_titre">Équipement possédé</string>
+    <string name="equipement_aucun_objet">Aucun objet acheté</string>
+    <string name="equipement_fortune">Fortune : %1$d d</string>
+    <string name="equipement_enc_total">Encombrement total : %1$.1f / %2$.1f</string>
+    <string name="equipement_achat_impossible_titre">Achat impossible</string>
+    <string name="equipement_fortune_insuffisante">Votre fortune est insuffisante pour cet achat.</string>
 </resources>

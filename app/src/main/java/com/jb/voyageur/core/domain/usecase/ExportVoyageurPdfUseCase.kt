@@ -1,8 +1,7 @@
 package com.jb.voyageur.core.domain.usecase
 
 import android.content.Context
-import com.itextpdf.text.pdf.PdfReader
-import com.itextpdf.text.pdf.PdfStamper
+import com.itextpdf.text.pdf.*
 import com.jb.voyageur.core.domain.model.*
 import com.jb.voyageur.core.domain.repository.VoyageurRepository
 import com.jb.voyageur.core.ui.util.FormatPhysique
@@ -21,14 +20,35 @@ class ExportVoyageurPdfUseCase @Inject constructor(
         return try {
             val inputStream = context.assets.open("fiche.pdf")
             val reader = PdfReader(inputStream)
+            
+            // Correction du dictionnaire AcroForm manquant
+            val catalog = reader.catalog
+            if (catalog.get(PdfName.ACROFORM) == null) {
+                val acroForm = PdfDictionary()
+                val fields = PdfArray()
+                for (i in 1..reader.numberOfPages) {
+                    val pageDict = reader.getPageN(i)
+                    val annots = pageDict.getAsArray(PdfName.ANNOTS)
+                    if (annots != null) {
+                        for (j in 0 until annots.size()) {
+                            val annot = annots.getAsDict(j)
+                            if (PdfName.WIDGET == annot.getAsName(PdfName.SUBTYPE)) {
+                                if (annot.get(PdfName.T) != null) {
+                                    fields.add(annots.getAsIndirectObject(j))
+                                }
+                            }
+                        }
+                    }
+                }
+                acroForm.put(PdfName.FIELDS, fields)
+                catalog.put(PdfName.ACROFORM, acroForm)
+                // Force iText à rafraîchir sa vue des champs
+                reader.consolidateNamedDestinations()
+            }
+
             val outputStream = ByteArrayOutputStream()
             val stamper = PdfStamper(reader, outputStream)
             val form = stamper.acroFields
-
-            // DEBUG — à supprimer après diagnostic
-            form.fields.keys.sorted().forEach { fieldName ->
-                android.util.Log.d("PDF_FIELDS", "Champ disponible : '$fieldName'")
-            }
 
             // ── Description ─────────────────────────────────────────
             form.setField("Text16", voyageur.nom)
@@ -73,7 +93,7 @@ class ExportVoyageurPdfUseCase @Inject constructor(
             form.setField("146", caracs.sc.toString())
             form.setField("147", "%.1f".format(caracs.encombrement))
             val bonusDom = caracs.bonusDom
-            form.setField("148", if (bonusDom >= 0) "+$bonusDom" else bonusDom.toString())
+            form.setField("148", if (bonusDom > 0) "+$bonusDom" else bonusDom.toString())
 
             // ── Compétences — helper ─────────────────────────────────
             fun comp(nom: String) = niveauCompetence(nom, voyageur)
@@ -131,7 +151,7 @@ class ExportVoyageurPdfUseCase @Inject constructor(
             form.setField("131", comp("Zoologie"))
 
             // ── Draconic ─────────────────────────────────────────────
-            fun draconic(niveau: Int) = if (niveau >= 0) "+$niveau" else niveau.toString()
+            fun draconic(niveau: Int) = if (niveau > 0) "+$niveau" else niveau.toString()
             form.setField("133", draconic(voyageur.draconic.oniros))
             form.setField("139", draconic(voyageur.draconic.hypnos))
             form.setField("136", draconic(voyageur.draconic.narcos))
@@ -139,7 +159,7 @@ class ExportVoyageurPdfUseCase @Inject constructor(
 
             // ── Tronc Corps ──────────────────────────────────────────
             fun troncNiveau(tronc: Tronc, nom: String) =
-                tronc.niveauPour(nom).let { if (it >= 0) "+$it" else it.toString() }
+                tronc.niveauPour(nom).let { if (it > 0) "+$it" else it.toString() }
 
             form.setField("178", troncNiveau(voyageur.troncCorps, "Corps à corps"))
             form.setField("182", troncNiveau(voyageur.troncCorps, "Dague de mêlée"))
@@ -152,7 +172,7 @@ class ExportVoyageurPdfUseCase @Inject constructor(
             meilleures.forEachIndexed { index, (nom, niveau) ->
                 form.setField(champNoms[index], nom)
                 form.setField(champNiveaux[index],
-                    if (niveau >= 0) "+$niveau" else niveau.toString())
+                    if (niveau > 0) "+$niveau" else niveau.toString())
             }
 
             // On aplatit le formulaire pour que les champs ne soient plus éditables dans le PDF final

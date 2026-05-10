@@ -103,4 +103,13 @@ data class SortAchete(
     val voie: VoieDraconic,
     val coutPaye: Int
 )
-data class ObjetPossede(val nom: String)
+
+data class ObjetPossede(
+    val nom: String,
+    val quantite: Int = 1,
+    val prixUnitaire: Int,
+    val encombrementUnitaire: Float
+) {
+    val prixTotal: Int get() = prixUnitaire * quantite
+    val encombrementTotal: Float get() = encombrementUnitaire * quantite
+}

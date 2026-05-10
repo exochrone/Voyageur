@@ -35,6 +35,7 @@ import com.jb.voyageur.core.ui.navigation.EcranCreation
 import com.jb.voyageur.core.ui.theme.GoudyAcc
 import com.jb.voyageur.feature.caracteristiques.CaracteristiquesScreen
 import com.jb.voyageur.feature.competences.CompetencesScreen
+import com.jb.voyageur.feature.equipement.EquipementScreen
 import com.jb.voyageur.feature.sorts.SortsScreen
 import com.jb.voyageur.ui.navigation.NavItem
 import kotlinx.coroutines.launch
@@ -270,11 +271,15 @@ fun MainScreen(
                         onNaviguerVers = onNaviguerVers
                     )
                 }
-                composable(NavItem.Equipement.route) {
-                    PlaceholderScreen(
-                        name = "Équipement",
-                        ecranCourant = EcranCreation.EQUIPEMENT,
-                        hautRevant = hautRevant,
+                composable(
+                    route = NavItem.Equipement.route,
+                    arguments = listOf(navArgument("voyageurId") {
+                        type = NavType.LongType
+                        defaultValue = voyageurId
+                    })
+                ) {
+                    EquipementScreen(
+                        voyageurId = voyageurId,
                         onNaviguerVers = onNaviguerVers
                     )
                 }
