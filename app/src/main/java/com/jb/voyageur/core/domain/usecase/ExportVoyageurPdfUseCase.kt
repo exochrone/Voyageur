@@ -25,6 +25,11 @@ class ExportVoyageurPdfUseCase @Inject constructor(
             val stamper = PdfStamper(reader, outputStream)
             val form = stamper.acroFields
 
+            // DEBUG — à supprimer après diagnostic
+            form.fields.keys.sorted().forEach { fieldName ->
+                android.util.Log.d("PDF_FIELDS", "Champ disponible : '$fieldName'")
+            }
+
             // ── Description ─────────────────────────────────────────
             form.setField("Text16", voyageur.nom)
             form.setField("1", voyageur.age?.toString() ?: "")
