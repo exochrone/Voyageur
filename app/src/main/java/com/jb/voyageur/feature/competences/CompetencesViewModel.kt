@@ -56,7 +56,52 @@ class CompetencesViewModel @Inject constructor(
                 }
             }
             
-            modifierCompetenceUseCase(voyageurId, nom, absoluteBase, niveauCible)
+            // Pour les compétences custom, on ne veut pas qu'elles disparaissent si elles sont à la base
+            // car elles portent le nom de la compétence.
+            val isCustom = nom.startsWith("CUSTOM:")
+            val finalNiveau = niveauCible.coerceIn(absoluteBase, 3)
+            val nouvCompetences = voyageur.competences.toMutableMap()
+            
+            if (!isCustom && finalNiveau == absoluteBase) {
+                nouvCompetences.remove(nom)
+            } else {
+                nouvCompetences[nom] = finalNiveau
+            }
+            voyageurRepository.sauvegarder(voyageur.copy(competences = nouvCompetences))
+        }
+    }
+
+    fun ajouterCompetenceCustom(famille: FamilleCompetence, index: Int, nom: String) {
+        viewModelScope.launch {
+            val voyageur = voyageurRepository.charger(voyageurId) ?: return@launch
+            val key = "CUSTOM:${famille.name}:$index:$nom"
+            val nouvCompetences = voyageur.competences.toMutableMap()
+            nouvCompetences[key] = famille.base
+            voyageurRepository.sauvegarder(voyageur.copy(competences = nouvCompetences))
+        }
+    }
+
+    fun supprimerCompetenceCustom(key: String) {
+        viewModelScope.launch {
+            val voyageur = voyageurRepository.charger(voyageurId) ?: return@launch
+            val nouvCompetences = voyageur.competences.toMutableMap()
+            nouvCompetences.remove(key)
+            voyageurRepository.sauvegarder(voyageur.copy(competences = nouvCompetences))
+        }
+    }
+
+    fun renommerCompetenceCustom(oldKey: String, nouveauNom: String) {
+        viewModelScope.launch {
+            val voyageur = voyageurRepository.charger(voyageurId) ?: return@launch
+            val parts = oldKey.split(":")
+            if (parts.size < 4) return@launch
+            val newKey = "CUSTOM:${parts[1]}:${parts[2]}:$nouveauNom"
+            
+            val niveau = voyageur.competences[oldKey] ?: -4
+            val nouvCompetences = voyageur.competences.toMutableMap()
+            nouvCompetences.remove(oldKey)
+            nouvCompetences[newKey] = niveau
+            voyageurRepository.sauvegarder(voyageur.copy(competences = nouvCompetences))
         }
     }
 
@@ -132,11 +177,17 @@ class CompetencesViewModel @Inject constructor(
 
     private fun calculPointsRestants(voyageur: Voyageur): Int {
         val pointsDraconic = voyageur.draconic.pointsTotal()
-        val pointsCompetences = voyageur.competences.entries.sumOf { (nom, niveau) ->
-            val famille = CatalogueCompetences.toutes
-                .find { it.nom == nom }?.famille ?: return@sumOf 0
+        
+        val pointsCompetences = voyageur.competences.entries.sumOf { (key, niveau) ->
+            val famille = if (key.startsWith("CUSTOM:")) {
+                val familleName = key.split(":")[1]
+                FamilleCompetence.valueOf(familleName)
+            } else {
+                CatalogueCompetences.toutes.find { it.nom == key }?.famille ?: return@sumOf 0
+            }
             CoutCompetence.coutCumule(famille.base, niveau)
         }
+
         val pointsTroncs = voyageur.troncCorps.coutTotal() + voyageur.troncArmes.coutTotal()
         
         // Calcul des points de sorts
@@ -194,18 +245,45 @@ class CompetencesViewModel @Inject constructor(
         return result
     }
 
-    private fun buildItems(famille: FamilleCompetence, voyageur: Voyageur): List<CompetenceUiItem.Individuelle> {
-        return CatalogueCompetences.parFamille[famille]?.map { comp ->
-            when (comp.nom) {
-                in CatalogueCompetences.SURVIES_SPECIFIQUES -> construireItemSurvieRestreinte(comp, voyageur)
-                "Survie en extérieur" -> construireItemSurvieExterieur(comp, voyageur)
-                else -> construireItemIndividuel(comp, voyageur)
+    private fun buildItems(famille: FamilleCompetence, voyageur: Voyageur): List<CompetenceUiItem> {
+        val items = mutableListOf<CompetenceUiItem>()
+        
+        // 1. Compétences du catalogue
+        CatalogueCompetences.parFamille[famille]?.forEach { comp ->
+            items.add(if (comp.nom in CatalogueCompetences.SURVIES_SPECIFIQUES) {
+                construireItemSurvieRestreinte(comp, voyageur)
+            } else if (comp.nom == "Survie en extérieur") {
+                construireItemSurvieExterieur(comp, voyageur)
+            } else {
+                construireItemIndividuel(comp, voyageur)
+            })
+        }
+        
+        // 2. Slots custom (3 par famille)
+        for (i in 0 until 3) {
+            val customKeyPrefix = "CUSTOM:${famille.name}:$i:"
+            val existingKey = voyageur.competences.keys.find { it.startsWith(customKeyPrefix) }
+            
+            if (existingKey != null) {
+                val nom = existingKey.substringAfterLast(":")
+                val niveau = voyageur.competences[existingKey] ?: famille.base
+                items.add(CompetenceUiItem.Individuelle(
+                    competence = Competence(nom, famille),
+                    niveauActuel = niveau,
+                    coutCumule = CoutCompetence.coutCumule(famille.base, niveau),
+                    isCustom = true,
+                    customKey = existingKey
+                ))
+            } else {
+                items.add(CompetenceUiItem.Placeholder(famille, i))
             }
-        } ?: emptyList()
+        }
+        
+        return items
     }
 
-    private fun buildItemsCombat(voyageur: Voyageur): List<CompetenceUiItem.Individuelle> {
-        val items = mutableListOf<CompetenceUiItem.Individuelle>()
+    private fun buildItemsCombat(voyageur: Voyageur): List<CompetenceUiItem> {
+        val items = mutableListOf<CompetenceUiItem>()
 
         // TroncCorps
         val corps = voyageur.troncCorps
@@ -272,6 +350,27 @@ class CompetencesViewModel @Inject constructor(
             ?.forEach { comp ->
                 items.add(construireItemIndividuel(comp, voyageur))
             }
+            
+        // 3 Slots custom pour Combat Mêlée
+        val combatFamille = FamilleCompetence.COMBAT_MELEE
+        for (i in 0 until 3) {
+            val customKeyPrefix = "CUSTOM:${combatFamille.name}:$i:"
+            val existingKey = voyageur.competences.keys.find { it.startsWith(customKeyPrefix) }
+            
+            if (existingKey != null) {
+                val nom = existingKey.substringAfterLast(":")
+                val niveau = voyageur.competences[existingKey] ?: combatFamille.base
+                items.add(CompetenceUiItem.Individuelle(
+                    competence = Competence(nom, combatFamille),
+                    niveauActuel = niveau,
+                    coutCumule = CoutCompetence.coutCumule(combatFamille.base, niveau),
+                    isCustom = true,
+                    customKey = existingKey
+                ))
+            } else {
+                items.add(CompetenceUiItem.Placeholder(combatFamille, i))
+            }
+        }
 
         return items
     }
@@ -362,7 +461,7 @@ sealed interface CompetencesUiState {
 
 data class ColonneCompetences(
     val famille: FamilleCompetence,
-    val items: List<CompetenceUiItem.Individuelle>
+    val items: List<CompetenceUiItem>
 )
 
 sealed interface CompetenceUiItem {
@@ -374,6 +473,13 @@ sealed interface CompetenceUiItem {
         val borneSup: Int = 3,
         val appartientAuTronc: String? = null,
         val estPremierDuTronc: Boolean = false,
-        val estVerrouilleParSorts: Boolean = false
+        val estVerrouilleParSorts: Boolean = false,
+        val isCustom: Boolean = false,
+        val customKey: String? = null
+    ) : CompetenceUiItem
+
+    data class Placeholder(
+        val famille: FamilleCompetence,
+        val index: Int
     ) : CompetenceUiItem
 }

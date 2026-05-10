@@ -29,9 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jb.voyageur.R
-import com.jb.voyageur.core.domain.model.CatalogueCompetences
-import com.jb.voyageur.core.domain.model.FamilleCompetence
-import com.jb.voyageur.core.domain.model.VoieDraconic
+import com.jb.voyageur.core.domain.model.*
 import com.jb.voyageur.core.ui.composable.AideBottomSheet
 import com.jb.voyageur.core.ui.composable.BarreNavigationEcran
 import com.jb.voyageur.core.ui.composable.CompetenceRow
@@ -53,6 +51,9 @@ fun CompetencesScreen(
     val isXPBlocked by viewModel.isXPBlocked.collectAsStateWithLifecycle()
     val messageDraconicBloque by viewModel.messageDraconicBloque.collectAsStateWithLifecycle()
     var highlightedSkills by remember { mutableStateOf(setOf<String>()) }
+    
+    var showAddCustomDialog by remember { mutableStateOf<Pair<FamilleCompetence, Int>?>(null) }
+    var showManageCustomDialog by remember { mutableStateOf<CompetenceUiItem.Individuelle?>(null) }
 
     ParcheminBackground {
         when (val state = uiState) {
@@ -89,6 +90,7 @@ fun CompetencesScreen(
                                     // Trouver toutes les survies spécifiques
                                     val specificItems = state.colonnes
                                         .flatMap { it.items }
+                                        .filterIsInstance<CompetenceUiItem.Individuelle>()
                                         .filter { it.competence.nom in CatalogueCompetences.SURVIES_SPECIFIQUES }
                                     
                                     val maxLevel = specificItems.maxOfOrNull { it.niveauActuel } ?: -8
@@ -103,6 +105,7 @@ fun CompetencesScreen(
                                     // Bloqué à 0 car un autre membre du tronc est > 0
                                     val troncItems = state.colonnes
                                         .flatMap { it.items }
+                                        .filterIsInstance<CompetenceUiItem.Individuelle>()
                                         .filter { it.appartientAuTronc == item.appartientAuTronc }
                                     
                                     val maxLevel = troncItems.maxOfOrNull { it.niveauActuel } ?: 0
@@ -116,10 +119,82 @@ fun CompetencesScreen(
                         } else {
                             highlightedSkills = emptySet()
                         }
-                    }
+                    },
+                    onAddCustom = { famille, index -> showAddCustomDialog = famille to index },
+                    onManageCustom = { item -> showManageCustomDialog = item }
                 )
             }
         }
+    }
+
+    // Dialogues de gestion des compétences custom
+    showAddCustomDialog?.let { (famille, index) ->
+        var name by remember { mutableStateOf("") }
+        AlertDialog(
+            onDismissRequest = { showAddCustomDialog = null },
+            title = { Text("Nouvelle compétence") },
+            text = {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Nom de la compétence") },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (name.isNotBlank()) {
+                            viewModel.ajouterCompetenceCustom(famille, index, name)
+                            showAddCustomDialog = null
+                        }
+                    },
+                    enabled = name.isNotBlank()
+                ) { Text(stringResource(R.string.valider)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddCustomDialog = null }) { Text(stringResource(R.string.annuler)) }
+            }
+        )
+    }
+
+    showManageCustomDialog?.let { item ->
+        var newName by remember { mutableStateOf(item.competence.nom) }
+        AlertDialog(
+            onDismissRequest = { showManageCustomDialog = null },
+            title = { Text("Gérer la compétence") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = newName,
+                        onValueChange = { newName = it },
+                        label = { Text("Renommer") },
+                        singleLine = true
+                    )
+                }
+            },
+            confirmButton = {
+                Row {
+                    TextButton(onClick = {
+                        item.customKey?.let { viewModel.supprimerCompetenceCustom(it) }
+                        showManageCustomDialog = null
+                    }) { Text("Supprimer", color = Color.Red) }
+                    
+                    TextButton(
+                        onClick = {
+                            if (newName.isNotBlank() && newName != item.competence.nom) {
+                                item.customKey?.let { viewModel.renommerCompetenceCustom(it, newName) }
+                                showManageCustomDialog = null
+                            }
+                        },
+                        enabled = newName.isNotBlank()
+                    ) { Text(stringResource(R.string.valider)) }
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showManageCustomDialog = null }) { Text(stringResource(R.string.annuler)) }
+            }
+        )
     }
 
     // Aide contextuelle — bottom sheet
@@ -159,7 +234,9 @@ fun CompetencesContent(
     onTroncChange: (String, String, Int) -> Unit,
     onDraconicChange: (VoieDraconic, Int) -> Unit,
     onDragEnd: () -> Unit,
-    onAtBorneChange: (CompetenceUiItem.Individuelle, Boolean) -> Unit
+    onAtBorneChange: (CompetenceUiItem.Individuelle, Boolean) -> Unit,
+    onAddCustom: (FamilleCompetence, Int) -> Unit,
+    onManageCustom: (CompetenceUiItem.Individuelle) -> Unit
 ) {
     val pagerState = rememberPagerState { uiState.colonnes.size }
     val scope = rememberCoroutineScope()
@@ -220,41 +297,55 @@ fun CompetencesContent(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(vertical = 12.dp)
                 ) {
-                    items(colonne.items, key = { it.competence.nom }) { item ->
-                        CompetenceRow(
-                            nom = item.competence.nom,
-                            niveauActuel = item.niveauActuel,
-                            niveauBase = item.competence.niveauBase,
-                            coutCumule = item.coutCumule,
-                            borneInf = item.borneInf,
-                            borneSup = item.borneSup,
-                            onNiveauChange = { nouveau ->
-                                when {
-                                    item.appartientAuTronc != null ->
-                                        onTroncChange(item.appartientAuTronc, item.competence.nom, nouveau)
-                                    item.competence.famille == FamilleCompetence.DRACONIC -> {
+                    items(colonne.items, key = { 
+                        when(it) {
+                            is CompetenceUiItem.Individuelle -> it.customKey ?: it.competence.nom
+                            is CompetenceUiItem.Placeholder -> "placeholder_${it.famille.name}_${it.index}"
+                        }
+                    }) { item ->
+                        when(item) {
+                            is CompetenceUiItem.Individuelle -> {
+                                CompetenceRow(
+                                    nom = item.competence.nom,
+                                    niveauActuel = item.niveauActuel,
+                                    niveauBase = item.competence.niveauBase,
+                                    coutCumule = item.coutCumule,
+                                    borneInf = item.borneInf,
+                                    borneSup = item.borneSup,
+                                    onNiveauChange = { nouveau ->
+                                        when {
+                                            item.appartientAuTronc != null ->
+                                                onTroncChange(item.appartientAuTronc, item.competence.nom, nouveau)
+                                            item.competence.famille == FamilleCompetence.DRACONIC -> {
+                                                val voie = VoieDraconic.entries.firstOrNull {
+                                                    it.name.lowercase().replaceFirstChar { c -> c.uppercase() } == item.competence.nom
+                                                }
+                                                if (voie != null) onDraconicChange(voie, nouveau)
+                                            }
+                                            else ->
+                                                onCompetenceChange(item.customKey ?: item.competence.nom, item.competence.niveauBase, nouveau)
+                                        }
+                                    },
+                                    onAideRequise = { onAideRequise(item.competence.nom) },
+                                    onDragEnd = onDragEnd,
+                                    onAtBorneChange = { isAtBorne -> onAtBorneChange(item, isAtBorne) },
+                                    isForceRed = item.competence.nom in highlightedSkills,
+                                    isVerrouille = item.estVerrouilleParSorts,
+                                    isCustom = item.isCustom,
+                                    onCustomNameClick = { onManageCustom(item) },
+                                    onVerrouilleClick = {
                                         val voie = VoieDraconic.entries.firstOrNull {
                                             it.name.lowercase().replaceFirstChar { c -> c.uppercase() } == item.competence.nom
                                         }
-                                        if (voie != null) onDraconicChange(voie, nouveau)
-                                    }
-                                    else ->
-                                        onCompetenceChange(item.competence.nom, item.competence.niveauBase, nouveau)
-                                }
-                            },
-                            onAideRequise = { onAideRequise(item.competence.nom) },
-                            onDragEnd = onDragEnd,
-                            onAtBorneChange = { isAtBorne -> onAtBorneChange(item, isAtBorne) },
-                            isForceRed = item.competence.nom in highlightedSkills,
-                            isVerrouille = item.estVerrouilleParSorts,
-                            onVerrouilleClick = {
-                                val voie = VoieDraconic.entries.firstOrNull {
-                                    it.name.lowercase().replaceFirstChar { c -> c.uppercase() } == item.competence.nom
-                                }
-                                if (voie != null) onDraconicChange(voie, item.niveauActuel)
-                            },
-                            modifier = Modifier.padding(vertical = 5.dp)
-                        )
+                                        if (voie != null) onDraconicChange(voie, item.niveauActuel)
+                                    },
+                                    modifier = Modifier.padding(vertical = 5.dp)
+                                )
+                            }
+                            is CompetenceUiItem.Placeholder -> {
+                                PlaceholderRow(onClick = { onAddCustom(item.famille, item.index) })
+                            }
+                        }
                         HorizontalDivider(color = VoyageurColors.NomCaracteristique.copy(alpha = 0.06f))
                     }
                 }
@@ -322,5 +413,30 @@ fun CompetencesContent(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun PlaceholderRow(
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 5.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Spacer(Modifier.weight(0.10f))
+        Text(
+            text = ".........................",
+            fontFamily = FontFamily.Serif,
+            fontSize = 16.sp,
+            color = VoyageurColors.NomCaracteristique.copy(alpha = 0.5f),
+            modifier = Modifier.weight(0.50f)
+        )
+        Spacer(Modifier.weight(0.15f))
+        Spacer(Modifier.weight(0.15f))
+        Spacer(Modifier.weight(0.10f))
     }
 }

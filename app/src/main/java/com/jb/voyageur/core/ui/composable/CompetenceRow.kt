@@ -36,7 +36,9 @@ fun CompetenceRow(
     onAtBorneChange: (Boolean) -> Unit = {},
     isForceRed: Boolean = false,
     isVerrouille: Boolean = false,
+    isCustom: Boolean = false,
     onVerrouilleClick: () -> Unit = {},
+    onCustomNameClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val haptic = LocalHapticFeedback.current
@@ -111,6 +113,7 @@ fun CompetenceRow(
                                 if (!pointer.pressed) {
                                     if (System.currentTimeMillis() - downTime < 200) {
                                         if (isVerrouille) onVerrouilleClick()
+                                        else if (isCustom) onCustomNameClick()
                                         else currentOnAideRequise()
                                     }
                                     break
