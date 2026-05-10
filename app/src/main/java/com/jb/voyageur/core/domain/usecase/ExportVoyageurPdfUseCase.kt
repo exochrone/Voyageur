@@ -1,6 +1,7 @@
 package com.jb.voyageur.core.domain.usecase
 
 import android.content.Context
+import com.jb.voyageur.core.domain.model.CatalogueCompetences
 import com.jb.voyageur.core.domain.repository.VoyageurRepository
 import com.itextpdf.text.pdf.PdfReader
 import com.itextpdf.text.pdf.PdfStamper
@@ -16,6 +17,11 @@ class ExportVoyageurPdfUseCase @Inject constructor(
         val voyageur = voyageurRepository.charger(voyageurId) ?: return null
         val caracs = voyageur.caracteristiques
 
+        fun comp(nom: String): String {
+            val niveau = voyageur.competences[nom] ?: CatalogueCompetences.toutes.find { it.nom == nom }?.niveauBase ?: 0
+            return if (niveau > 0) "+$niveau" else niveau.toString()
+        }
+
         return try {
             val inputStream = context.assets.open("fiche.pdf")
             val reader = PdfReader(inputStream)
@@ -28,6 +34,9 @@ class ExportVoyageurPdfUseCase @Inject constructor(
             form.setField("CONSTITUTION", caracs.constitution.toString())
             form.setField("FORCE", caracs.force.toString())
             form.setField("AGILITE", caracs.agilite.toString())
+            
+            // Compétences (selon spec additionnelle)
+            form.setField("75", comp("Survie en cité"))
 
             // On aplatit le formulaire pour que les champs ne soient plus éditables dans le PDF final
             stamper.setFormFlattening(true)
