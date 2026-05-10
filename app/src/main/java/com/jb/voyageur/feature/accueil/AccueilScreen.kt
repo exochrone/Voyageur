@@ -62,7 +62,8 @@ fun AccueilContent(
             Text(
                 text = stringResource(R.string.app_name),
                 fontFamily = Luminari,
-                fontSize = 48.sp
+                fontSize = 60.sp,
+                fontWeight = FontWeight.Bold
             )
             Spacer(Modifier.height(8.dp))
             Text(

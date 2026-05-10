@@ -297,10 +297,10 @@ fun ColonneCatalogue(
         contentPadding = PaddingValues(vertical = 4.dp)
     ) {
         items(colonne.categorie.objets, key = { it.nom }) { objet ->
-            val estPossede = objet.nom in colonne.nomsAchetes
+            val quantite = colonne.quantitesAchetees[objet.nom] ?: 0
             ObjetCatalogueRow(
                 objet      = objet,
-                estPossede = estPossede,
+                quantite   = quantite,
                 onAcheter  = { onAcheter(objet) }
             )
             HorizontalDivider(
@@ -313,7 +313,7 @@ fun ColonneCatalogue(
 @Composable
 fun ObjetCatalogueRow(
     objet: ObjetEquipement,
-    estPossede: Boolean,
+    quantite: Int,
     onAcheter: () -> Unit
 ) {
     Column(
@@ -322,13 +322,29 @@ fun ObjetCatalogueRow(
             .clickable(onClick = onAcheter)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        Text(
-            text = objet.nom,
-            fontFamily = FontFamily.Serif,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Bold,
-            color = VoyageurColors.NomCaracteristique
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = objet.nom,
+                fontFamily = FontFamily.Serif,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                color = VoyageurColors.NomCaracteristique,
+                modifier = Modifier.weight(1f)
+            )
+            if (quantite > 0) {
+                Text(
+                    text = "x$quantite",
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+            }
+        }
         Text(
             text = "Enc : ${formatEnc(objet.encombrement)} - Prix : ${objet.prix}d",
             fontFamily = FontFamily.Serif,

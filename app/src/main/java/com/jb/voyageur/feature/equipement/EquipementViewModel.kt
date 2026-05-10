@@ -83,8 +83,8 @@ class EquipementViewModel @Inject constructor(
 
         val colonnesCatalogue = catalogue.map { categorie ->
             ColonneEquipement.Catalogue(
-                categorie   = categorie,
-                nomsAchetes = possedes.map { it.nom }.toSet()
+                categorie           = categorie,
+                quantitesAchetees   = possedes.associate { it.nom to it.quantite }
             )
         }
 
@@ -118,6 +118,6 @@ sealed interface ColonneEquipement {
 
     data class Catalogue(
         val categorie:   CategorieEquipement,
-        val nomsAchetes: Set<String>
+        val quantitesAchetees: Map<String, Int>
     ) : ColonneEquipement
 }
