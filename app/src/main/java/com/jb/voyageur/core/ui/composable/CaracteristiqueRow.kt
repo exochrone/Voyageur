@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -46,7 +47,9 @@ fun CaracteristiqueRow(
     labelPaddingStart: androidx.compose.ui.unit.Dp = 0.dp,
     valuePaddingEnd: androidx.compose.ui.unit.Dp = 0.dp,
     spacerEnabled: Boolean = true,
+    isForceRed: Boolean = false,
     onValeurChange: (Int) -> Unit,
+    onAtBorneChange: (Boolean) -> Unit = {},
     onAideRequise: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -60,6 +63,10 @@ fun CaracteristiqueRow(
     val currentValeur by rememberUpdatedState(valeur)
     val currentMin by rememberUpdatedState(min)
     val currentMax by rememberUpdatedState(max)
+
+    LaunchedEffect(atBorne) {
+        onAtBorneChange(atBorne)
+    }
 
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
@@ -109,10 +116,13 @@ fun CaracteristiqueRow(
 
                                 if (event == null) {
                                     // 200ms écoulées sans mouvement → activer le drag seulement si modifiable
-                                    if (pointer.pressed && currentMin < currentMax) {
+                                    if (pointer.pressed && (currentMin < currentMax || currentValeur == currentMax)) {
                                         longPressTriggered = true
                                         isDragging = true
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        if (currentValeur == currentMax) {
+                                            atBorne = true
+                                        }
                                     }
                                     break
                                 }
@@ -152,8 +162,13 @@ fun CaracteristiqueRow(
                                                 onValeurChange(nouvelleValeur)
                                                 atBorne = false
                                             } else {
-                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                atBorne = true
+                                                if (increments > 0 && currentValeur == currentMax) {
+                                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                    atBorne = true
+                                                } else if (increments < 0 && currentValeur == currentMin) {
+                                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                    atBorne = true
+                                                }
                                             }
                                             dragAccumulator -= increments * dragThresholdPx
                                         }
@@ -177,7 +192,7 @@ fun CaracteristiqueRow(
             fontFamily = valueFontFamily,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = if (atBorne) androidx.compose.ui.graphics.Color(0xFFFF0000) else VoyageurColors.ValeurCaracteristique,
+            color = if (atBorne || isForceRed) androidx.compose.ui.graphics.Color(0xFFFF0000) else VoyageurColors.ValeurCaracteristique,
             modifier = Modifier
                 .graphicsLayer(scaleX = scale, scaleY = scale)
                 .padding(start = 8.dp, end = valuePaddingEnd)

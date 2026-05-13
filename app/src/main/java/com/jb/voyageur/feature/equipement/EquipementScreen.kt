@@ -164,13 +164,13 @@ fun EquipementContent(
         // Sticky bas — Fortune + Encombrement total
         Surface(
             color           = VoyageurColors.ParcheminBase.copy(alpha = 0.3f),
-            shadowElevation = 4.dp,
+            shadowElevation = 0.dp,
             modifier        = Modifier
                 .align(Alignment.BottomEnd)
                 .fillMaxWidth()
         ) {
             Column(
-                modifier             = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                modifier             = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                 horizontalAlignment  = Alignment.End
             ) {
                 Text(

@@ -355,7 +355,7 @@ fun CompetencesContent(
         // Compteur de points restants — Sticky Bottom
         Surface(
             color = VoyageurColors.ParcheminBase.copy(alpha = 0.3f),
-            shadowElevation = 4.dp,
+            shadowElevation = 0.dp,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .fillMaxWidth()
@@ -363,7 +363,7 @@ fun CompetencesContent(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
                 horizontalAlignment = Alignment.End
             ) {
                 if (uiState.hautRevant) {

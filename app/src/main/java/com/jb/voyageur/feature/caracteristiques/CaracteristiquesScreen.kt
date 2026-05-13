@@ -152,6 +152,8 @@ fun CaracteristiquesListe(
     onLateraliteChange: (com.jb.voyageur.core.domain.model.Lateralite) -> Unit,
     onDemanderAide: (ChampAffichage) -> Unit
 ) {
+    var highlightedChamps by remember { mutableStateOf(setOf<ChampAffichage>()) }
+
     LazyColumn(modifier = modifier) {
         item {
             SectionDescription(
@@ -195,6 +197,16 @@ fun CaracteristiquesListe(
                             uiState = uiState,
                             labelPaddingStart = 6.dp, 
                             valuePaddingEnd = 8.dp,
+                            isForceRed = champ in highlightedChamps,
+                            onAtBorneChange = { isAtBorne ->
+                                if (isAtBorne && champ == ChampAffichage.Principale.FORCE && 
+                                    uiState.caracteristiques.force == uiState.forceMax &&
+                                    uiState.forceMax < 15) {
+                                    highlightedChamps = setOf(ChampAffichage.Principale.TAILLE)
+                                } else {
+                                    highlightedChamps = emptySet()
+                                }
+                            },
                             onCaracteristiqueChange = onCaracteristiqueChange,
                             onDemanderAide = onDemanderAide
                         )
@@ -222,6 +234,16 @@ fun CaracteristiquesListe(
                             champ = champ,
                             uiState = uiState,
                             valuePaddingEnd = 20.dp,
+                            isForceRed = champ in highlightedChamps,
+                            onAtBorneChange = { isAtBorne ->
+                                if (isAtBorne && champ == ChampAffichage.Principale.FORCE && 
+                                    uiState.caracteristiques.force == uiState.forceMax &&
+                                    uiState.forceMax < 15) {
+                                    highlightedChamps = setOf(ChampAffichage.Principale.TAILLE)
+                                } else {
+                                    highlightedChamps = emptySet()
+                                }
+                            },
                             onCaracteristiqueChange = onCaracteristiqueChange,
                             onDemanderAide = onDemanderAide
                         )
@@ -295,6 +317,8 @@ private fun CaracteristiqueItem(
     uiState: CaracteristiquesUiState.Success,
     labelPaddingStart: androidx.compose.ui.unit.Dp = 0.dp,
     valuePaddingEnd: androidx.compose.ui.unit.Dp = 0.dp,
+    isForceRed: Boolean = false,
+    onAtBorneChange: (Boolean) -> Unit = {},
     onCaracteristiqueChange: (ChampCaracteristique, Int) -> Unit,
     onDemanderAide: (ChampAffichage) -> Unit
 ) {
@@ -365,7 +389,9 @@ private fun CaracteristiqueItem(
         max = max,
         labelPaddingStart = labelPaddingStart,
         valuePaddingEnd = valuePaddingEnd,
+        isForceRed = isForceRed,
         onValeurChange = { if (champ is ChampAffichage.Principale) onCaracteristiqueChange(champ.domain, it) },
+        onAtBorneChange = onAtBorneChange,
         onAideRequise = { onDemanderAide(champ) }
     )
 }
