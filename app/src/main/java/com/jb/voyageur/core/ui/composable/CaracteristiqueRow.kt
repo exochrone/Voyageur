@@ -65,7 +65,7 @@ fun CaracteristiqueRow(
     val currentMax by rememberUpdatedState(max)
 
     LaunchedEffect(atBorne) {
-        onAtBorneChange(atBorne)
+        if (isDragging) onAtBorneChange(atBorne)
     }
 
     val nestedScrollConnection = remember {

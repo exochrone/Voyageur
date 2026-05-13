@@ -217,6 +217,9 @@ fun MainScreen(
                 CenterAlignedTopAppBar(
                     modifier = Modifier.statusBarsPadding().height(48.dp),
                     windowInsets = WindowInsets(0),
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    ),
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(Icons.Default.Menu, contentDescription = null)

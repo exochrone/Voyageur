@@ -153,6 +153,7 @@ fun CaracteristiquesListe(
     onDemanderAide: (ChampAffichage) -> Unit
 ) {
     var highlightedChamps by remember { mutableStateOf(setOf<ChampAffichage>()) }
+    var highlightPointsRestants by remember { mutableStateOf(false) }
 
     LazyColumn(modifier = modifier) {
         item {
@@ -199,12 +200,17 @@ fun CaracteristiquesListe(
                             valuePaddingEnd = 8.dp,
                             isForceRed = champ in highlightedChamps,
                             onAtBorneChange = { isAtBorne ->
-                                if (isAtBorne && champ == ChampAffichage.Principale.FORCE && 
-                                    uiState.caracteristiques.force == uiState.forceMax &&
-                                    uiState.forceMax < 15) {
-                                    highlightedChamps = setOf(ChampAffichage.Principale.TAILLE)
+                                if (isAtBorne) {
+                                    if (champ == ChampAffichage.Principale.FORCE && 
+                                        uiState.caracteristiques.force == uiState.forceMax &&
+                                        uiState.forceMax < 15) {
+                                        highlightedChamps = setOf(ChampAffichage.Principale.TAILLE)
+                                    } else if (uiState.pointsRestants == 0 && champ is ChampAffichage.Principale) {
+                                        highlightPointsRestants = true
+                                    }
                                 } else {
                                     highlightedChamps = emptySet()
+                                    highlightPointsRestants = false
                                 }
                             },
                             onCaracteristiqueChange = onCaracteristiqueChange,
@@ -236,12 +242,17 @@ fun CaracteristiquesListe(
                             valuePaddingEnd = 20.dp,
                             isForceRed = champ in highlightedChamps,
                             onAtBorneChange = { isAtBorne ->
-                                if (isAtBorne && champ == ChampAffichage.Principale.FORCE && 
-                                    uiState.caracteristiques.force == uiState.forceMax &&
-                                    uiState.forceMax < 15) {
-                                    highlightedChamps = setOf(ChampAffichage.Principale.TAILLE)
+                                if (isAtBorne) {
+                                    if (champ == ChampAffichage.Principale.FORCE && 
+                                        uiState.caracteristiques.force == uiState.forceMax &&
+                                        uiState.forceMax < 15) {
+                                        highlightedChamps = setOf(ChampAffichage.Principale.TAILLE)
+                                    } else if (uiState.pointsRestants == 0 && champ is ChampAffichage.Principale) {
+                                        highlightPointsRestants = true
+                                    }
                                 } else {
                                     highlightedChamps = emptySet()
+                                    highlightPointsRestants = false
                                 }
                             },
                             onCaracteristiqueChange = onCaracteristiqueChange,
@@ -268,7 +279,9 @@ fun CaracteristiquesListe(
                     if (startIndex != -1) {
                         addStyle(
                             style = androidx.compose.ui.text.SpanStyle(
-                                color = if (uiState.pointsRestants < 0) VoyageurColors.ValeurCaracteristique else androidx.compose.ui.graphics.Color.Black,
+                                color = if (highlightPointsRestants) androidx.compose.ui.graphics.Color(0xFFFF0000)
+                                        else if (uiState.pointsRestants < 0) VoyageurColors.ValeurCaracteristique 
+                                        else androidx.compose.ui.graphics.Color.Black,
                                 fontWeight = FontWeight.Bold
                             ),
                             start = startIndex,
