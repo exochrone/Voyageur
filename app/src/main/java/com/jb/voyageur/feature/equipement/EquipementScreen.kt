@@ -1,7 +1,6 @@
 package com.jb.voyageur.feature.equipement
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -90,7 +89,7 @@ fun EquipementContent(
             BarreNavigationEcran(
                 titre          = stringResource(R.string.menu_equipement),
                 ecranCourant   = EcranCreation.EQUIPEMENT,
-                hautRevant     = uiState.hautRevant,
+                afficherSorts  = uiState.aDesSortsAccessibles,
                 onNaviguerVers = onNaviguerVers
             )
 
@@ -150,12 +149,16 @@ fun EquipementContent(
                 if (page == 0) {
                     ColonnePossedes(
                         colonne      = uiState.colonnePossedes,
-                        onRembourser = onRembourser
+                        onAcheter    = onAcheter,
+                        onRembourser = onRembourser,
+                        fortune      = uiState.fortune
                     )
                 } else {
                     ColonneCatalogue(
                         colonne   = uiState.colonnesCatalogue[page - 1],
-                        onAcheter = onAcheter
+                        onAcheter = onAcheter,
+                        onRembourser = onRembourser,
+                        fortune      = uiState.fortune
                     )
                 }
             }
@@ -209,7 +212,9 @@ fun EquipementContent(
 @Composable
 fun ColonnePossedes(
     colonne: ColonneEquipement.Possedes,
-    onRembourser: (String) -> Unit
+    onAcheter: (ObjetEquipement) -> Unit,
+    onRembourser: (String) -> Unit,
+    fortune: Int
 ) {
     if (colonne.groupes.isEmpty()) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -246,7 +251,11 @@ fun ColonnePossedes(
             items(objets, key = { it.nom }) { objet ->
                 ObjetPossedeRow(
                     objet        = objet,
-                    onRembourser = { onRembourser(objet.nom) }
+                    onAcheter    = { 
+                        onAcheter(ObjetEquipement(objet.nom, objet.encombrementUnitaire, objet.prixUnitaire))
+                    },
+                    onRembourser = { onRembourser(objet.nom) },
+                    canAfford = fortune >= objet.prixUnitaire
                 )
                 HorizontalDivider(
                     color = VoyageurColors.NomCaracteristique.copy(alpha = 0.06f)
@@ -259,30 +268,45 @@ fun ColonnePossedes(
 @Composable
 fun ObjetPossedeRow(
     objet: ObjetPossede,
-    onRembourser: () -> Unit
+    onAcheter: () -> Unit,
+    onRembourser: () -> Unit,
+    canAfford: Boolean
 ) {
-    // Tap → rembourser 1 unité
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onRembourser)
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = objet.nom,
+                fontFamily = FontFamily.Serif,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                color = VoyageurColors.NomCaracteristique
+            )
+            Text(
+                text = "Enc : ${formatEnc(objet.encombrementTotal)} - Prix : ${objet.prixTotal}d",
+                fontFamily = FontFamily.Serif,
+                fontSize = 12.sp,
+                color = VoyageurColors.NomCaracteristique.copy(alpha = 0.8f)
+            )
+        }
+
         Text(
-            text = buildString {
-                if (objet.quantite > 1) append("${objet.quantite} ")
-                append(objet.nom)
-            },
-            fontFamily = FontFamily.Serif,
+            text = "x${objet.quantite}",
+            fontFamily = FontFamily.SansSerif,
             fontSize = 15.sp,
             fontWeight = FontWeight.Bold,
-            color = VoyageurColors.NomCaracteristique
+            color = Color.Black,
+            modifier = Modifier.padding(horizontal = 12.dp)
         )
-        Text(
-            text = "Enc : ${formatEnc(objet.encombrementTotal)} - Prix : ${objet.prixTotal}d",
-            fontFamily = FontFamily.Serif,
-            fontSize = 12.sp,
-            color = VoyageurColors.NomCaracteristique.copy(alpha = 0.8f)
+
+        BoutonsAchatRemboursement(
+            onAcheter = onAcheter,
+            onRembourser = onRembourser,
+            acheterEnabled = canAfford
         )
     }
 }
@@ -290,7 +314,9 @@ fun ObjetPossedeRow(
 @Composable
 fun ColonneCatalogue(
     colonne: ColonneEquipement.Catalogue,
-    onAcheter: (ObjetEquipement) -> Unit
+    onAcheter: (ObjetEquipement) -> Unit,
+    onRembourser: (String) -> Unit,
+    fortune: Int
 ) {
     LazyColumn(
         modifier       = Modifier.fillMaxSize(),
@@ -301,7 +327,9 @@ fun ColonneCatalogue(
             ObjetCatalogueRow(
                 objet      = objet,
                 quantite   = quantite,
-                onAcheter  = { onAcheter(objet) }
+                onAcheter  = { onAcheter(objet) },
+                onRembourser = { onRembourser(objet.nom) },
+                canAfford = fortune >= objet.prix
             )
             HorizontalDivider(
                 color = VoyageurColors.NomCaracteristique.copy(alpha = 0.06f)
@@ -314,43 +342,94 @@ fun ColonneCatalogue(
 fun ObjetCatalogueRow(
     objet: ObjetEquipement,
     quantite: Int,
-    onAcheter: () -> Unit
+    onAcheter: () -> Unit,
+    onRembourser: () -> Unit,
+    canAfford: Boolean
 ) {
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onAcheter)
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = objet.nom,
                 fontFamily = FontFamily.Serif,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
-                color = VoyageurColors.NomCaracteristique,
-                modifier = Modifier.weight(1f)
+                color = VoyageurColors.NomCaracteristique
             )
-            if (quantite > 0) {
-                Text(
-                    text = "x$quantite",
-                    fontFamily = FontFamily.Serif,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
+            Text(
+                text = "Enc : ${formatEnc(objet.encombrement)} - Prix : ${objet.prix}d",
+                fontFamily = FontFamily.Serif,
+                fontSize = 12.sp,
+                color = VoyageurColors.NomCaracteristique.copy(alpha = 0.8f)
+            )
+        }
+
+        if (quantite > 0) {
+            Text(
+                text = "x$quantite",
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+                modifier = Modifier.padding(horizontal = 12.dp)
+            )
+        }
+
+        BoutonsAchatRemboursement(
+            onAcheter = onAcheter,
+            onRembourser = onRembourser,
+            rembourserEnabled = quantite > 0,
+            acheterEnabled = canAfford
+        )
+    }
+}
+
+@Composable
+fun BoutonsAchatRemboursement(
+    onAcheter: () -> Unit,
+    onRembourser: () -> Unit,
+    modifier: Modifier = Modifier,
+    rembourserEnabled: Boolean = true,
+    acheterEnabled: Boolean = true
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        // Bouton +
+        Surface(
+            onClick = onAcheter,
+            enabled = acheterEnabled,
+            modifier = Modifier.size(32.dp),
+            shape = MaterialTheme.shapes.extraSmall,
+            color = if (acheterEnabled) VoyageurColors.NomCaracteristique.copy(alpha = 0.15f)
+                    else Color.Gray.copy(alpha = 0.1f),
+            contentColor = if (acheterEnabled) VoyageurColors.NomCaracteristique
+                          else Color.Gray
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text("+", fontWeight = FontWeight.Bold, fontSize = 20.sp)
             }
         }
-        Text(
-            text = "Enc : ${formatEnc(objet.encombrement)} - Prix : ${objet.prix}d",
-            fontFamily = FontFamily.Serif,
-            fontSize = 12.sp,
-            color = VoyageurColors.NomCaracteristique.copy(alpha = 0.8f)
-        )
+        // Bouton -
+        Surface(
+            onClick = onRembourser,
+            enabled = rembourserEnabled,
+            modifier = Modifier.size(32.dp),
+            shape = MaterialTheme.shapes.extraSmall,
+            color = if (rembourserEnabled) VoyageurColors.ValeurCaracteristique.copy(alpha = 0.15f) 
+                    else Color.Gray.copy(alpha = 0.1f),
+            contentColor = if (rembourserEnabled) VoyageurColors.ValeurCaracteristique 
+                          else Color.Gray
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text("-", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+            }
+        }
     }
 }
 

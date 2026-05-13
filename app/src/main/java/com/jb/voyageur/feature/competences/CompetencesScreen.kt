@@ -246,7 +246,7 @@ fun CompetencesContent(
             BarreNavigationEcran(
                 titre = stringResource(R.string.menu_competences),
                 ecranCourant = EcranCreation.COMPETENCES,
-                hautRevant = uiState.hautRevant,
+                afficherSorts = uiState.aDesSortsAccessibles,
                 onNaviguerVers = onNaviguerVers
             )
 

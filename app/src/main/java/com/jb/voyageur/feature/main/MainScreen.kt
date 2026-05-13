@@ -1,5 +1,6 @@
 package com.jb.voyageur.feature.main
 
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -58,10 +59,14 @@ fun MainScreen(
     viewModel: MainViewModel = hiltViewModel()
 ) {
     val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+    val currentRoute = currentDestination?.route
+
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val voyageurNom by viewModel.voyageurNom.collectAsStateWithLifecycle()
-    val hautRevant by viewModel.hautRevant.collectAsStateWithLifecycle()
+    val isSpellMenuEnabled by viewModel.isSpellMenuEnabled.collectAsStateWithLifecycle()
     val pdfExportState by viewModel.pdfExportState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
@@ -98,10 +103,6 @@ fun MainScreen(
             }
         )
     }
-
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = navBackStackEntry?.destination
-    val currentRoute = currentDestination?.route
 
     val onNaviguerVers: (EcranCreation) -> Unit = { ecran ->
         navController.navigate(ecran.toRoute()) {
@@ -153,20 +154,36 @@ fun MainScreen(
                     )
 
                     menuItems.forEach { item ->
+                        val isEnabled = item != NavItem.Sorts || isSpellMenuEnabled
                         NavigationDrawerItem(
-                            label = { Text(stringResource(item.labelRes), fontFamily = FontFamily.Serif, fontSize = 18.sp) },
+                            label = { 
+                                Text(
+                                    text = stringResource(item.labelRes), 
+                                    fontFamily = FontFamily.Serif, 
+                                    fontSize = 18.sp
+                                ) 
+                            },
                             selected = currentDestination?.hierarchy?.any { it.route == item.route } == true,
                             onClick = {
-                                scope.launch { drawerState.close() }
-                                navController.navigate(item.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
+                                if (isEnabled) {
+                                    scope.launch { drawerState.close() }
+                                    navController.navigate(item.route) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
                                     }
-                                    launchSingleTop = true
-                                    restoreState = true
                                 }
                             },
-                            colors = drawerColors,
+                            colors = if (isEnabled) drawerColors else NavigationDrawerItemDefaults.colors(
+                                unselectedContainerColor = Color.Transparent,
+                                unselectedTextColor = Color.Gray,
+                                unselectedIconColor = Color.Gray,
+                                selectedContainerColor = Color.Transparent,
+                                selectedTextColor = Color.Gray,
+                                selectedIconColor = Color.Gray
+                            ),
                             modifier = Modifier.padding(vertical = 4.dp)
                         )
                     }
@@ -251,6 +268,12 @@ fun MainScreen(
                 )
             }
         ) { innerPadding ->
+            // Le BackHandler placé ici interceptera le retour système
+            // et empêchera la navigation arrière dans le NavHost interne.
+            BackHandler(enabled = currentRoute != NavItem.Options.route) {
+                // Bloque le retour (consomme l'événement)
+            }
+
             NavHost(
                 navController = navController,
                 startDestination = NavItem.Caracteristiques.route,
@@ -308,7 +331,7 @@ fun MainScreen(
                     PlaceholderScreen(
                         name = "Archétype",
                         ecranCourant = EcranCreation.ARCHETYPE,
-                        hautRevant = hautRevant,
+                        afficherSorts = isSpellMenuEnabled,
                         onNaviguerVers = onNaviguerVers
                     )
                 }
@@ -357,7 +380,7 @@ fun MainScreen(
 fun PlaceholderScreen(
     name: String,
     ecranCourant: EcranCreation? = null,
-    hautRevant: Boolean = false,
+    afficherSorts: Boolean = false,
     onNaviguerVers: ((EcranCreation) -> Unit)? = null
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
@@ -365,7 +388,7 @@ fun PlaceholderScreen(
             BarreNavigationEcran(
                 titre = name,
                 ecranCourant = ecranCourant,
-                hautRevant = hautRevant,
+                afficherSorts = afficherSorts,
                 onNaviguerVers = onNaviguerVers
             )
         }

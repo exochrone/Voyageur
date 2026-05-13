@@ -154,6 +154,7 @@ sealed interface CaracteristiquesUiState {
         val caracteristiques: Caracteristiques,
         val beaute: Int,
         val hautRevant: Boolean,
+        val aDesSortsAccessibles: Boolean,
         val pointsRestants: Int,
         val derobee: Int,
         val melee: Int,
@@ -171,6 +172,12 @@ sealed interface CaracteristiquesUiState {
 
 private fun Voyageur.toCaracteristiquesUiState(): CaracteristiquesUiState.Success {
     val pointsBeaute = (beaute - 10).coerceAtLeast(0)
+    val aDesSorts = hautRevant && (
+        draconic.oniros > -11 || 
+        draconic.hypnos > -11 || 
+        draconic.narcos > -11 || 
+        draconic.thanatos > -11
+    )
     return CaracteristiquesUiState.Success(
         nom = nom,
         sexe = sexe,
@@ -185,6 +192,7 @@ private fun Voyageur.toCaracteristiquesUiState(): CaracteristiquesUiState.Succes
         caracteristiques = caracteristiques,
         beaute = beaute,
         hautRevant = hautRevant,
+        aDesSortsAccessibles = aDesSorts,
         pointsRestants = 160 - caracteristiques.pointsTotal - pointsBeaute,
         derobee = caracteristiques.derobee,
         melee = caracteristiques.melee,

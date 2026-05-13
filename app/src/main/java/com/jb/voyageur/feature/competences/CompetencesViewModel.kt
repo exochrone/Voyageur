@@ -173,7 +173,13 @@ class CompetencesViewModel @Inject constructor(
         val pointsRestants = calculPointsRestants(this)
         val pointsSorts = sorts.sumOf { it.coutPaye }
         val colonnes = buildColonnes(this)
-        return CompetencesUiState.Success(colonnes, pointsRestants, pointsSorts, hautRevant)
+        val aDesSorts = hautRevant && (
+            draconic.oniros > -11 || 
+            draconic.hypnos > -11 || 
+            draconic.narcos > -11 || 
+            draconic.thanatos > -11
+        )
+        return CompetencesUiState.Success(colonnes, pointsRestants, pointsSorts, hautRevant, aDesSorts)
     }
 
     private fun calculPointsRestants(voyageur: Voyageur): Int {
@@ -456,7 +462,8 @@ sealed interface CompetencesUiState {
         val colonnes: List<ColonneCompetences>,
         val pointsRestants: Int,
         val pointsSortsUtilises: Int,
-        val hautRevant: Boolean
+        val hautRevant: Boolean,
+        val aDesSortsAccessibles: Boolean
     ) : CompetencesUiState
 }
 

@@ -93,7 +93,13 @@ class EquipementViewModel @Inject constructor(
             colonnesCatalogue = colonnesCatalogue,
             fortune          = fortune,
             encMax           = caracteristiques.encombrement,
-            hautRevant       = hautRevant
+            hautRevant       = hautRevant,
+            aDesSortsAccessibles = hautRevant && (
+                draconic.oniros > -11 || 
+                draconic.hypnos > -11 || 
+                draconic.narcos > -11 || 
+                draconic.thanatos > -11
+            )
         )
     }
 }
@@ -105,7 +111,8 @@ sealed interface EquipementUiState {
         val colonnesCatalogue: List<ColonneEquipement.Catalogue>,
         val fortune:           Int,
         val encMax:            Float,
-        val hautRevant:        Boolean
+        val hautRevant:        Boolean,
+        val aDesSortsAccessibles: Boolean
     ) : EquipementUiState
 }
 

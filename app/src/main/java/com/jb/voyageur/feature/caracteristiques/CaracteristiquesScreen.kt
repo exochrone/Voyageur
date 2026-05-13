@@ -91,7 +91,7 @@ fun CaracteristiquesContent(
             BarreNavigationEcran(
                 titre = stringResource(R.string.menu_caracteristiques),
                 ecranCourant = EcranCreation.CARACTERISTIQUES,
-                hautRevant = uiState.hautRevant,
+                afficherSorts = uiState.aDesSortsAccessibles,
                 onNaviguerVers = onNaviguerVers
             )
 

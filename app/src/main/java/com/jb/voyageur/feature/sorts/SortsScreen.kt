@@ -89,7 +89,7 @@ fun SortsContent(
             BarreNavigationEcran(
                 titre = stringResource(R.string.menu_sorts),
                 ecranCourant = EcranCreation.SORTS,
-                hautRevant = state.hautRevant,
+                afficherSorts = true, // On y est, donc forcé à true pour permettre le retour
                 onNaviguerVers = onNaviguerVers
             )
 
@@ -261,30 +261,42 @@ fun AchatSortDialog(
     val coutBase = sort.calculerCoutDeBase()
     val supplement = sort.calculerSupplement(niveauDraconic)
     val coutTotal = coutBase + supplement
-    val diffStr = sort.difficulte?.let { "R-$it" } ?: "variable"
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { 
             Text(
-                text = "${sort.nom} $diffStr", 
+                text = sort.nomPur, 
                 fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Bold
             ) 
         },
         text = {
             Column {
-                if (estConnu) {
-                    Text(stringResource(R.string.sorts_deja_connu))
-                } else if (!accessible) {
-                    Text(stringResource(R.string.sorts_inaccessible_niveau, sort.voie.name.lowercase()))
-                } else {
-                    Text(stringResource(R.string.sorts_cout, coutBase))
-                    if (supplement > 0) {
-                        Text(stringResource(R.string.sorts_supplement, supplement))
-                        Text(stringResource(R.string.sorts_total, coutTotal), fontWeight = FontWeight.Bold)
-                    }
+                sort.tmr?.let {
+                    Text(text = "TMR : $it", fontFamily = FontFamily.Serif)
                 }
+                Text(text = "Difficulté : ${sort.diffFull}", fontFamily = FontFamily.Serif)
+                
+                Spacer(Modifier.height(8.dp))
+
+                if (estConnu) {
+                    Text(stringResource(R.string.sorts_deja_connu), fontWeight = FontWeight.Bold, color = VoyageurColors.NomCaracteristique)
+                    Spacer(Modifier.height(4.dp))
+                } else if (!accessible) {
+                    Text(stringResource(R.string.sorts_inaccessible_niveau, sort.voie.name.lowercase()), color = VoyageurColors.ValeurCaracteristique)
+                    Spacer(Modifier.height(4.dp))
+                }
+
+                Text(stringResource(R.string.sorts_cout, coutBase), fontFamily = FontFamily.Serif)
+                if (supplement > 0) {
+                    Text(stringResource(R.string.sorts_supplement, supplement), fontFamily = FontFamily.Serif)
+                }
+                Text(
+                    text = stringResource(R.string.sorts_total, if (estConnu) coutBase + supplement else coutTotal),
+                    fontFamily = FontFamily.Serif,
+                    fontWeight = FontWeight.Bold
+                )
             }
         },
         confirmButton = {

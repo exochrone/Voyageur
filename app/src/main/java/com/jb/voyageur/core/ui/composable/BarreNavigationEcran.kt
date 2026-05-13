@@ -26,12 +26,12 @@ import com.jb.voyageur.core.ui.theme.VoyageurColors
 fun BarreNavigationEcran(
     titre: String,
     ecranCourant: EcranCreation,
-    hautRevant: Boolean,
+    afficherSorts: Boolean,
     onNaviguerVers: (EcranCreation) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val ecranPrecedent = SequenceEcrans.precedent(ecranCourant, hautRevant)
-    val ecranSuivant   = SequenceEcrans.suivant(ecranCourant, hautRevant)
+    val ecranPrecedent = SequenceEcrans.precedent(ecranCourant, afficherSorts)
+    val ecranSuivant   = SequenceEcrans.suivant(ecranCourant, afficherSorts)
 
     Row(
         modifier = modifier

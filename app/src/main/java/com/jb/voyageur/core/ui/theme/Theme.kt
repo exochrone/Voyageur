@@ -12,6 +12,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -56,8 +57,10 @@ fun VoyageurTheme(
         surfaceVariant = colorScheme.surfaceVariant.copy(alpha = 0.7f),
     )
 
-    val backgroundModel = backgroundImageUri ?: R.drawable.fond
-    val uri = backgroundImageUri?.let { Uri.parse(it) } ?: Uri.parse("android.resource://${context.packageName}/${R.drawable.fond}")
+    val backgroundModel = remember(backgroundImageUri) { backgroundImageUri ?: R.drawable.fond }
+    val uri = remember(backgroundImageUri) {
+        backgroundImageUri?.let { Uri.parse(it) } ?: Uri.parse("android.resource://${context.packageName}/${R.drawable.fond}")
+    }
 
     CompositionLocalProvider(LocalBackgroundImageUri provides uri) {
         MaterialTheme(
