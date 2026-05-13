@@ -199,8 +199,8 @@ fun CaracteristiquesListe(
                             labelPaddingStart = 6.dp, 
                             valuePaddingEnd = 8.dp,
                             isForceRed = champ in highlightedChamps,
-                            onAtBorneChange = { isAtBorne ->
-                                if (isAtBorne) {
+                            onAtBorneChange = { direction ->
+                                if (direction == 1) { // Blocage en montant
                                     if (champ == ChampAffichage.Principale.FORCE && 
                                         uiState.caracteristiques.force == uiState.forceMax &&
                                         uiState.forceMax < 15) {
@@ -241,8 +241,8 @@ fun CaracteristiquesListe(
                             uiState = uiState,
                             valuePaddingEnd = 20.dp,
                             isForceRed = champ in highlightedChamps,
-                            onAtBorneChange = { isAtBorne ->
-                                if (isAtBorne) {
+                            onAtBorneChange = { direction ->
+                                if (direction == 1) { // Blocage en montant
                                     if (champ == ChampAffichage.Principale.FORCE && 
                                         uiState.caracteristiques.force == uiState.forceMax &&
                                         uiState.forceMax < 15) {
@@ -331,7 +331,7 @@ private fun CaracteristiqueItem(
     labelPaddingStart: androidx.compose.ui.unit.Dp = 0.dp,
     valuePaddingEnd: androidx.compose.ui.unit.Dp = 0.dp,
     isForceRed: Boolean = false,
-    onAtBorneChange: (Boolean) -> Unit = {},
+    onAtBorneChange: (Int) -> Unit = {},
     onCaracteristiqueChange: (ChampCaracteristique, Int) -> Unit,
     onDemanderAide: (ChampAffichage) -> Unit
 ) {

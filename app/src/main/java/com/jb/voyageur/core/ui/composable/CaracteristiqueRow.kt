@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -49,13 +50,13 @@ fun CaracteristiqueRow(
     spacerEnabled: Boolean = true,
     isForceRed: Boolean = false,
     onValeurChange: (Int) -> Unit,
-    onAtBorneChange: (Boolean) -> Unit = {},
+    onAtBorneChange: (Int) -> Unit = {}, // 1: haut, -1: bas, 0: aucun
     onAideRequise: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val view = LocalView.current
     var isDragging by remember { mutableStateOf(false) }
-    var atBorne by remember { mutableStateOf(false) }
+    var atBorneDir by remember { mutableIntStateOf(0) }
     var showSaisieDialog by remember { mutableStateOf(false) }
     var dragAccumulator by remember { mutableFloatStateOf(0f) }
     val dragThresholdPx = with(LocalDensity.current) { 24.dp.toPx() }
@@ -64,8 +65,8 @@ fun CaracteristiqueRow(
     val currentMin by rememberUpdatedState(min)
     val currentMax by rememberUpdatedState(max)
 
-    LaunchedEffect(atBorne) {
-        if (isDragging) onAtBorneChange(atBorne)
+    LaunchedEffect(atBorneDir) {
+        if (isDragging) onAtBorneChange(atBorneDir)
     }
 
     val nestedScrollConnection = remember {
@@ -121,7 +122,7 @@ fun CaracteristiqueRow(
                                     isDragging = true
                                     view.performHapticFeedback(HapticFeedbackConstants.GESTURE_START)
                                     if (currentMin == currentMax || currentValeur == currentMax || currentValeur == currentMin) {
-                                        atBorne = true
+                                        atBorneDir = if (currentValeur == currentMax) 1 else -1
                                     }
                                     break
                                 }
@@ -157,23 +158,21 @@ fun CaracteristiqueRow(
                                             val nouvelleValeur = (currentValeur + increments)
                                                 .coerceIn(currentMin, currentMax)
                                             if (nouvelleValeur != currentValeur) {
-                                                // Retour haptique pour chaque changement de valeur (plus sec que TextHandleMove)
-                                                repeat(kotlin.math.abs(nouvelleValeur - currentValeur)) {
-                                                    view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-                                                }
+                                                // Retour haptique pour le changement de valeur
+                                                view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
                                                 onValeurChange(nouvelleValeur)
-                                                atBorne = false
+                                                atBorneDir = 0
                                             } else {
                                                 // Retour haptique en cas de blocage (effet REJECT très parlant)
                                                 view.performHapticFeedback(HapticFeedbackConstants.REJECT)
-                                                atBorne = true
+                                                atBorneDir = if (increments > 0) 1 else -1
                                             }
                                             dragAccumulator -= increments * dragThresholdPx
                                         }
                                     }
                                 } finally {
                                     isDragging = false
-                                    atBorne = false
+                                    atBorneDir = 0
                                 }
                             }
                         }
@@ -190,7 +189,7 @@ fun CaracteristiqueRow(
             fontFamily = valueFontFamily,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = if (atBorne || isForceRed) androidx.compose.ui.graphics.Color(0xFFFF0000) else VoyageurColors.ValeurCaracteristique,
+            color = if (atBorneDir != 0 || isForceRed) androidx.compose.ui.graphics.Color(0xFFFF0000) else VoyageurColors.ValeurCaracteristique,
             modifier = Modifier
                 .graphicsLayer(scaleX = scale, scaleY = scale)
                 .padding(start = 8.dp, end = valuePaddingEnd)

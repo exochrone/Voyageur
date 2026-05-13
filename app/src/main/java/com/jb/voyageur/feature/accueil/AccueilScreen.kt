@@ -85,7 +85,7 @@ fun AccueilContent(
                     .height(56.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.accueil_creer_voyageur).uppercase(),
+                    text = stringResource(R.string.accueil_creer_voyageur),
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -106,7 +106,7 @@ fun AccueilContent(
                     .height(56.dp)
             ) {
                 Text(
-                    text = "OUVRIR UNE FICHE DE VOYAGEUR",
+                    text = stringResource(R.string.accueil_ouvrir_fiche),
                     fontWeight = FontWeight.Bold
                 )
             }

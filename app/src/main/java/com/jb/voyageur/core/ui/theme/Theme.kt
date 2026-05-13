@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
+import com.jb.voyageur.R
 import com.jb.voyageur.core.ui.composable.LocalBackgroundImageUri
 
 private val DarkColorScheme = darkColorScheme(
@@ -38,9 +39,9 @@ fun VoyageurTheme(
     backgroundImageUri: String? = null,
     content: @Composable () -> Unit
 ) {
+    val context = LocalContext.current
     var colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 
@@ -48,16 +49,15 @@ fun VoyageurTheme(
         else -> LightColorScheme
     }
     
-    // Si une image de fond est présente, on rend le fond transparent pour la voir
-    if (backgroundImageUri != null) {
-        colorScheme = colorScheme.copy(
-            background = Color.Transparent,
-            surface = colorScheme.surface.copy(alpha = 0.7f),
-            surfaceVariant = colorScheme.surfaceVariant.copy(alpha = 0.7f),
-        )
-    }
+    // On rend le fond transparent pour voir l'image
+    colorScheme = colorScheme.copy(
+        background = Color.Transparent,
+        surface = colorScheme.surface.copy(alpha = 0.7f),
+        surfaceVariant = colorScheme.surfaceVariant.copy(alpha = 0.7f),
+    )
 
-    val uri = backgroundImageUri?.let { Uri.parse(it) }
+    val backgroundModel = backgroundImageUri ?: R.drawable.fond
+    val uri = backgroundImageUri?.let { Uri.parse(it) } ?: Uri.parse("android.resource://${context.packageName}/${R.drawable.fond}")
 
     CompositionLocalProvider(LocalBackgroundImageUri provides uri) {
         MaterialTheme(
@@ -65,14 +65,12 @@ fun VoyageurTheme(
             typography = Typography,
             content = {
                 Box(modifier = Modifier.fillMaxSize()) {
-                    if (backgroundImageUri != null) {
-                        AsyncImage(
-                            model = backgroundImageUri,
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.FillBounds
-                        )
-                    }
+                    AsyncImage(
+                        model = backgroundModel,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.FillBounds
+                    )
                     content()
                 }
             }

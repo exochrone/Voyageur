@@ -147,9 +147,7 @@ fun CompetenceRow(
                                             val nouveau = (currentValeur + increments)
                                                 .coerceIn(currentBorneInf, currentBorneSup)
                                             if (nouveau != currentValeur) {
-                                                repeat(kotlin.math.abs(nouveau - currentValeur)) {
-                                                    view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-                                                }
+                                                view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
                                                 currentOnNiveauChange(nouveau)
                                                 atBorne = false
                                             } else {

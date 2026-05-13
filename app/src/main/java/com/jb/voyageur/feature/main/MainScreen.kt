@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
@@ -122,11 +123,21 @@ fun MainScreen(
         NavItem.Archetype
     )
 
+    val drawerColors = NavigationDrawerItemDefaults.colors(
+        selectedContainerColor = Color(0xFF99958E),
+        unselectedContainerColor = Color.Transparent,
+        selectedTextColor = Color.Black,
+        unselectedTextColor = Color.Black,
+        selectedIconColor = Color.Black,
+        unselectedIconColor = Color.Black
+    )
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(
-                modifier = Modifier.width(240.dp)
+                modifier = Modifier.width(240.dp),
+                drawerContainerColor = Color(0xFFE6E0D6)
             ) {
                 Column(
                     modifier = Modifier
@@ -155,6 +166,7 @@ fun MainScreen(
                                     restoreState = true
                                 }
                             },
+                            colors = drawerColors,
                             modifier = Modifier.padding(vertical = 4.dp)
                         )
                     }
@@ -169,6 +181,7 @@ fun MainScreen(
                             scope.launch { drawerState.close() }
                             viewModel.onExportPdf()
                         },
+                        colors = drawerColors,
                         modifier = Modifier.padding(vertical = 4.dp)
                     )
 
@@ -184,6 +197,7 @@ fun MainScreen(
                                 restoreState = true
                             }
                         },
+                        colors = drawerColors,
                         modifier = Modifier.padding(vertical = 4.dp)
                     )
 
@@ -199,6 +213,7 @@ fun MainScreen(
                                 restoreState = true
                             }
                         },
+                        colors = drawerColors,
                         modifier = Modifier.padding(vertical = 4.dp)
                     )
                 }
