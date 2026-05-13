@@ -10,10 +10,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
+import android.view.HapticFeedbackConstants
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -41,9 +41,14 @@ fun CompetenceRow(
     onCustomNameClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val haptic = LocalHapticFeedback.current
+    val view = LocalView.current
     var isDragging by remember { mutableStateOf(false) }
     var atBorne by remember { mutableStateOf(false) }
+
+    LaunchedEffect(atBorne) {
+        if (isDragging) onAtBorneChange(atBorne)
+    }
+
     var showSaisieDialog by remember { mutableStateOf(false) }
     var dragAccumulator by remember { mutableFloatStateOf(0f) }
     val dragThresholdPx = with(LocalDensity.current) { 20.dp.toPx() }
@@ -103,7 +108,10 @@ fun CompetenceRow(
                                         }
                                         longPressTriggered = true
                                         isDragging = true
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        view.performHapticFeedback(HapticFeedbackConstants.GESTURE_START)
+                                        if (currentValeur == currentBorneSup || currentValeur == currentBorneInf) {
+                                            atBorne = true
+                                        }
                                     }
                                     break
                                 }
@@ -139,18 +147,14 @@ fun CompetenceRow(
                                             val nouveau = (currentValeur + increments)
                                                 .coerceIn(currentBorneInf, currentBorneSup)
                                             if (nouveau != currentValeur) {
-                                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                                repeat(kotlin.math.abs(nouveau - currentValeur)) {
+                                                    view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                                                }
                                                 currentOnNiveauChange(nouveau)
-                                                if (atBorne) {
-                                                    atBorne = false
-                                                    currentOnAtBorneChange(false)
-                                                }
+                                                atBorne = false
                                             } else {
-                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                if (!atBorne) {
-                                                    atBorne = true
-                                                    currentOnAtBorneChange(true)
-                                                }
+                                                view.performHapticFeedback(HapticFeedbackConstants.REJECT)
+                                                atBorne = true
                                             }
                                             dragAccumulator -= increments * dragThresholdPx
                                         }

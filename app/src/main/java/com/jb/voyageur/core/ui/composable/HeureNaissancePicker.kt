@@ -13,10 +13,10 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
+import android.view.HapticFeedbackConstants
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jb.voyageur.core.domain.model.HeureNaissance
@@ -29,7 +29,7 @@ fun HeureNaissancePicker(
     onAideRequise: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val haptic = LocalHapticFeedback.current
+    val view = LocalView.current
     val currentHeure by rememberUpdatedState(heureCourante)
     var dragAccumulator by remember { mutableFloatStateOf(0f) }
     val dragThresholdPx = with(LocalDensity.current) { 20.dp.toPx() }
@@ -42,12 +42,12 @@ fun HeureNaissancePicker(
                     onHorizontalDrag = { _, dragAmount ->
                         dragAccumulator += dragAmount
                         while (dragAccumulator < -dragThresholdPx) {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
                             onHeureChange(currentHeure.next())
                             dragAccumulator += dragThresholdPx
                         }
                         while (dragAccumulator > dragThresholdPx) {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
                             onHeureChange(currentHeure.previous())
                             dragAccumulator -= dragThresholdPx
                         }

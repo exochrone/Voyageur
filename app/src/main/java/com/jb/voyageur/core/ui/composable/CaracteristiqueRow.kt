@@ -21,13 +21,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
+import android.view.HapticFeedbackConstants
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -53,7 +53,7 @@ fun CaracteristiqueRow(
     onAideRequise: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val haptic = LocalHapticFeedback.current
+    val view = LocalView.current
     var isDragging by remember { mutableStateOf(false) }
     var atBorne by remember { mutableStateOf(false) }
     var showSaisieDialog by remember { mutableStateOf(false) }
@@ -115,14 +115,13 @@ fun CaracteristiqueRow(
                                 }
 
                                 if (event == null) {
-                                    // 200ms écoulées sans mouvement → activer le drag seulement si modifiable
-                                    if (pointer.pressed && (currentMin < currentMax || currentValeur == currentMax)) {
-                                        longPressTriggered = true
-                                        isDragging = true
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        if (currentValeur == currentMax) {
-                                            atBorne = true
-                                        }
+                                    // 200ms écoulées sans mouvement → activer le drag
+                                    // On autorise le drag même si min == max pour montrer le blocage (en rouge)
+                                    longPressTriggered = true
+                                    isDragging = true
+                                    view.performHapticFeedback(HapticFeedbackConstants.GESTURE_START)
+                                    if (currentMin == currentMax || currentValeur == currentMax || currentValeur == currentMin) {
+                                        atBorne = true
                                     }
                                     break
                                 }
@@ -158,17 +157,16 @@ fun CaracteristiqueRow(
                                             val nouvelleValeur = (currentValeur + increments)
                                                 .coerceIn(currentMin, currentMax)
                                             if (nouvelleValeur != currentValeur) {
-                                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                                // Retour haptique pour chaque changement de valeur (plus sec que TextHandleMove)
+                                                repeat(kotlin.math.abs(nouvelleValeur - currentValeur)) {
+                                                    view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                                                }
                                                 onValeurChange(nouvelleValeur)
                                                 atBorne = false
                                             } else {
-                                                if (increments > 0 && currentValeur == currentMax) {
-                                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                    atBorne = true
-                                                } else if (increments < 0 && currentValeur == currentMin) {
-                                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                    atBorne = true
-                                                }
+                                                // Retour haptique en cas de blocage (effet REJECT très parlant)
+                                                view.performHapticFeedback(HapticFeedbackConstants.REJECT)
+                                                atBorne = true
                                             }
                                             dragAccumulator -= increments * dragThresholdPx
                                         }
