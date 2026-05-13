@@ -45,6 +45,9 @@ class MainViewModel @Inject constructor(
     private val _pdfExportState = MutableStateFlow<PdfExportState>(PdfExportState.Idle)
     val pdfExportState = _pdfExportState.asStateFlow()
 
+    private val _backgroundImageUri = MutableStateFlow<android.net.Uri?>(null)
+    val backgroundImageUri = _backgroundImageUri.asStateFlow()
+
     fun onRename(nouveauNom: String) {
         viewModelScope.launch {
             modifierDescriptionUseCase(voyageurId, ChampDescription.NOM, nouveauNom)
@@ -65,6 +68,10 @@ class MainViewModel @Inject constructor(
 
     fun onPdfExportConsumed() {
         _pdfExportState.value = PdfExportState.Idle
+    }
+
+    fun onBackgroundSelected(uri: android.net.Uri?) {
+        _backgroundImageUri.value = uri
     }
 }
 

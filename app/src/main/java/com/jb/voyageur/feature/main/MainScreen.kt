@@ -37,6 +37,7 @@ import com.jb.voyageur.core.ui.theme.Luminari
 import com.jb.voyageur.feature.caracteristiques.CaracteristiquesScreen
 import com.jb.voyageur.feature.competences.CompetencesScreen
 import com.jb.voyageur.feature.equipement.EquipementScreen
+import com.jb.voyageur.feature.options.OptionsScreen
 import com.jb.voyageur.feature.sorts.SortsScreen
 import com.jb.voyageur.ui.navigation.NavItem
 import kotlinx.coroutines.launch
@@ -297,7 +298,7 @@ fun MainScreen(
                     PlaceholderScreen("Aide")
                 }
                 composable(NavItem.Options.route) {
-                    PlaceholderScreen("Options")
+                    OptionsScreen()
                 }
             }
         }

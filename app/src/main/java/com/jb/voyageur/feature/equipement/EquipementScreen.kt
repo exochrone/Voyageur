@@ -163,7 +163,7 @@ fun EquipementContent(
 
         // Sticky bas — Fortune + Encombrement total
         Surface(
-            color           = VoyageurColors.ParcheminBase.copy(alpha = 0.95f),
+            color           = VoyageurColors.ParcheminBase.copy(alpha = 0.3f),
             shadowElevation = 4.dp,
             modifier        = Modifier
                 .align(Alignment.BottomEnd)

@@ -354,7 +354,7 @@ fun CompetencesContent(
 
         // Compteur de points restants — Sticky Bottom
         Surface(
-            color = VoyageurColors.ParcheminBase.copy(alpha = 0.95f),
+            color = VoyageurColors.ParcheminBase.copy(alpha = 0.3f),
             shadowElevation = 4.dp,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
