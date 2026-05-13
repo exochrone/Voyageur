@@ -2,6 +2,8 @@ package com.jb.voyageur
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
@@ -28,6 +30,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                // Bloquer le retour
+            }
+        })
+
         setContent {
             val backgroundImageUri by debugSettingsManager.backgroundImageUri.collectAsStateWithLifecycle()
             
@@ -41,6 +50,11 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun VoyageurNavHost() {
     val navController = rememberNavController()
+    
+    BackHandler(enabled = true) {
+        // Bloquer le retour au niveau Compose
+    }
+
     NavHost(navController = navController, startDestination = "accueil") {
         composable("accueil") {
             AccueilScreen(
