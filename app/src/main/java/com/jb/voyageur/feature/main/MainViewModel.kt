@@ -7,6 +7,9 @@ import com.jb.voyageur.core.domain.repository.VoyageurRepository
 import com.jb.voyageur.core.domain.usecase.ChampDescription
 import com.jb.voyageur.core.domain.usecase.ExportVoyageurPdfUseCase
 import com.jb.voyageur.core.domain.usecase.ModifierDescriptionUseCase
+import com.jb.voyageur.core.domain.usecase.SerializerVoyageurUseCase
+import android.content.Context
+import android.net.Uri
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -17,7 +20,8 @@ class MainViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val voyageurRepository: VoyageurRepository,
     private val modifierDescriptionUseCase: ModifierDescriptionUseCase,
-    private val exportVoyageurPdfUseCase: ExportVoyageurPdfUseCase
+    private val exportVoyageurPdfUseCase: ExportVoyageurPdfUseCase,
+    private val serializerVoyageurUseCase: SerializerVoyageurUseCase
 ) : ViewModel() {
 
     private val voyageurId: Long = savedStateHandle["voyageurId"] ?: 0L
@@ -82,6 +86,21 @@ class MainViewModel @Inject constructor(
 
     fun onPdfExportConsumed() {
         _pdfExportState.value = PdfExportState.Idle
+    }
+
+    fun onSaveJson(context: Context, uri: Uri) {
+        viewModelScope.launch {
+            val voyageur = voyageurRepository.charger(voyageurId) ?: return@launch
+            val json = serializerVoyageurUseCase(voyageur)
+            
+            try {
+                context.contentResolver.openOutputStream(uri)?.use { os ->
+                    os.write(json.toByteArray())
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 }
 

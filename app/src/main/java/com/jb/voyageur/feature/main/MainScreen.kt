@@ -37,6 +37,7 @@ import com.jb.voyageur.core.ui.composable.BarreNavigationEcran
 import com.jb.voyageur.core.ui.navigation.EcranCreation
 import com.jb.voyageur.core.ui.theme.Luminari
 import com.jb.voyageur.feature.aide.AideScreen
+import com.jb.voyageur.feature.sauvegarde.SauvegardeScreen
 import com.jb.voyageur.feature.archetype.ArchetypeScreen
 import com.jb.voyageur.feature.caracteristiques.CaracteristiquesScreen
 import com.jb.voyageur.feature.competences.CompetencesScreen
@@ -192,18 +193,6 @@ fun MainScreen(
 
                     Spacer(modifier = Modifier.weight(1f))
 
-                    // Sauvegarde PDF
-                    NavigationDrawerItem(
-                        label = { Text(stringResource(R.string.menu_sauvegarde_pdf), fontFamily = FontFamily.Serif, fontSize = 18.sp) },
-                        selected = false,
-                        onClick = {
-                            scope.launch { drawerState.close() }
-                            viewModel.onExportPdf()
-                        },
-                        colors = drawerColors,
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    )
-
                     // Aide
                     NavigationDrawerItem(
                         label = { Text(stringResource(NavItem.Aide.labelRes), fontFamily = FontFamily.Serif, fontSize = 18.sp) },
@@ -211,6 +200,22 @@ fun MainScreen(
                         onClick = {
                             scope.launch { drawerState.close() }
                             navController.navigate(NavItem.Aide.route) {
+                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        colors = drawerColors,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+
+                    // Sauvegarde
+                    NavigationDrawerItem(
+                        label = { Text(stringResource(NavItem.Sauvegarde.labelRes), fontFamily = FontFamily.Serif, fontSize = 18.sp) },
+                        selected = currentRoute == NavItem.Sauvegarde.route,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            navController.navigate(NavItem.Sauvegarde.route) {
                                 popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                                 launchSingleTop = true
                                 restoreState = true
@@ -272,7 +277,7 @@ fun MainScreen(
         ) { innerPadding ->
             // Le BackHandler placé ici interceptera le retour système
             // et empêchera la navigation arrière dans le NavHost interne.
-            BackHandler(enabled = currentRoute != NavItem.Options.route && currentRoute != NavItem.Aide.route) {
+            BackHandler(enabled = currentRoute != NavItem.Options.route && currentRoute != NavItem.Aide.route && currentRoute != NavItem.Sauvegarde.route) {
                 // Bloque le retour (consomme l'événement)
             }
 
@@ -343,6 +348,9 @@ fun MainScreen(
                 }
                 composable(NavItem.Aide.route) {
                     AideScreen()
+                }
+                composable(NavItem.Sauvegarde.route) {
+                    SauvegardeScreen(viewModel = viewModel)
                 }
                 composable(NavItem.Options.route) {
                     OptionsScreen()

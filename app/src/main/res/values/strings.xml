@@ -141,8 +141,10 @@
     <string name="archetype_niveau">Niveau</string>
     <string name="archetype_nb">Nb</string>
     <string name="menu_aide">Aide</string>
+    <string name="menu_sauvegarde">Sauvegarde</string>
     <string name="menu_options">Options</string>
-    <string name="menu_sauvegarde_pdf">Sauvegarde PDF</string>
+    <string name="sauvegarde_bouton_json">Enregistrer la fiche</string>
+    <string name="sauvegarde_bouton_pdf">Exporter la fiche en PDF</string>
 
     <!-- Familles de compétences -->
     <string name="menu_competences_generales">Générales</string>

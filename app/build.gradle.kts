@@ -71,4 +71,5 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.itextg)
     implementation(libs.compose.markdown)
+    implementation("com.google.code.gson:gson:2.11.0")
 }
