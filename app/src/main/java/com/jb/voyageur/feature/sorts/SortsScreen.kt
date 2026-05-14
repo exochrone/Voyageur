@@ -84,9 +84,24 @@ fun SortsContent(
     onAcheterSort: (Sort, Int) -> Unit,
     onRembourserSort: (Sort) -> Unit
 ) {
-    val pagerState = rememberPagerState { state.colonnes.size }
+    val colonnesAffichees = remember(state.colonnes) {
+        state.colonnes.filter { !it.isConnu || it.sorts.isNotEmpty() }
+    }
+    val aDesSorts = state.colonnes.any { it.isConnu && it.sorts.isNotEmpty() }
+    
+    val pagerState = rememberPagerState { colonnesAffichees.size }
     val scope = rememberCoroutineScope()
     var sortSelectionne by remember { mutableStateOf<Sort?>(null) }
+
+    var avaitDesSorts by remember { mutableStateOf(aDesSorts) }
+    LaunchedEffect(aDesSorts) {
+        if (aDesSorts && !avaitDesSorts) {
+            pagerState.scrollToPage(pagerState.currentPage + 1)
+        } else if (!aDesSorts && avaitDesSorts) {
+            pagerState.scrollToPage((pagerState.currentPage - 1).coerceAtLeast(0))
+        }
+        avaitDesSorts = aDesSorts
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -107,12 +122,12 @@ fun SortsContent(
                     if (pagerState.currentPage < tabPositions.size) {
                         TabRowDefaults.SecondaryIndicator(
                             modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
-                            color = if (state.colonnes[pagerState.currentPage].isConnu) Color.Black else VoyageurColors.NomCaracteristique
+                            color = if (colonnesAffichees[pagerState.currentPage].isConnu) Color.Black else VoyageurColors.NomCaracteristique
                         )
                     }
                 }
             ) {
-                state.colonnes.forEachIndexed { index, col ->
+                colonnesAffichees.forEachIndexed { index, col ->
                     Tab(
                         selected = pagerState.currentPage == index,
                         onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
@@ -133,7 +148,7 @@ fun SortsContent(
                 state = pagerState,
                 modifier = Modifier.weight(1f).padding(top = 16.dp, bottom = 64.dp)
             ) { page ->
-                val col = state.colonnes[page]
+                val col = colonnesAffichees[page]
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     if (col.isConnu) {
                         val grouped = col.sorts.groupBy { it.voie }

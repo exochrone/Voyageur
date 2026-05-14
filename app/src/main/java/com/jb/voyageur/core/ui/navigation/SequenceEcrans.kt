@@ -20,12 +20,14 @@ object SequenceEcrans {
     fun precedent(ecran: EcranCreation, afficherSorts: Boolean): EcranCreation? {
         val sequence = pour(afficherSorts)
         val index    = sequence.indexOf(ecran)
-        return if (index > 0) sequence[index - 1] else null
+        if (index == -1) return null
+        return if (index > 0) sequence[index - 1] else sequence.last()
     }
 
     fun suivant(ecran: EcranCreation, afficherSorts: Boolean): EcranCreation? {
         val sequence = pour(afficherSorts)
         val index    = sequence.indexOf(ecran)
-        return if (index != -1 && index < sequence.size - 1) sequence[index + 1] else null
+        if (index == -1) return null
+        return if (index < sequence.size - 1) sequence[index + 1] else sequence.first()
     }
 }

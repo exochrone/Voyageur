@@ -36,6 +36,7 @@ import com.jb.voyageur.R
 import com.jb.voyageur.core.ui.composable.BarreNavigationEcran
 import com.jb.voyageur.core.ui.navigation.EcranCreation
 import com.jb.voyageur.core.ui.theme.Luminari
+import com.jb.voyageur.feature.aide.AideScreen
 import com.jb.voyageur.feature.archetype.ArchetypeScreen
 import com.jb.voyageur.feature.caracteristiques.CaracteristiquesScreen
 import com.jb.voyageur.feature.competences.CompetencesScreen
@@ -271,7 +272,7 @@ fun MainScreen(
         ) { innerPadding ->
             // Le BackHandler placé ici interceptera le retour système
             // et empêchera la navigation arrière dans le NavHost interne.
-            BackHandler(enabled = currentRoute != NavItem.Options.route) {
+            BackHandler(enabled = currentRoute != NavItem.Options.route && currentRoute != NavItem.Aide.route) {
                 // Bloque le retour (consomme l'événement)
             }
 
@@ -341,7 +342,7 @@ fun MainScreen(
                     )
                 }
                 composable(NavItem.Aide.route) {
-                    PlaceholderScreen("Aide")
+                    AideScreen()
                 }
                 composable(NavItem.Options.route) {
                     OptionsScreen()

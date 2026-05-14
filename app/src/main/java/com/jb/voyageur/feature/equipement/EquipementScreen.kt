@@ -82,10 +82,23 @@ fun EquipementContent(
     onAcheter: (ObjetEquipement) -> Unit,
     onRembourser: (String) -> Unit
 ) {
+    val aDesPossedes = uiState.colonnePossedes.groupes.isNotEmpty()
     // Colonne 0 = Possédés, colonnes 1..N = catalogue
-    val nbColonnes = 1 + uiState.colonnesCatalogue.size
+    val nbColonnes = (if (aDesPossedes) 1 else 0) + uiState.colonnesCatalogue.size
     val pagerState = rememberPagerState { nbColonnes }
     val scope      = rememberCoroutineScope()
+
+    // Gestion du décalage d'index pour rester sur le même onglet catalogue 
+    // lors de l'achat/remboursement du premier/dernier objet
+    var avaitDesPossedes by remember { mutableStateOf(aDesPossedes) }
+    LaunchedEffect(aDesPossedes) {
+        if (aDesPossedes && !avaitDesPossedes) {
+            pagerState.scrollToPage(pagerState.currentPage + 1)
+        } else if (!aDesPossedes && avaitDesPossedes) {
+            pagerState.scrollToPage((pagerState.currentPage - 1).coerceAtLeast(0))
+        }
+        avaitDesPossedes = aDesPossedes
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -112,24 +125,27 @@ fun EquipementContent(
                     }
                 }
             ) {
-                // Tab "Équipement possédé"
-                Tab(
-                    selected = pagerState.currentPage == 0,
-                    onClick  = { scope.launch { pagerState.animateScrollToPage(0) } },
-                    text = {
-                        Text(
-                            text       = stringResource(R.string.equipement_possede_titre),
-                            fontFamily = Luminari,
-                            fontSize   = 18.sp,
-                            color      = Color.Black  // libellé noir
-                        )
-                    }
-                )
+                if (aDesPossedes) {
+                    // Tab "Équipement possédé"
+                    Tab(
+                        selected = pagerState.currentPage == 0,
+                        onClick  = { scope.launch { pagerState.animateScrollToPage(0) } },
+                        text = {
+                            Text(
+                                text       = stringResource(R.string.equipement_possede_titre),
+                                fontFamily = Luminari,
+                                fontSize   = 18.sp,
+                                color      = Color.Black  // libellé noir
+                            )
+                        }
+                    )
+                }
                 // Tabs catégories
                 uiState.colonnesCatalogue.forEachIndexed { index, col ->
+                    val tabIndex = if (aDesPossedes) index + 1 else index
                     Tab(
-                        selected = pagerState.currentPage == index + 1,
-                        onClick  = { scope.launch { pagerState.animateScrollToPage(index + 1) } },
+                        selected = pagerState.currentPage == tabIndex,
+                        onClick  = { scope.launch { pagerState.animateScrollToPage(tabIndex) } },
                         text = {
                             Text(
                                 text       = col.categorie.nom,
@@ -150,7 +166,7 @@ fun EquipementContent(
                     .padding(top = 8.dp, bottom = 64.dp), // Ajusté pour le footer plus large
                 verticalAlignment = Alignment.Top
             ) { page ->
-                if (page == 0) {
+                if (aDesPossedes && page == 0) {
                     ColonnePossedes(
                         colonne      = uiState.colonnePossedes,
                         onAcheter    = onAcheter,
@@ -158,8 +174,9 @@ fun EquipementContent(
                         fortune      = uiState.fortune
                     )
                 } else {
+                    val catalogueIndex = if (aDesPossedes) page - 1 else page
                     ColonneCatalogue(
-                        colonne   = uiState.colonnesCatalogue[page - 1],
+                        colonne   = uiState.colonnesCatalogue[catalogueIndex],
                         onAcheter = onAcheter,
                         onRembourser = onRembourser,
                         fortune      = uiState.fortune
