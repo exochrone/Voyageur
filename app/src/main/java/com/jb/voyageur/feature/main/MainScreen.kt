@@ -36,6 +36,7 @@ import com.jb.voyageur.R
 import com.jb.voyageur.core.ui.composable.BarreNavigationEcran
 import com.jb.voyageur.core.ui.navigation.EcranCreation
 import com.jb.voyageur.core.ui.theme.Luminari
+import com.jb.voyageur.feature.archetype.ArchetypeScreen
 import com.jb.voyageur.feature.caracteristiques.CaracteristiquesScreen
 import com.jb.voyageur.feature.competences.CompetencesScreen
 import com.jb.voyageur.feature.equipement.EquipementScreen
@@ -327,11 +328,15 @@ fun MainScreen(
                         onNaviguerVers = onNaviguerVers
                     )
                 }
-                composable(NavItem.Archetype.route) {
-                    PlaceholderScreen(
-                        name = "Archétype",
-                        ecranCourant = EcranCreation.ARCHETYPE,
-                        afficherSorts = isSpellMenuEnabled,
+                composable(
+                    route = NavItem.Archetype.route,
+                    arguments = listOf(navArgument("voyageurId") {
+                        type = NavType.LongType
+                        defaultValue = voyageurId
+                    })
+                ) {
+                    ArchetypeScreen(
+                        voyageurId = voyageurId,
                         onNaviguerVers = onNaviguerVers
                     )
                 }

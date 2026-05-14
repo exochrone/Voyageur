@@ -35,7 +35,7 @@ data class Voyageur(
     val sorts: List<SortAchete> = emptyList(),
     val equipement: List<ObjetPossede> = emptyList(),
     val fortune: Int = 5000,
-    val archetype: Map<String, Int> = emptyMap()
+    val archetype: Archetype = Archetype()
 )
 
 enum class Sexe { HOMME, FEMME }

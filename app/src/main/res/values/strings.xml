@@ -138,6 +138,8 @@
     <string name="menu_sorts">Sorts</string>
     <string name="menu_equipement">Équipement</string>
     <string name="menu_archetype">Archétype</string>
+    <string name="archetype_niveau">Niveau</string>
+    <string name="archetype_nb">Nb</string>
     <string name="menu_aide">Aide</string>
     <string name="menu_options">Options</string>
     <string name="menu_sauvegarde_pdf">Sauvegarde PDF</string>
