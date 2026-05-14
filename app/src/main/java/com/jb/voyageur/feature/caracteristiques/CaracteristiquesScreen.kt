@@ -58,6 +58,7 @@ fun CaracteristiquesScreen(
                 aideActive = aideActive,
                 windowWidthSizeClass = windowSizeClass.widthSizeClass,
                 onNaviguerVers = onNaviguerVers,
+                provider = viewModel.aideCaracteristiqueProvider,
                 onCaracteristiqueChange = viewModel::onCaracteristiqueChange,
                 onBeauteChange = viewModel::onBeauteChange,
                 onDescriptionChange = viewModel::onDescriptionChange,
@@ -79,6 +80,7 @@ fun CaracteristiquesContent(
     windowWidthSizeClass: WindowWidthSizeClass,
     onNaviguerVers: (EcranCreation) -> Unit,
     modifier: Modifier = Modifier,
+    provider: AideCaracteristiqueProvider,
     onCaracteristiqueChange: (ChampCaracteristique, Int) -> Unit,
     onBeauteChange: (Int) -> Unit,
     onDescriptionChange: (ChampDescription, String) -> Unit,
@@ -114,6 +116,7 @@ fun CaracteristiquesContent(
                     )
                     ZoneAide(
                         champAide = aideActive,
+                        provider = provider,
                         modifier = Modifier.weight(0.4f)
                     )
                 }
@@ -133,6 +136,7 @@ fun CaracteristiquesContent(
                 aideActive?.let { champ ->
                     AideBottomSheet(
                         champAide = champ,
+                        provider = provider,
                         onDismiss = onFermerAide
                     )
                 }
@@ -442,17 +446,20 @@ private fun ThresholdItem(
 @Composable
 fun ZoneAide(
     champAide: ChampAffichage?,
+    provider: AideCaracteristiqueProvider,
     modifier: Modifier = Modifier
 ) {
     Column(modifier.padding(16.dp)) {
         if (champAide != null) {
             val context = LocalContext.current
             val aide = remember(champAide) {
-                AideCaracteristiqueProvider.pour(champAide, context.resources)
+                provider.pour(champAide, context.resources)
             }
             Text(text = aide.titre, fontFamily = FontFamily.Serif, fontSize = 24.sp)
-            Spacer(Modifier.height(8.dp))
-            Text(text = aide.description, fontFamily = FontFamily.SansSerif, fontSize = 16.sp)
+            if (aide.description.isNotEmpty()) {
+                Spacer(Modifier.height(8.dp))
+                Text(text = aide.description, fontFamily = FontFamily.SansSerif, fontSize = 16.sp)
+            }
         } else {
             Text(text = stringResource(R.string.aide_invitation))
         }
@@ -463,6 +470,7 @@ fun ZoneAide(
 @Composable
 fun AideBottomSheet(
     champAide: ChampAffichage,
+    provider: AideCaracteristiqueProvider,
     onDismiss: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
@@ -470,7 +478,7 @@ fun AideBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState
     ) {
-        ZoneAide(champAide = champAide)
+        ZoneAide(champAide = champAide, provider = provider)
         Spacer(Modifier.height(24.dp))
     }
 }

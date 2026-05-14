@@ -7,6 +7,7 @@ import com.jb.voyageur.core.domain.model.*
 import com.jb.voyageur.core.domain.repository.SortRepository
 import com.jb.voyageur.core.domain.repository.VoyageurRepository
 import com.jb.voyageur.core.domain.usecase.*
+import com.jb.voyageur.core.ui.helper.AideCompetenceProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -19,7 +20,8 @@ class CompetencesViewModel @Inject constructor(
     private val sortRepository: SortRepository,
     private val modifierCompetenceUseCase: ModifierCompetenceUseCase,
     private val modifierNiveauTroncUseCase: ModifierNiveauTroncUseCase,
-    private val modifierDraconicUseCase: ModifierDraconicUseCase
+    private val modifierDraconicUseCase: ModifierDraconicUseCase,
+    val aideCompetenceProvider: AideCompetenceProvider
 ) : ViewModel() {
 
     private val voyageurId: Long = savedStateHandle["voyageurId"] ?: 0L

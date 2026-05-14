@@ -225,7 +225,7 @@ fun CompetencesScreen(
     // Aide contextuelle — bottom sheet
     aideActive?.let { nom ->
         val context = LocalContext.current
-        val aide = remember(nom) { AideCompetenceProvider.pour(nom, context.resources) }
+        val aide = remember(nom) { viewModel.aideCompetenceProvider.pour(nom, context.resources) }
         
         val state = uiState as? CompetencesUiState.Success
         val niveauArchetype = state?.niveauxArchetype?.get(nom)

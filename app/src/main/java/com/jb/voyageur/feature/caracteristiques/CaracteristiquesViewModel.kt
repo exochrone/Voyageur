@@ -28,6 +28,7 @@ import com.jb.voyageur.core.domain.usecase.ModifierDescriptionUseCase
 import com.jb.voyageur.core.domain.usecase.ModifierHeureNaissanceUseCase
 import com.jb.voyageur.core.domain.usecase.ModifierLateraliteUseCase
 import com.jb.voyageur.core.domain.usecase.MettreAJourPhysiqueUseCase
+import com.jb.voyageur.core.ui.helper.AideCaracteristiqueProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -50,7 +51,8 @@ class CaracteristiquesViewModel @Inject constructor(
     private val modifierHeureNaissanceUseCase: ModifierHeureNaissanceUseCase,
     private val modifierLateraliteUseCase: ModifierLateraliteUseCase,
     private val mettreAJourPhysiqueUseCase: MettreAJourPhysiqueUseCase,
-    private val voyageurRepository: VoyageurRepository
+    private val voyageurRepository: VoyageurRepository,
+    val aideCaracteristiqueProvider: AideCaracteristiqueProvider
 ) : ViewModel() {
 
     private val voyageurId: Long = savedStateHandle["voyageurId"] ?: 0L
