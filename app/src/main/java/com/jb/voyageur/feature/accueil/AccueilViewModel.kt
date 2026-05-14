@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jb.voyageur.core.domain.model.Sexe
 import com.jb.voyageur.core.domain.usecase.CreerVoyageurUseCase
+import com.jb.voyageur.core.domain.usecase.ImportVoyageurUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +17,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AccueilViewModel @Inject constructor(
-    private val creerVoyageurUseCase: CreerVoyageurUseCase
+    private val creerVoyageurUseCase: CreerVoyageurUseCase,
+    private val importVoyageurUseCase: ImportVoyageurUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AccueilUiState())
@@ -45,6 +47,13 @@ class AccueilViewModel @Inject constructor(
                 sexe = state.sexe,
                 hautRevant = state.hautRevant
             )
+            _navigation.send(AccueilNavigation.VersCaracteristiques(id))
+        }
+    }
+
+    fun onImporterVoyageur(json: String) {
+        viewModelScope.launch {
+            val id = importVoyageurUseCase(json)
             _navigation.send(AccueilNavigation.VersCaracteristiques(id))
         }
     }

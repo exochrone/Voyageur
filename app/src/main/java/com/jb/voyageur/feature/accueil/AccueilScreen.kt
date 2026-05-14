@@ -1,5 +1,7 @@
 package com.jb.voyageur.feature.accueil
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -23,7 +26,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jb.voyageur.R
 import com.jb.voyageur.core.ui.composable.ParcheminBackground
 import com.jb.voyageur.core.ui.theme.Luminari
@@ -33,6 +35,23 @@ fun AccueilScreen(
     onNavigateToCaracteristiques: (Long) -> Unit,
     viewModel: AccueilViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
+    
+    val openDocumentLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            try {
+                context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                    val json = inputStream.bufferedReader().use { it.readText() }
+                    viewModel.onImporterVoyageur(json)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     LaunchedEffect(Unit) {
         viewModel.navigation.collect { event ->
             when (event) {
@@ -43,13 +62,17 @@ fun AccueilScreen(
     }
 
     AccueilContent(
-        onCreerVoyageur = viewModel::onCreerVoyageur
+        onCreerVoyageur = viewModel::onCreerVoyageur,
+        onOuvrirFiche = {
+            openDocumentLauncher.launch(arrayOf("*/*"))
+        }
     )
 }
 
 @Composable
 fun AccueilContent(
-    onCreerVoyageur: () -> Unit
+    onCreerVoyageur: () -> Unit,
+    onOuvrirFiche: () -> Unit
 ) {
     ParcheminBackground {
         Column(
@@ -93,8 +116,8 @@ fun AccueilContent(
             Spacer(Modifier.height(16.dp))
             
             Button(
-                onClick = { },
-                enabled = false,
+                onClick = onOuvrirFiche,
+                enabled = true,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black,
                     contentColor = Color.White,
@@ -118,6 +141,7 @@ fun AccueilContent(
 @Composable
 private fun AccueilContentPreview() {
     AccueilContent(
-        onCreerVoyageur = {}
+        onCreerVoyageur = {},
+        onOuvrirFiche = {}
     )
 }

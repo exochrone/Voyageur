@@ -59,6 +59,7 @@ fun EcranCreation.toRoute(): String = when (this) {
 @Composable
 fun MainScreen(
     voyageurId: Long,
+    onBackToAccueil: () -> Unit,
     viewModel: MainViewModel = hiltViewModel()
 ) {
     val navController = rememberNavController()
@@ -72,6 +73,8 @@ fun MainScreen(
     val isSpellMenuEnabled by viewModel.isSpellMenuEnabled.collectAsStateWithLifecycle()
     val pdfExportState by viewModel.pdfExportState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+
+    var showRetourConfirmation by remember { mutableStateOf(false) }
 
     val createDocumentLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/pdf")
@@ -119,7 +122,7 @@ fun MainScreen(
 
     var showRenameDialog by remember { mutableStateOf(false) }
 
-    val menuItems = listOf(
+    val characterSheets = listOf(
         NavItem.Caracteristiques,
         NavItem.Competences,
         NavItem.Sorts,
@@ -156,7 +159,8 @@ fun MainScreen(
                         modifier = Modifier.padding(bottom = 24.dp)
                     )
 
-                    menuItems.forEach { item ->
+                    // Feuilles de personnage
+                    characterSheets.forEach { item ->
                         val isEnabled = item != NavItem.Sorts || isSpellMenuEnabled
                         NavigationDrawerItem(
                             label = { 
@@ -191,22 +195,9 @@ fun MainScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    // Aide
-                    NavigationDrawerItem(
-                        label = { Text(stringResource(NavItem.Aide.labelRes), fontFamily = FontFamily.Serif, fontSize = 18.sp) },
-                        selected = currentRoute == NavItem.Aide.route,
-                        onClick = {
-                            scope.launch { drawerState.close() }
-                            navController.navigate(NavItem.Aide.route) {
-                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        colors = drawerColors,
-                        modifier = Modifier.padding(vertical = 4.dp)
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        color = Color.Black.copy(alpha = 0.12f)
                     )
 
                     // Sauvegarde
@@ -225,17 +216,31 @@ fun MainScreen(
                         modifier = Modifier.padding(vertical = 4.dp)
                     )
 
-                    // Options
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    // Aide
                     NavigationDrawerItem(
-                        label = { Text(stringResource(NavItem.Options.labelRes), fontFamily = FontFamily.Serif, fontSize = 18.sp) },
-                        selected = currentRoute == NavItem.Options.route,
+                        label = { Text(stringResource(NavItem.Aide.labelRes), fontFamily = FontFamily.Serif, fontSize = 18.sp) },
+                        selected = currentRoute == NavItem.Aide.route,
                         onClick = {
                             scope.launch { drawerState.close() }
-                            navController.navigate(NavItem.Options.route) {
+                            navController.navigate(NavItem.Aide.route) {
                                 popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                                 launchSingleTop = true
                                 restoreState = true
                             }
+                        },
+                        colors = drawerColors,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+
+                    // Retour
+                    NavigationDrawerItem(
+                        label = { Text(stringResource(R.string.menu_retour), fontFamily = FontFamily.Serif, fontSize = 18.sp) },
+                        selected = false,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            showRetourConfirmation = true
                         },
                         colors = drawerColors,
                         modifier = Modifier.padding(vertical = 4.dp)
@@ -393,6 +398,27 @@ fun MainScreen(
             LaunchedEffect(Unit) {
                 focusRequester.requestFocus()
             }
+        }
+
+        if (showRetourConfirmation) {
+            AlertDialog(
+                onDismissRequest = { showRetourConfirmation = false },
+                title = { Text(stringResource(R.string.retour_confirmation_titre)) },
+                text = { Text(stringResource(R.string.retour_confirmation_message)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showRetourConfirmation = false
+                        onBackToAccueil()
+                    }) {
+                        Text(stringResource(R.string.confirmer))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showRetourConfirmation = false }) {
+                        Text(stringResource(R.string.annuler))
+                    }
+                }
+            )
         }
     }
 }

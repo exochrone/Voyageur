@@ -31,6 +31,9 @@ class ArchetypeViewModel @Inject constructor(
     private val _niveauSelectionne = MutableStateFlow(11)
     val niveauSelectionne: StateFlow<Int> = _niveauSelectionne.asStateFlow()
 
+    private val _errorDialog = MutableStateFlow<String?>(null)
+    val errorDialog: StateFlow<String?> = _errorDialog.asStateFlow()
+
     val uiState: StateFlow<ArchetypeUiState> = combine(
         voyageurRepository.observerVoyageur(voyageurId).filterNotNull(),
         _niveauSelectionne
@@ -46,6 +49,10 @@ class ArchetypeViewModel @Inject constructor(
         _niveauSelectionne.value = niveau
     }
 
+    fun dismissError() {
+        _errorDialog.value = null
+    }
+
     fun onCompetenceTappee(keyCompetence: String) {
         viewModelScope.launch {
             val voyageur = voyageurRepository.charger(voyageurId) ?: return@launch
@@ -59,6 +66,33 @@ class ArchetypeViewModel @Inject constructor(
             } else if (!voyageur.archetype.estComplet()) {
                 // Attribution (uniquement si non complet)
                 val niveauAAttribuer = _niveauSelectionne.value
+
+                // Vérifier si cette action va compléter l'archétype
+                val totalAttribuePourComplet = Archetype.NIVEAUX_DISPONIBLES
+                    .filterKeys { it > 0 }
+                    .values.sum()  // = 56
+                
+                if (voyageur.archetype.niveaux.size == totalAttribuePourComplet - 1) {
+                    // Cette attribution va rendre l'archétype complet
+                    // On doit vérifier que les compétences qui vont passer à 0 ne sont pas déjà > 0
+                    val allStandardKeys = CATEGORIES_ARCHETYPE.flatMap { it.competences }
+                    val allCustomKeys = voyageur.competences.keys.filter { it.startsWith("CUSTOM:") }
+                    val allPossibleKeys = (allStandardKeys + allCustomKeys).toSet()
+                    
+                    val remainingKeys = allPossibleKeys.filter { 
+                        it != keyCompetence && !voyageur.archetype.niveaux.containsKey(it) 
+                    }
+                    
+                    for (remKey in remainingKeys) {
+                        val niveauActuel = getNiveauActuel(voyageur, remKey)
+                        if (niveauActuel > 0) {
+                            val nomAffiche = if (remKey.startsWith("CUSTOM:")) remKey.substringAfterLast(":") else remKey
+                            _errorDialog.value = "Impossible de mettre un niveau d'archétype de 0 en $nomAffiche car cette compétence est à +$niveauActuel. Son niveau d'archétype doit être égal ou supérieur à +$niveauActuel."
+                            return@launch
+                        }
+                    }
+                }
+
                 modifierArchetypeUseCase(voyageurId, keyCompetence, niveauAAttribuer)
 
                 // Avancement automatique si le niveau est épuisé

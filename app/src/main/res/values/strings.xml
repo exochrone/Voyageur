@@ -142,7 +142,10 @@
     <string name="archetype_nb">Nb</string>
     <string name="menu_aide">Aide</string>
     <string name="menu_sauvegarde">Sauvegarde</string>
+    <string name="menu_retour">Retour</string>
     <string name="menu_options">Options</string>
+    <string name="retour_confirmation_titre">Quitter la fiche</string>
+    <string name="retour_confirmation_message">Les données non enregistrées seront perdues.</string>
     <string name="sauvegarde_bouton_json">Enregistrer la fiche</string>
     <string name="sauvegarde_bouton_pdf">Exporter la fiche en PDF</string>
 

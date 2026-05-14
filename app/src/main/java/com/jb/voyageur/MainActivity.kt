@@ -56,7 +56,14 @@ fun VoyageurNavHost() {
             arguments = listOf(navArgument("voyageurId") { type = NavType.LongType })
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getLong("voyageurId") ?: 0L
-            MainScreen(voyageurId = id)
+            MainScreen(
+                voyageurId = id,
+                onBackToAccueil = {
+                    navController.navigate("accueil") {
+                        popUpTo("accueil") { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }

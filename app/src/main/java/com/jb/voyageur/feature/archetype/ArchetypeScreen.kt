@@ -4,9 +4,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,6 +37,7 @@ fun ArchetypeScreen(
     viewModel: ArchetypeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val errorDialog by viewModel.errorDialog.collectAsStateWithLifecycle()
 
     ParcheminBackground {
         when (val state = uiState) {
@@ -51,6 +55,19 @@ fun ArchetypeScreen(
                 )
             }
         }
+    }
+
+    errorDialog?.let { message ->
+        AlertDialog(
+            onDismissRequest = viewModel::dismissError,
+            title = { Text("Attribution impossible", fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold) },
+            text = { Text(message, fontFamily = FontFamily.Serif) },
+            confirmButton = {
+                Button(onClick = viewModel::dismissError) {
+                    Text(stringResource(R.string.ok))
+                }
+            }
+        )
     }
 }
 
