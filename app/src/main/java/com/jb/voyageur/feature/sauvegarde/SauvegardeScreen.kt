@@ -1,6 +1,5 @@
 package com.jb.voyageur.feature.sauvegarde
 
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -17,7 +16,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jb.voyageur.R
 import com.jb.voyageur.core.ui.composable.ParcheminBackground
-import com.jb.voyageur.core.ui.theme.Luminari
 import com.jb.voyageur.core.ui.theme.VoyageurColors
 import com.jb.voyageur.feature.main.MainViewModel
 import com.jb.voyageur.feature.main.PdfExportState
@@ -26,9 +24,6 @@ import com.jb.voyageur.feature.main.PdfExportState
 fun SauvegardeScreen(
     viewModel: MainViewModel
 ) {
-    BackHandler(enabled = true) {
-        // Retour système autorisé
-    }
     val context = LocalContext.current
     val voyageurNom by viewModel.voyageurNom.collectAsStateWithLifecycle()
     val pdfExportState by viewModel.pdfExportState.collectAsStateWithLifecycle()
@@ -50,14 +45,6 @@ fun SauvegardeScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = stringResource(R.string.menu_sauvegarde),
-                fontFamily = Luminari,
-                fontSize = 32.sp,
-                color = VoyageurColors.NomCaracteristique,
-                modifier = Modifier.padding(bottom = 48.dp)
-            )
-
             Button(
                 onClick = { 
                     val fileName = if (voyageurNom.isBlank()) "voyageur.rdd" else "$voyageurNom.rdd"

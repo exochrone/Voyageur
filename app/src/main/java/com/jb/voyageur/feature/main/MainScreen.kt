@@ -246,9 +246,16 @@ fun MainScreen(
     ) {
         Scaffold(
             topBar = {
-                val isSpecialScreen = currentRoute == NavItem.Aide.route || currentRoute == NavItem.Options.route
+                val isSpecialScreen = currentRoute == NavItem.Aide.route || 
+                                    currentRoute == NavItem.Options.route || 
+                                    currentRoute == NavItem.Sauvegarde.route
                 val titleText = if (isSpecialScreen) {
-                    stringResource(if (currentRoute == NavItem.Aide.route) R.string.menu_aide else R.string.menu_options)
+                    when (currentRoute) {
+                        NavItem.Aide.route -> stringResource(R.string.menu_aide)
+                        NavItem.Options.route -> stringResource(R.string.menu_options)
+                        NavItem.Sauvegarde.route -> stringResource(R.string.menu_sauvegarde)
+                        else -> ""
+                    }
                 } else {
                     voyageurNom.ifBlank { stringResource(R.string.app_name) }
                 }
