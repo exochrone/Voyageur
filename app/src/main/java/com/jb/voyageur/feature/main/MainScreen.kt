@@ -383,6 +383,9 @@ fun PlaceholderScreen(
     afficherSorts: Boolean = false,
     onNaviguerVers: ((EcranCreation) -> Unit)? = null
 ) {
+    BackHandler(enabled = true) {
+        // Bloquer le retour système
+    }
     Column(modifier = Modifier.fillMaxSize()) {
         if (ecranCourant != null && onNaviguerVers != null) {
             BarreNavigationEcran(

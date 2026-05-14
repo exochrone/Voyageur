@@ -1,5 +1,6 @@
 package com.jb.voyageur.feature.competences
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -46,6 +47,9 @@ fun CompetencesScreen(
     onNaviguerVers: (EcranCreation) -> Unit,
     viewModel: CompetencesViewModel = hiltViewModel()
 ) {
+    BackHandler(enabled = true) {
+        // Bloquer le retour système
+    }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val aideActive by viewModel.aideActive.collectAsStateWithLifecycle()
     val isXPBlocked by viewModel.isXPBlocked.collectAsStateWithLifecycle()

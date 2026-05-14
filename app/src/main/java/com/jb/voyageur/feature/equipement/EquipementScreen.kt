@@ -1,5 +1,6 @@
 package com.jb.voyageur.feature.equipement
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -35,6 +36,9 @@ fun EquipementScreen(
     onNaviguerVers: (EcranCreation) -> Unit,
     viewModel: EquipementViewModel = hiltViewModel()
 ) {
+    BackHandler(enabled = true) {
+        // Bloquer le retour système
+    }
     val uiState     by viewModel.uiState.collectAsStateWithLifecycle()
     val messageErreur by viewModel.messageErreur.collectAsStateWithLifecycle()
 
