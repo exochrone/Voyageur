@@ -53,6 +53,7 @@ fun CompetencesScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val aideActive by viewModel.aideActive.collectAsStateWithLifecycle()
     val isXPBlocked by viewModel.isXPBlocked.collectAsStateWithLifecycle()
+    val archetypeCompletAlerte by viewModel.archetypeCompletAlerte.collectAsStateWithLifecycle()
     val messageDraconicBloque by viewModel.messageDraconicBloque.collectAsStateWithLifecycle()
     var highlightedSkills by remember { mutableStateOf(setOf<String>()) }
     
@@ -124,11 +125,31 @@ fun CompetencesScreen(
                             highlightedSkills = emptySet()
                         }
                     },
-                    onAddCustom = { famille, index -> showAddCustomDialog = famille to index },
+                    onAddCustom = { famille, index -> 
+                        val state = uiState as? CompetencesUiState.Success
+                        if (state?.archetypeEstComplet == true) {
+                            viewModel.onTaperPlaceholder()
+                        } else {
+                            showAddCustomDialog = famille to index 
+                        }
+                    },
                     onManageCustom = { item -> showManageCustomDialog = item }
                 )
             }
         }
+    }
+
+    if (archetypeCompletAlerte) {
+        AlertDialog(
+            onDismissRequest = viewModel::effacerAlerteArchetype,
+            title = { Text("Création impossible") },
+            text = { Text("L'archétype est terminé : impossible de créer une compétence.") },
+            confirmButton = {
+                TextButton(onClick = viewModel::effacerAlerteArchetype) {
+                    Text(stringResource(R.string.ok))
+                }
+            }
+        )
     }
 
     // Dialogues de gestion des compétences custom
@@ -205,9 +226,22 @@ fun CompetencesScreen(
     aideActive?.let { nom ->
         val context = LocalContext.current
         val aide = remember(nom) { AideCompetenceProvider.pour(nom, context.resources) }
+        
+        val state = uiState as? CompetencesUiState.Success
+        val niveauArchetype = state?.niveauxArchetype?.get(nom)
+        val item = state?.colonnes?.flatMap { it.items }
+            ?.filterIsInstance<CompetenceUiItem.Individuelle>()
+            ?.find { (it.customKey ?: it.competence.nom) == nom }
+            
+        val finalDescription = if (item != null && niveauArchetype != null && item.niveauActuel == niveauArchetype) {
+            aide.description + "\n\nNiveau d'archétype atteint"
+        } else {
+            aide.description
+        }
+
         AideBottomSheet(
             titre = aide.titre,
-            description = aide.description,
+            description = finalDescription,
             onDismiss = viewModel::onFermerAide
         )
     }
@@ -333,7 +367,7 @@ fun CompetencesContent(
                                     onAideRequise = { onAideRequise(item.competence.nom) },
                                     onDragEnd = onDragEnd,
                                     onAtBorneChange = { isAtBorne -> onAtBorneChange(item, isAtBorne) },
-                                    isForceRed = item.competence.nom in highlightedSkills,
+                                    isForceRed = item.competence.nom in highlightedSkills || item.depasseArchetype,
                                     isVerrouille = item.estVerrouilleParSorts,
                                     isCustom = item.isCustom,
                                     onCustomNameClick = { onManageCustom(item) },

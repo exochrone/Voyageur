@@ -66,16 +66,16 @@ fun ArchetypeContent(
         BarreNavigationEcran(
             titre          = stringResource(R.string.menu_archetype),
             ecranCourant   = EcranCreation.ARCHETYPE,
-            afficherSorts  = uiState.hautRevant,
+            afficherSorts  = uiState.aDesSortsAccessibles,
             onNaviguerVers = onNaviguerVers
         )
 
         Row(modifier = Modifier.fillMaxSize()) {
 
-            // ── Colonne gauche fixe 33% ──────────────────────────────
+            // ── Colonne gauche fixe 25% ──────────────────────────────
             Column(
                 modifier = Modifier
-                    .weight(0.33f)
+                    .weight(0.25f)
                     .fillMaxHeight()
                     .padding(top = 8.dp, start = 8.dp, end = 4.dp)
             ) {
@@ -87,16 +87,17 @@ fun ArchetypeContent(
                     Text(
                         text       = stringResource(R.string.archetype_niveau),
                         fontFamily = FontFamily.Serif,
-                        fontSize   = 12.sp,
+                        fontSize   = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color      = VoyageurColors.NomCaracteristique
+                        color      = if (uiState.estComplet) VoyageurColors.NomCaracteristique.copy(alpha = 0.3f) else VoyageurColors.NomCaracteristique
                     )
                     Text(
                         text       = stringResource(R.string.archetype_nb),
                         fontFamily = FontFamily.Serif,
-                        fontSize   = 12.sp,
+                        fontSize   = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color      = VoyageurColors.NomCaracteristique
+                        color      = if (uiState.estComplet) VoyageurColors.NomCaracteristique.copy(alpha = 0.3f) else VoyageurColors.NomCaracteristique,
+                        modifier   = Modifier.padding(end = 12.dp)
                     )
                 }
                 HorizontalDivider(color = VoyageurColors.NomCaracteristique.copy(alpha = 0.3f))
@@ -105,8 +106,9 @@ fun ArchetypeContent(
                 uiState.colonneGauche.forEach { item ->
                     NiveauRow(
                         item    = item,
+                        estComplet = uiState.estComplet,
                         onClick = {
-                            if (item.restant > 0) onNiveauSelectionne(item.niveau)
+                            if (!uiState.estComplet && item.restant > 0) onNiveauSelectionne(item.niveau)
                         }
                     )
                 }
@@ -117,10 +119,10 @@ fun ArchetypeContent(
                 color = VoyageurColors.NomCaracteristique.copy(alpha = 0.2f)
             )
 
-            // ── Colonne droite scrollable 67% ────────────────────────
+            // ── Colonne droite scrollable 75% ────────────────────────
             LazyColumn(
                 modifier       = Modifier
-                    .weight(0.67f)
+                    .weight(0.75f)
                     .fillMaxHeight(),
                 contentPadding = PaddingValues(
                     start = 8.dp, end = 8.dp,
@@ -148,11 +150,12 @@ fun ArchetypeContent(
                     // Compétences
                     items(
                         items = categorie.competences,
-                        key   = { it.nom }
+                        key   = { it.key }
                     ) { comp ->
                         CompetenceArchetypeRow(
-                            comp    = comp,
-                            onClick = { onCompetenceTappee(comp.nom) }
+                            comp       = comp,
+                            estComplet = uiState.estComplet,
+                            onClick    = { onCompetenceTappee(comp.key) }
                         )
                     }
                 }
@@ -162,8 +165,8 @@ fun ArchetypeContent(
 }
 
 @Composable
-fun NiveauRow(item: NiveauItem, onClick: () -> Unit) {
-    val epuise = item.restant == 0
+fun NiveauRow(item: NiveauItem, estComplet: Boolean, onClick: () -> Unit) {
+    val epuise = item.restant == 0 || estComplet
 
     Row(
         modifier = Modifier
@@ -197,23 +200,29 @@ fun NiveauRow(item: NiveauItem, onClick: () -> Unit) {
                 item.selectionne -> Color(0xFFFF0000)
                 epuise           -> VoyageurColors.NomCaracteristique.copy(alpha = 0.3f)
                 else             -> VoyageurColors.NomCaracteristique
-            }
+            },
+            modifier   = Modifier.padding(end = 12.dp)
         )
     }
 }
 
 @Composable
-fun CompetenceArchetypeRow(comp: CompetenceArchetype, onClick: () -> Unit) {
+fun CompetenceArchetypeRow(comp: CompetenceArchetype, estComplet: Boolean, onClick: () -> Unit) {
     val niveauStr = when (comp.niveau) {
         null -> "-"
         0    -> "0"
         else -> "+${comp.niveau}"
     }
 
+    val isClickable = !comp.estGrise && comp.niveau != 0 && (comp.niveau != null || !estComplet)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .then(
+                if (isClickable) Modifier.clickable(onClick = onClick)
+                else Modifier
+            )
             .padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment     = Alignment.CenterVertically
@@ -222,20 +231,20 @@ fun CompetenceArchetypeRow(comp: CompetenceArchetype, onClick: () -> Unit) {
             text       = comp.nom,
             fontFamily = FontFamily.Serif,
             fontSize   = 13.sp,
-            color      = VoyageurColors.NomCaracteristique,
+            color      = if (comp.estGrise) VoyageurColors.NomCaracteristique.copy(alpha = 0.2f) else VoyageurColors.NomCaracteristique,
             modifier   = Modifier.weight(1f)
         )
         Text(
             text       = niveauStr,
             fontFamily = FontFamily.Serif,
             fontSize   = 13.sp,
-            fontWeight = if (comp.niveau != null && comp.niveau > 0) FontWeight.Bold else FontWeight.Normal,
+            fontWeight = if (comp.niveau != null) FontWeight.Bold else FontWeight.Normal,
             color      = when {
+                comp.estGrise -> VoyageurColors.NomCaracteristique.copy(alpha = 0.2f)
                 comp.niveau == null -> VoyageurColors.NomCaracteristique.copy(alpha = 0.4f)
-                comp.niveau == 0    -> VoyageurColors.NomCaracteristique.copy(alpha = 0.4f)
                 else                -> VoyageurColors.ValeurCaracteristique
             },
-            modifier   = Modifier.padding(start = 8.dp)
+            modifier   = Modifier.padding(start = 8.dp, end = 32.dp)
         )
     }
 }

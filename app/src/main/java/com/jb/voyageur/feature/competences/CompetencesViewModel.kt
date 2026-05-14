@@ -40,6 +40,9 @@ class CompetencesViewModel @Inject constructor(
     private val _isXPBlocked = MutableStateFlow(false)
     val isXPBlocked: StateFlow<Boolean> = _isXPBlocked.asStateFlow()
 
+    private val _archetypeCompletAlerte = MutableStateFlow(false)
+    val archetypeCompletAlerte: StateFlow<Boolean> = _archetypeCompletAlerte.asStateFlow()
+
     private val _messageDraconicBloque = MutableStateFlow<String?>(null)
     val messageDraconicBloque: StateFlow<String?> = _messageDraconicBloque.asStateFlow()
 
@@ -48,6 +51,13 @@ class CompetencesViewModel @Inject constructor(
             val voyageur = voyageurRepository.charger(voyageurId) ?: return@launch
             val currentNiveau = voyageur.competences[nom] ?: absoluteBase
             
+            // Nouveau contrôle : ne peut pas dépasser le niveau d'archétype
+            val niveauArchetype = voyageur.archetype.niveaux[nom]
+            if (niveauArchetype != null && niveauCible > niveauArchetype) {
+                // Bloqué par l'archétype
+                return@launch
+            }
+
             if (niveauCible > currentNiveau) {
                 val coutNiveauSuivant = CoutCompetence.coutUnNiveau(niveauCible)
                 if (coutNiveauSuivant > calculPointsRestants(voyageur)) {
@@ -157,6 +167,19 @@ class CompetencesViewModel @Inject constructor(
         _isXPBlocked.value = false
     }
 
+    fun effacerAlerteArchetype() {
+        _archetypeCompletAlerte.value = false
+    }
+
+    fun onTaperPlaceholder() {
+        viewModelScope.launch {
+            val voyageur = voyageurRepository.charger(voyageurId) ?: return@launch
+            if (voyageur.archetype.estComplet()) {
+                _archetypeCompletAlerte.value = true
+            }
+        }
+    }
+
     fun effacerMessageDraconic() {
         _messageDraconicBloque.value = null
     }
@@ -179,7 +202,15 @@ class CompetencesViewModel @Inject constructor(
             draconic.narcos > -11 || 
             draconic.thanatos > -11
         )
-        return CompetencesUiState.Success(colonnes, pointsRestants, pointsSorts, hautRevant, aDesSorts)
+        return CompetencesUiState.Success(
+            colonnes = colonnes,
+            pointsRestants = pointsRestants,
+            pointsSortsUtilises = pointsSorts,
+            hautRevant = hautRevant,
+            aDesSortsAccessibles = aDesSorts,
+            archetypeEstComplet = archetype.estComplet(),
+            niveauxArchetype = archetype.niveaux
+        )
     }
 
     private fun calculPointsRestants(voyageur: Voyageur): Int {
@@ -274,12 +305,15 @@ class CompetencesViewModel @Inject constructor(
             if (existingKey != null) {
                 val nom = existingKey.substringAfter(customKeyPrefix)
                 val niveau = voyageur.competences[existingKey] ?: famille.base
+                val niveauArchetype = voyageur.archetype.niveaux[existingKey]
                 items.add(CompetenceUiItem.Individuelle(
                     competence = Competence(nom, famille),
                     niveauActuel = niveau,
                     coutCumule = CoutCompetence.coutCumule(famille.base, niveau),
                     isCustom = true,
-                    customKey = existingKey
+                    customKey = existingKey,
+                    niveauArchetype = niveauArchetype,
+                    depasseArchetype = niveauArchetype != null && niveau > niveauArchetype
                 ))
             } else {
                 items.add(CompetenceUiItem.Placeholder(famille, i))
@@ -310,15 +344,20 @@ class CompetencesViewModel @Inject constructor(
 
             val autreMembresSupZero = troncMembresSupZero(corps, nom)
             val borneInf = if (autreMembresSupZero.isNotEmpty()) 0 else corps.niveauBase
+            
+            val niveauArchetype = voyageur.archetype.niveaux[nom]
+            val borneSup = if (niveauArchetype != null) minOf(3, niveauArchetype) else 3
 
             items.add(CompetenceUiItem.Individuelle(
                 competence = comp,
                 niveauActuel = niveau,
                 coutCumule = (if (isAncre) coutBaseTronc else 0) + coutIndividuel,
                 borneInf = borneInf,
-                borneSup = 3,
+                borneSup = borneSup,
                 appartientAuTronc = "TroncCorps",
-                estPremierDuTronc = index == 0
+                estPremierDuTronc = index == 0,
+                niveauArchetype = niveauArchetype,
+                depasseArchetype = niveauArchetype != null && niveau > niveauArchetype
             ))
         }
 
@@ -341,14 +380,19 @@ class CompetencesViewModel @Inject constructor(
             val autreMembresSupZero = troncMembresSupZero(armes, nom)
             val borneInf = if (autreMembresSupZero.isNotEmpty()) 0 else armes.niveauBase
 
+            val niveauArchetype = voyageur.archetype.niveaux[nom]
+            val borneSup = if (niveauArchetype != null) minOf(3, niveauArchetype) else 3
+
             items.add(CompetenceUiItem.Individuelle(
                 competence = comp,
                 niveauActuel = niveau,
                 coutCumule = (if (isAncre) coutBaseTronc else 0) + coutIndividuel,
                 borneInf = borneInf,
-                borneSup = 3,
+                borneSup = borneSup,
                 appartientAuTronc = "TroncArmes",
-                estPremierDuTronc = index == 0
+                estPremierDuTronc = index == 0,
+                niveauArchetype = niveauArchetype,
+                depasseArchetype = niveauArchetype != null && niveau > niveauArchetype
             ))
         }
 
@@ -367,12 +411,15 @@ class CompetencesViewModel @Inject constructor(
             if (existingKey != null) {
                 val nom = existingKey.substringAfter(customKeyPrefix)
                 val niveau = voyageur.competences[existingKey] ?: combatFamille.base
+                val niveauArchetype = voyageur.archetype.niveaux[existingKey]
                 items.add(CompetenceUiItem.Individuelle(
                     competence = Competence(nom, combatFamille),
                     niveauActuel = niveau,
                     coutCumule = CoutCompetence.coutCumule(combatFamille.base, niveau),
                     isCustom = true,
-                    customKey = existingKey
+                    customKey = existingKey,
+                    niveauArchetype = niveauArchetype,
+                    depasseArchetype = niveauArchetype != null && niveau > niveauArchetype
                 ))
             } else {
                 items.add(CompetenceUiItem.Placeholder(combatFamille, i))
@@ -413,26 +460,35 @@ class CompetencesViewModel @Inject constructor(
 
     private fun construireItemIndividuel(competence: Competence, voyageur: Voyageur): CompetenceUiItem.Individuelle {
         val niveauActuel = voyageur.competences[competence.nom] ?: competence.niveauBase
+        val niveauArchetype = voyageur.archetype.niveaux[competence.nom]
+        val borneSup = if (niveauArchetype != null) minOf(3, niveauArchetype) else 3
         return CompetenceUiItem.Individuelle(
             competence = competence,
             niveauActuel = niveauActuel,
             coutCumule = CoutCompetence.coutCumule(competence.famille.base, niveauActuel),
             borneInf = competence.niveauBase,
-            borneSup = 3
+            borneSup = borneSup,
+            niveauArchetype = niveauArchetype,
+            depasseArchetype = niveauArchetype != null && niveauActuel > niveauArchetype
         )
     }
 
     private fun construireItemSurvieRestreinte(competence: Competence, voyageur: Voyageur): CompetenceUiItem.Individuelle {
         val niveauActuel = voyageur.competences[competence.nom] ?: competence.niveauBase
         val survieExterieur = voyageur.competences["Survie en extérieur"] ?: -8
-        val borneSup = if (survieExterieur >= 0) 3 else survieExterieur
+        val niveauArchetype = voyageur.archetype.niveaux[competence.nom]
+        
+        var borneSup = if (survieExterieur >= 0) 3 else survieExterieur
+        if (niveauArchetype != null) borneSup = minOf(borneSup, niveauArchetype)
 
         return CompetenceUiItem.Individuelle(
             competence = competence,
             niveauActuel = niveauActuel,
             coutCumule = CoutCompetence.coutCumule(competence.famille.base, niveauActuel),
             borneInf = competence.niveauBase,
-            borneSup = borneSup
+            borneSup = borneSup,
+            niveauArchetype = niveauArchetype,
+            depasseArchetype = niveauArchetype != null && niveauActuel > niveauArchetype
         )
     }
 
@@ -445,13 +501,18 @@ class CompetencesViewModel @Inject constructor(
         // Si une survie spécifique est >= 0, l'extérieur est bloqué à 0 minimum.
         // Sinon (toutes < 0), l'extérieur est bloqué au max des survies spécifiques.
         val borneInf = if (maxSpecific >= 0) 0 else maxSpecific
+        val niveauArchetype = voyageur.archetype.niveaux[competence.nom]
+        
+        val borneSup = if (niveauArchetype != null) minOf(3, niveauArchetype) else 3
 
         return CompetenceUiItem.Individuelle(
             competence = competence,
             niveauActuel = niveauActuel,
             coutCumule = CoutCompetence.coutCumule(competence.famille.base, niveauActuel),
             borneInf = borneInf,
-            borneSup = 3
+            borneSup = borneSup,
+            niveauArchetype = niveauArchetype,
+            depasseArchetype = niveauArchetype != null && niveauActuel > niveauArchetype
         )
     }
 }
@@ -463,7 +524,9 @@ sealed interface CompetencesUiState {
         val pointsRestants: Int,
         val pointsSortsUtilises: Int,
         val hautRevant: Boolean,
-        val aDesSortsAccessibles: Boolean
+        val aDesSortsAccessibles: Boolean,
+        val archetypeEstComplet: Boolean,
+        val niveauxArchetype: Map<String, Int>
     ) : CompetencesUiState
 }
 
@@ -483,7 +546,9 @@ sealed interface CompetenceUiItem {
         val estPremierDuTronc: Boolean = false,
         val estVerrouilleParSorts: Boolean = false,
         val isCustom: Boolean = false,
-        val customKey: String? = null
+        val customKey: String? = null,
+        val niveauArchetype: Int? = null,
+        val depasseArchetype: Boolean = false
     ) : CompetenceUiItem
 
     data class Placeholder(
