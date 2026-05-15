@@ -22,6 +22,7 @@ import com.jb.voyageur.core.domain.model.tir
 import com.jb.voyageur.core.domain.repository.VoyageurRepository
 import com.jb.voyageur.core.domain.usecase.ChampCaracteristique
 import com.jb.voyageur.core.domain.usecase.ChampDescription
+import com.jb.voyageur.core.domain.usecase.ChangerStatutHautRevantUseCase
 import com.jb.voyageur.core.domain.usecase.ModifierBeauteUseCase
 import com.jb.voyageur.core.domain.usecase.ModifierCaracteristiqueUseCase
 import com.jb.voyageur.core.domain.usecase.ModifierDescriptionUseCase
@@ -48,6 +49,7 @@ class CaracteristiquesViewModel @Inject constructor(
     private val modifierCaracteristiqueUseCase: ModifierCaracteristiqueUseCase,
     private val modifierBeauteUseCase: ModifierBeauteUseCase,
     private val modifierDescriptionUseCase: ModifierDescriptionUseCase,
+    private val changerStatutHautRevantUseCase: ChangerStatutHautRevantUseCase,
     private val modifierHeureNaissanceUseCase: ModifierHeureNaissanceUseCase,
     private val modifierLateraliteUseCase: ModifierLateraliteUseCase,
     private val mettreAJourPhysiqueUseCase: MettreAJourPhysiqueUseCase,
@@ -69,6 +71,9 @@ class CaracteristiquesViewModel @Inject constructor(
 
     private val _aideActive = MutableStateFlow<ChampAffichage?>(null)
     val aideActive: StateFlow<ChampAffichage?> = _aideActive.asStateFlow()
+
+    private val _confirmationHautRevant = MutableStateFlow<ConfirmationHautRevant?>(null)
+    val confirmationHautRevant: StateFlow<ConfirmationHautRevant?> = _confirmationHautRevant.asStateFlow()
 
     init {
         // Observer les changements de TAILLE et Sexe pour régénérer
@@ -102,9 +107,47 @@ class CaracteristiquesViewModel @Inject constructor(
     }
 
     fun onDescriptionChange(champ: ChampDescription, valeur: String) {
-        viewModelScope.launch {
-            modifierDescriptionUseCase(voyageurId, champ, valeur)
+        if (champ == ChampDescription.HAUT_REVANT) {
+            val futurEtat = valeur.toBoolean()
+            viewModelScope.launch {
+                val voyageur = voyageurRepository.charger(voyageurId) ?: return@launch
+                
+                // Si on passe de Haut-rêvant à Vrai-rêvant
+                if (!futurEtat && voyageur.hautRevant) {
+                    val aDesPointsDraconic = voyageur.draconic.oniros > -11 || 
+                                           voyageur.draconic.hypnos > -11 || 
+                                           voyageur.draconic.narcos > -11 || 
+                                           voyageur.draconic.thanatos > -11 ||
+                                           voyageur.sorts.isNotEmpty()
+                    
+                    if (aDesPointsDraconic) {
+                        val nom = if (voyageur.nom.isNotBlank()) voyageur.nom 
+                                 else if (voyageur.sexe == Sexe.HOMME) "le voyageur" 
+                                 else "la voyageuse"
+                        _confirmationHautRevant.value = ConfirmationHautRevant(nom, false)
+                        return@launch
+                    }
+                }
+                
+                changerStatutHautRevantUseCase(voyageurId, futurEtat)
+            }
+        } else {
+            viewModelScope.launch {
+                modifierDescriptionUseCase(voyageurId, champ, valeur)
+            }
         }
+    }
+
+    fun confirmerChangementHautRevant() {
+        val confirmation = _confirmationHautRevant.value ?: return
+        viewModelScope.launch {
+            changerStatutHautRevantUseCase(voyageurId, confirmation.futurEtat)
+            _confirmationHautRevant.value = null
+        }
+    }
+
+    fun annulerChangementHautRevant() {
+        _confirmationHautRevant.value = null
     }
 
     fun onHeureNaissanceChange(heure: HeureNaissance) {
@@ -172,14 +215,14 @@ sealed interface CaracteristiquesUiState {
     ) : CaracteristiquesUiState
 }
 
+data class ConfirmationHautRevant(
+    val nom: String,
+    val futurEtat: Boolean
+)
+
 private fun Voyageur.toCaracteristiquesUiState(): CaracteristiquesUiState.Success {
     val pointsBeaute = (beaute - 10).coerceAtLeast(0)
-    val aDesSorts = hautRevant && (
-        draconic.oniros > -11 || 
-        draconic.hypnos > -11 || 
-        draconic.narcos > -11 || 
-        draconic.thanatos > -11
-    )
+    val aDesSorts = hautRevant
     return CaracteristiquesUiState.Success(
         nom = nom,
         sexe = sexe,

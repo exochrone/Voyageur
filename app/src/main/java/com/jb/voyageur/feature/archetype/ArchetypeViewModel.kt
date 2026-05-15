@@ -168,12 +168,7 @@ class ArchetypeViewModel @Inject constructor(
             )
         }
 
-        val aDesSortsAccessibles = hautRevant && (
-            draconic.oniros > -11 ||
-            draconic.hypnos > -11 ||
-            draconic.narcos > -11 ||
-            draconic.thanatos > -11
-        )
+        val aDesSortsAccessibles = hautRevant
 
         return ArchetypeUiState.Success(
             colonneGauche        = colonneGauche,

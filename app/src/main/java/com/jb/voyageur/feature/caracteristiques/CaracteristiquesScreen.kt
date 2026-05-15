@@ -43,8 +43,27 @@ fun CaracteristiquesScreen(
     }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val aideActive by viewModel.aideActive.collectAsStateWithLifecycle()
+    val confirmationHautRevant by viewModel.confirmationHautRevant.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val windowSizeClass = calculateWindowSizeClass(context as android.app.Activity)
+
+    confirmationHautRevant?.let { conf ->
+        AlertDialog(
+            onDismissRequest = viewModel::annulerChangementHautRevant,
+            title = { Text(stringResource(R.string.vrai_revant_confirmation_titre)) },
+            text = { Text(stringResource(R.string.vrai_revant_confirmation_message, conf.nom)) },
+            confirmButton = {
+                TextButton(onClick = viewModel::confirmerChangementHautRevant) {
+                    Text(stringResource(R.string.oui))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::annulerChangementHautRevant) {
+                    Text(stringResource(R.string.non))
+                }
+            }
+        )
+    }
 
     when (val state = uiState) {
         CaracteristiquesUiState.Loading -> {

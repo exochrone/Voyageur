@@ -23,6 +23,12 @@
     <string name="droitier">Droitier</string>
     <string name="gaucher">Gaucher</string>
     <string name="saisie_manuelle_titre">Saisie manuelle</string>
+    <string name="vrai_revant_confirmation_titre">Devenir vrai-rêvant ?</string>
+    <string name="vrai_revant_confirmation_message">Si %1$s devient vrai-rêvant, les points dépensés en Draconic et en sorts vont être remboursés et ces éléments seront bloqués.\nConfirmer ?</string>
+    <string name="le_voyageur">le voyageur</string>
+    <string name="la_voyageuse">la voyageuse</string>
+    <string name="oui">Oui</string>
+    <string name="non">Non</string>
     <string name="points_restants">Points restants : %1$d / 160</string>
     <string name="heure_naissance">Heure de naissance</string>
 
@@ -145,7 +151,7 @@
     <string name="menu_retour">Retour</string>
     <string name="menu_options">Options</string>
     <string name="retour_confirmation_titre">Quitter la fiche</string>
-    <string name="retour_confirmation_message">Les données non enregistrées seront perdues.</string>
+    <string name="retour_confirmation_message">Les changements non enregistrés seront perdus.</string>
     <string name="sauvegarde_bouton_json">Enregistrer la fiche</string>
     <string name="sauvegarde_bouton_pdf">Exporter la fiche en PDF</string>
 

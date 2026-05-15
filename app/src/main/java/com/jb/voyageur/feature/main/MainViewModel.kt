@@ -49,14 +49,7 @@ class MainViewModel @Inject constructor(
     val isSpellMenuEnabled: StateFlow<Boolean> = voyageurRepository
         .observerVoyageur(voyageurId)
         .filterNotNull()
-        .map { v ->
-            v.hautRevant && (
-                v.draconic.oniros > -11 || 
-                v.draconic.hypnos > -11 || 
-                v.draconic.narcos > -11 || 
-                v.draconic.thanatos > -11
-            )
-        }
+        .map { v -> v.hautRevant }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),

@@ -52,6 +52,7 @@ fun CaracteristiqueRow(
     onValeurChange: (Int) -> Unit,
     onAtBorneChange: (Int) -> Unit = {}, // 1: haut, -1: bas, 0: aucun
     onAideRequise: () -> Unit,
+    dragEnabled: Boolean = min < max,
     modifier: Modifier = Modifier
 ) {
     val view = LocalView.current
@@ -64,6 +65,7 @@ fun CaracteristiqueRow(
     val currentValeur by rememberUpdatedState(valeur)
     val currentMin by rememberUpdatedState(min)
     val currentMax by rememberUpdatedState(max)
+    val currentDragEnabled by rememberUpdatedState(dragEnabled)
 
     LaunchedEffect(atBorneDir) {
         if (isDragging) onAtBorneChange(atBorneDir)
@@ -116,13 +118,17 @@ fun CaracteristiqueRow(
                                 }
 
                                 if (event == null) {
-                                    // 200ms écoulées sans mouvement → activer le drag
-                                    // On autorise le drag même si min == max pour montrer le blocage (en rouge)
-                                    longPressTriggered = true
-                                    isDragging = true
-                                    view.performHapticFeedback(HapticFeedbackConstants.GESTURE_START)
-                                    if (currentMin == currentMax || currentValeur == currentMax || currentValeur == currentMin) {
-                                        atBorneDir = if (currentValeur == currentMax) 1 else -1
+                                    // 200ms écoulées sans mouvement → activer le drag si autorisé
+                                    if (currentDragEnabled) {
+                                        longPressTriggered = true
+                                        isDragging = true
+                                        view.performHapticFeedback(HapticFeedbackConstants.GESTURE_START)
+                                        if (currentMin == currentMax || currentValeur == currentMax || currentValeur == currentMin) {
+                                            atBorneDir = if (currentValeur == currentMax) 1 else -1
+                                        }
+                                    } else {
+                                        // Drag désactivé (champs calculés) : on traite comme un long tap pour l'aide
+                                        onAideRequise()
                                     }
                                     break
                                 }

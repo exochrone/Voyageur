@@ -94,12 +94,7 @@ class EquipementViewModel @Inject constructor(
             fortune          = fortune,
             encMax           = caracteristiques.encombrement,
             hautRevant       = hautRevant,
-            aDesSortsAccessibles = hautRevant && (
-                draconic.oniros > -11 || 
-                draconic.hypnos > -11 || 
-                draconic.narcos > -11 || 
-                draconic.thanatos > -11
-            )
+            aDesSortsAccessibles = hautRevant
         )
     }
 }
