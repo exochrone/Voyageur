@@ -48,10 +48,11 @@ fun CaracteristiquesScreen(
     val windowSizeClass = calculateWindowSizeClass(context as android.app.Activity)
 
     confirmationHautRevant?.let { conf ->
+        val displayedName = conf.nom ?: stringResource(conf.nomRes!!)
         AlertDialog(
             onDismissRequest = viewModel::annulerChangementHautRevant,
             title = { Text(stringResource(R.string.vrai_revant_confirmation_titre)) },
-            text = { Text(stringResource(R.string.vrai_revant_confirmation_message, conf.nom)) },
+            text = { Text(stringResource(R.string.vrai_revant_confirmation_message, displayedName)) },
             confirmButton = {
                 TextButton(onClick = viewModel::confirmerChangementHautRevant) {
                     Text(stringResource(R.string.oui))

@@ -3,6 +3,7 @@ package com.jb.voyageur.feature.caracteristiques
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jb.voyageur.R
 import com.jb.voyageur.core.domain.model.Caracteristiques
 import com.jb.voyageur.core.domain.model.HeureNaissance
 import com.jb.voyageur.core.domain.model.Lateralite
@@ -121,10 +122,13 @@ class CaracteristiquesViewModel @Inject constructor(
                                            voyageur.sorts.isNotEmpty()
                     
                     if (aDesPointsDraconic) {
-                        val nom = if (voyageur.nom.isNotBlank()) voyageur.nom 
-                                 else if (voyageur.sexe == Sexe.HOMME) "le voyageur" 
-                                 else "la voyageuse"
-                        _confirmationHautRevant.value = ConfirmationHautRevant(nom, false)
+                        val conf = if (voyageur.nom.isNotBlank()) {
+                            ConfirmationHautRevant(nom = voyageur.nom, futurEtat = false)
+                        } else {
+                            val resId = if (voyageur.sexe == Sexe.HOMME) R.string.le_voyageur else R.string.la_voyageuse
+                            ConfirmationHautRevant(nomRes = resId, futurEtat = false)
+                        }
+                        _confirmationHautRevant.value = conf
                         return@launch
                     }
                 }
@@ -216,7 +220,8 @@ sealed interface CaracteristiquesUiState {
 }
 
 data class ConfirmationHautRevant(
-    val nom: String,
+    val nom: String? = null,
+    val nomRes: Int? = null,
     val futurEtat: Boolean
 )
 

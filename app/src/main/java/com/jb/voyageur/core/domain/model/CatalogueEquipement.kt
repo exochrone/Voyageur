@@ -16,43 +16,46 @@ object CatalogueEquipement {
     }
 
     private fun parse(assets: AssetManager): List<CategorieEquipement> {
-        val lignes = assets.open("ListeEquipement.txt")
+        val lignes = assets.open("equipement.csv")
             .bufferedReader()
             .readLines()
 
-        val categories = mutableListOf<CategorieEquipement>()
-        var categorieEnCours: String? = null
-        val objetsEnCours = mutableListOf<ObjetEquipement>()
+        val objetsParCategorie = mutableMapOf<String, MutableList<ObjetEquipement>>()
+        val ordreCategories = mutableListOf<String>()
 
-        for (ligne in lignes) {
-            when {
-                ligne.isBlank() || ligne.startsWith(";") -> continue
-
-                ligne.startsWith("#") -> {
-                    // Sauvegarder la catégorie précédente
-                    categorieEnCours?.let {
-                        categories.add(CategorieEquipement(it, objetsEnCours.toList()))
-                    }
-                    categorieEnCours = ligne.removePrefix("#").trim()
-                    objetsEnCours.clear()
+        lignes.forEach { ligneRaw ->
+            // Nettoyage du BOM et des espaces
+            val ligne = ligneRaw.trim().removePrefix("\uFEFF")
+            if (ligne.isBlank()) return@forEach
+            
+            val parts = ligne.split(";")
+            if (parts.size >= 4) {
+                val categorie = parts[0].trim()
+                val nom = parts[1].trim()
+                
+                // Ignorer les lignes d'entête (peuvent apparaître plusieurs fois)
+                if (categorie.equals("catégorie", ignoreCase = true) || 
+                    nom.equals("nom_objet", ignoreCase = true) || 
+                    nom.equals("nom complet", ignoreCase = true)) {
+                    return@forEach
                 }
 
-                else -> {
-                    val parts = ligne.split("\\")
-                    if (parts.size >= 3) {
-                        val nom  = parts[0].trim()
-                        val enc  = parts[1].trim().replace(",", ".").toFloatOrNull() ?: 0f
-                        val prix = parts[2].trim().toIntOrNull() ?: 0
-                        objetsEnCours.add(ObjetEquipement(nom, enc, prix))
-                    }
+                val enc = parts[2].trim().replace(",", ".").toFloatOrNull() ?: 0f
+                val prix = parts[3].trim().toIntOrNull() ?: 0
+                
+                // Utiliser une clé normalisée pour le dictionnaire mais garder l'affichage original
+                val key = objetsParCategorie.keys.find { it.equals(categorie, ignoreCase = true) } ?: categorie
+                
+                if (!objetsParCategorie.containsKey(key)) {
+                    objetsParCategorie[key] = mutableListOf()
+                    ordreCategories.add(key)
                 }
+                objetsParCategorie[key]?.add(ObjetEquipement(nom, enc, prix))
             }
         }
-        // Dernière catégorie
-        categorieEnCours?.let {
-            categories.add(CategorieEquipement(it, objetsEnCours.toList()))
-        }
 
-        return categories
+        return ordreCategories.map { nomCat ->
+            CategorieEquipement(nomCat, objetsParCategorie[nomCat] ?: emptyList())
+        }
     }
 }

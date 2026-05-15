@@ -305,7 +305,7 @@ fun ObjetPossedeRow(
                 fontFamily = FontFamily.Serif,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
-                color = VoyageurColors.NomCaracteristique
+                color = Color.Black
             )
             Text(
                 text = "Enc : ${formatEnc(objet.encombrementTotal)} - Prix : ${objet.prixTotal}d",
@@ -379,7 +379,7 @@ fun ObjetCatalogueRow(
                 fontFamily = FontFamily.Serif,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
-                color = VoyageurColors.NomCaracteristique
+                color = Color.Black
             )
             Text(
                 text = "Enc : ${formatEnc(objet.encombrement)} - Prix : ${objet.prix}d",
